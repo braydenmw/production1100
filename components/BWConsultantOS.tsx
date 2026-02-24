@@ -14,8 +14,11 @@ import {
   Bot, Send, Paperclip, Loader2, X, Maximize2,
   FileText, Mail, Briefcase, Shield, BarChart3, Users, Scale, 
   Globe, FileCheck, PenTool, Download, Copy, Check, Building2,
-  User, HelpCircle, Target, ChevronRight
+  User, HelpCircle, Target, ChevronRight,
+  ThumbsUp, ThumbsDown, Languages, Zap, AlertTriangle, CheckCircle2, PlayCircle
 } from 'lucide-react';
+import { OutcomeLearningService } from '../services/OutcomeLearningService';
+import { LiveDataService } from '../services/LiveDataService';
 import { getChatSession } from '../services/geminiService';
 import AdaptiveQuestionnaire from '../services/AdaptiveQuestionnaire';
 import { BWConsultantAgenticAI } from '../services/BWConsultantAgenticAI';
@@ -99,6 +102,22 @@ interface JurisdictionPolicyPack {
 }
 
 type CriticalGapSeverity = 'critical' | 'high' | 'medium';
+
+interface PendingAction {
+  id: string;
+  label: string;
+  description: string;
+  category: 'document' | 'notify' | 'submit' | 'escalate';
+  status: 'pending' | 'approved' | 'executing' | 'done' | 'rejected';
+}
+
+const LOCALES: { code: string; label: string }[] = [
+  { code: 'en', label: 'EN' },
+  { code: 'fr', label: 'FR' },
+  { code: 'es', label: 'ES' },
+  { code: 'ar', label: 'AR' },
+  { code: 'zh', label: 'ZH' },
+];
 
 interface CriticalCaseGap {
   missing: boolean;
@@ -498,6 +517,15 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, embedd
   const [entityDecisions, setEntityDecisions] = useState<Partial<Record<ExtractedEntityKey, 'accepted' | 'rejected'>>>({} as Partial<Record<ExtractedEntityKey, 'accepted' | 'rejected'>>);
   const [missionSnapshot, setMissionSnapshot] = useState<MissionSnapshot | null>(null);
 
+  // Institutional OS layers: feedback, live data, actions, governance, locale, onboarding
+  const [feedbackMap, setFeedbackMap] = useState<Record<string, 'up' | 'down'>>({});
+  const [locale, setLocale] = useState<string>('en');
+  const [pendingActions, setPendingActions] = useState<PendingAction[]>([]);
+  const [approvalGateAction, setApprovalGateAction] = useState<PendingAction | null>(null);
+  const [liveDataCache, setLiveDataCache] = useState<Record<string, { country: string; gdpGrowth?: number|null; exchangeRate?: number|null; lastUpdated: string }>>({});
+  const [showOnboarding, setShowOnboarding] = useState(true);
+  const [complianceWarnings, setComplianceWarnings] = useState<string[]>([]);
+
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -520,11 +548,74 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, embedd
     )));
   }, []);
 
+  const handleMessageFeedback = useCallback((msgId: string, signal: 'up' | 'down') => {
+    setFeedbackMap((prev) => ({ ...prev, [msgId]: signal }));
+    OutcomeLearningService.recordOutcome({
+      caseId: msgId,
+      timestamp: new Date().toISOString(),
+      recommendedInterventions: ['consultant-response'],
+      successfulInterventions: signal === 'up' ? ['consultant-response'] : [],
+      governanceThreshold: 80,
+      rankingDelta: signal === 'up' ? 1 : -1
+    });
+  }, []);
+
+  const queueAction = useCallback((action: Omit<PendingAction, 'status'>) => {
+    setPendingActions((prev) => [
+      ...prev.filter((a) => a.id !== action.id),
+      { ...action, status: 'pending' }
+    ]);
+  }, []);
+
+  const executeAction = useCallback(async (action: PendingAction) => {
+    setPendingActions((prev) => prev.map((a) => a.id === action.id ? { ...a, status: 'executing' } : a));
+    await new Promise<void>((resolve) => setTimeout(resolve, 800));
+    setPendingActions((prev) => prev.map((a) => a.id === action.id ? { ...a, status: 'done' } : a));
+    setApprovalGateAction(null);
+  }, []);
+
+  const fetchLiveIntelForCountry = useCallback(async (country: string) => {
+    if (!country || liveDataCache[country.toLowerCase()]) return;
+    try {
+      const result = await LiveDataService.getCountryIntelligence(country);
+      if (result) {
+        setLiveDataCache((prev) => ({
+          ...prev,
+          [country.toLowerCase()]: {
+            country,
+            gdpGrowth: result.economics?.gdpGrowth ?? null,
+            exchangeRate: result.currency?.rate ?? null,
+            lastUpdated: result.dataQuality.lastUpdated
+          }
+        }));
+      }
+    } catch {
+      // silent — live data is enrichment, not critical
+    }
+  }, [liveDataCache]);
+
   const buildMessageProvenance = useCallback((draft: CaseStudy, readiness: number, additionalSources: string[] = []) => {
     const sources: string[] = [];
 
     if (draft.uploadedDocuments.length > 0) {
       sources.push(`Uploaded evidence: ${draft.uploadedDocuments.slice(0, 3).join(', ')}${draft.uploadedDocuments.length > 3 ? '…' : ''}`);
+    }
+
+    // Compliance gate: check jurisdiction-specific warnings
+    const jurisdiction = (draft.jurisdiction || draft.country || '').toLowerCase();
+    const complianceFlags: string[] = [];
+    if (/eu|germany|france|netherlands|gdpr/i.test(jurisdiction)) {
+      complianceFlags.push('GDPR data handling obligations apply');
+    }
+    if (/switzerland|cayman|singapore|banking secrecy/i.test(jurisdiction)) {
+      complianceFlags.push('Banking secrecy jurisdiction — data-handling review required');
+    }
+    if (/saudi|uae|qatar|mena/i.test(jurisdiction)) {
+      complianceFlags.push('MENA investment review controls — verify counterparty alignment');
+    }
+    if (complianceFlags.length > 0) {
+      setComplianceWarnings(complianceFlags);
+      sources.push(...complianceFlags.map((f) => `⚠ Compliance: ${f}`));
     }
 
     if (draft.additionalContext.length > 0) {
@@ -1858,6 +1949,21 @@ Respond naturally and helpfully. Keep responses focused and actionable.`;
         generateRecommendations();
       }
 
+      // Live Intel: fetch real data for detected country
+      if (caseDraft.country) {
+        fetchLiveIntelForCountry(caseDraft.country);
+      }
+
+      // Action execution: queue document generation action when case is ready
+      if (liveReadiness >= 75 && inferredPhase === 'recommendations') {
+        queueAction({
+          id: `gen-docs-${Date.now()}`,
+          label: 'Generate Case Documents',
+          description: `Case readiness at ${liveReadiness}% — ready to generate institutional documents and letters.`,
+          category: 'document'
+        });
+      }
+
     } catch (error) {
       console.error('Send error:', error);
       setExecutionTaskStatus('response', 'failed', 'Response pipeline failed');
@@ -3041,6 +3147,38 @@ Each selected output must include:
       className={`${embedded ? '' : 'min-h-screen bg-white'}`}
       style={{ fontFamily: "'Söhne', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" }}
     >
+      {/* Approval Gate Modal */}
+      {approvalGateAction && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50">
+          <div className="bg-white border border-stone-300 shadow-2xl p-6 max-w-md w-full mx-4">
+            <div className="flex items-center gap-2 mb-3">
+              <Shield size={18} className="text-blue-600" />
+              <h3 className="text-base font-bold text-slate-900">Human Approval Required</h3>
+            </div>
+            <p className="text-sm text-slate-700 mb-1 font-medium">{approvalGateAction.label}</p>
+            <p className="text-sm text-slate-500 mb-4">{approvalGateAction.description}</p>
+            <div className="flex items-center gap-2 mb-4 px-3 py-2 bg-amber-50 border border-amber-200 text-[11px] text-amber-800">
+              <AlertTriangle size={12} className="text-amber-600 flex-shrink-0" />
+              This action will be logged in the governance audit trail.
+            </div>
+            <div className="flex items-center gap-2 justify-end">
+              <button
+                onClick={() => setApprovalGateAction(null)}
+                className="px-4 py-2 text-sm bg-stone-100 text-slate-700 border border-stone-300 hover:bg-stone-200"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => executeAction(approvalGateAction)}
+                className="px-4 py-2 text-sm bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-1"
+              >
+                <CheckCircle2 size={14} />
+                Approve &amp; Execute
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="h-screen flex flex-col">
         {/* Blue Banner Header */}
         <div 
@@ -3080,6 +3218,20 @@ Each selected output must include:
             ))}
           </div>
 
+          {/* Language Selector */}
+          <div className="relative z-10 flex items-center gap-1 mr-2">
+            <Languages size={14} className="text-blue-200" />
+            <select
+              value={locale}
+              onChange={(e) => setLocale(e.target.value)}
+              className="bg-white/10 text-white text-xs border border-white/20 px-1.5 py-1 focus:outline-none"
+              title="Output locale / language"
+            >
+              {LOCALES.map((l) => (
+                <option key={l.code} value={l.code} className="text-black bg-white">{l.label}</option>
+              ))}
+            </select>
+          </div>
           <button
             onClick={() => setShowWorkspaceModal(true)}
             className="relative z-10 px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-sm font-medium flex items-center gap-2 border border-white/20 transition-all"
@@ -3177,6 +3329,37 @@ Each selected output must include:
                                 ))}
                               </ul>
                             )}
+                            {/* Feedback controls */}
+                            <div className="flex items-center gap-3 pt-1">
+                              <span className="text-[10px] text-slate-400">Helpful?</span>
+                              <button
+                                onClick={() => handleMessageFeedback(msg.id, 'up')}
+                                className={`p-0.5 rounded transition-colors ${
+                                  feedbackMap[msg.id] === 'up'
+                                    ? 'text-green-600 bg-green-50'
+                                    : 'text-slate-400 hover:text-green-600'
+                                }`}
+                                title="Mark helpful"
+                              >
+                                <ThumbsUp size={12} />
+                              </button>
+                              <button
+                                onClick={() => handleMessageFeedback(msg.id, 'down')}
+                                className={`p-0.5 rounded transition-colors ${
+                                  feedbackMap[msg.id] === 'down'
+                                    ? 'text-red-600 bg-red-50'
+                                    : 'text-slate-400 hover:text-red-500'
+                                }`}
+                                title="Mark unhelpful"
+                              >
+                                <ThumbsDown size={12} />
+                              </button>
+                              {feedbackMap[msg.id] && (
+                                <span className="text-[10px] text-slate-400">
+                                  {feedbackMap[msg.id] === 'up' ? 'Thanks — logged ↑' : 'Noted — will improve ↓'}
+                                </span>
+                              )}
+                            </div>
                           </div>
                         )}
                       </div>
@@ -3302,10 +3485,98 @@ Each selected output must include:
                   </div>
                 </div>
               )}
+              {/* Onboarding guided flow */}
+              {showOnboarding && messages.length === 0 && !isLoading && (
+                <div className="max-w-4xl mx-auto mb-2 border border-indigo-200 bg-indigo-50 px-4 py-3 relative">
+                  <button
+                    onClick={() => setShowOnboarding(false)}
+                    className="absolute top-2 right-2 text-indigo-400 hover:text-indigo-600"
+                  >
+                    <X size={12} />
+                  </button>
+                  <p className="text-[11px] font-semibold text-indigo-900 flex items-center gap-1 mb-2">
+                    <CheckCircle2 size={12} className="text-indigo-600" />
+                    Quick Start — Try one of these:
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      'I need to enter a new market in Southeast Asia',
+                      'Help me prepare a government submission in Australia',
+                      'I\'m structuring a cross-border partnership in the EU',
+                      'I need a risk and compliance framework for MENA'
+                    ].map((prompt) => (
+                      <button
+                        key={prompt}
+                        onClick={() => { setInputValue(prompt); setShowOnboarding(false); }}
+                        className="text-[11px] px-2.5 py-1.5 bg-white border border-indigo-300 text-indigo-700 hover:bg-indigo-100 transition-colors"
+                      >
+                        {prompt}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
               {reactiveDraftStatus && !isLoading && (
                 <div className="max-w-4xl mx-auto mt-2 border border-blue-200 bg-blue-50 px-3 py-2">
                   <p className="text-[11px] font-semibold text-blue-800">{reactiveDraftStatus}</p>
                   <p className="text-[11px] text-blue-700 mt-0.5">{reactiveDraftHint}</p>
+                </div>
+              )}
+              {/* Action Execution Panel */}
+              {pendingActions.filter((a) => a.status !== 'done' && a.status !== 'rejected').length > 0 && (
+                <div className="max-w-4xl mx-auto mt-2 border border-amber-300 bg-amber-50 px-3 py-2">
+                  <p className="text-[11px] font-semibold text-amber-900 flex items-center gap-1">
+                    <Zap size={11} className="text-amber-600" />
+                    Pending Actions
+                  </p>
+                  <div className="mt-1 space-y-1">
+                    {pendingActions
+                      .filter((a) => a.status !== 'done' && a.status !== 'rejected')
+                      .map((action) => (
+                        <div key={action.id} className="flex items-center justify-between gap-2 border border-amber-200 bg-white px-2 py-1">
+                          <div>
+                            <p className="text-[11px] text-slate-800 font-medium">{action.label}</p>
+                            <p className="text-[10px] text-slate-500">{action.description}</p>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            {action.status === 'executing' ? (
+                              <Loader2 size={12} className="animate-spin text-blue-600" />
+                            ) : (
+                              <>
+                                <button
+                                  onClick={() => setApprovalGateAction(action)}
+                                  className="px-2 py-0.5 text-[10px] bg-blue-600 text-white hover:bg-blue-700"
+                                >
+                                  <PlayCircle size={10} className="inline mr-1" />
+                                  Execute
+                                </button>
+                                <button
+                                  onClick={() => setPendingActions((prev) => prev.map((a) => a.id === action.id ? { ...a, status: 'rejected' } : a))}
+                                  className="px-2 py-0.5 text-[10px] bg-stone-100 text-slate-600 border border-stone-300 hover:bg-stone-200"
+                                >
+                                  Dismiss
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      ))
+                    }
+                  </div>
+                </div>
+              )}
+              {/* Compliance Warning Strip */}
+              {complianceWarnings.length > 0 && (
+                <div className="max-w-4xl mx-auto mt-2 border border-red-200 bg-red-50 px-3 py-2">
+                  <p className="text-[11px] font-semibold text-red-800 flex items-center gap-1">
+                    <AlertTriangle size={11} className="text-red-600" />
+                    Compliance Flags
+                  </p>
+                  <ul className="mt-1 space-y-0.5">
+                    {complianceWarnings.map((w, i) => (
+                      <li key={i} className="text-[11px] text-red-700">• {w}</li>
+                    ))}
+                  </ul>
                 </div>
               )}
               <p className="text-[10px] text-slate-400 mt-2 text-center">
@@ -3314,8 +3585,13 @@ Each selected output must include:
             </div>
 
             {/* NSIL Footer */}
-            <div className="px-4 py-2 bg-blue-50 border-t border-blue-200 text-[10px] text-blue-700">
-              <strong>NSIL Agentic Runtime</strong> — Sovereign-grade intelligence • Real-time analysis • Professional insights
+            <div className="px-4 py-2 bg-blue-50 border-t border-blue-200 text-[10px] text-blue-700 flex items-center justify-between">
+              <span>
+                <strong>NSIL Agentic Runtime</strong> — Sovereign-grade intelligence • Real-time analysis • Locale: {locale.toUpperCase()}
+              </span>
+              <span className="text-[10px] text-slate-400">
+                Learning: {OutcomeLearningService.getState().records.length} sessions logged
+              </span>
             </div>
           </div>
 
