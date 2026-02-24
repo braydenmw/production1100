@@ -46,6 +46,7 @@ const DocumentGenerationSuite: React.FC<DocumentGenerationSuiteProps> = ({
   const [structuredIntake, setStructuredIntake] = useState<StructuredDocumentIntake>(createDefaultIntake());
   const [lastRewriteMode, setLastRewriteMode] = useState<RewriteMode | null>(null);
   const [rewriteBaseContent, setRewriteBaseContent] = useState<string>('');
+  const [originalGeneratedContent, setOriginalGeneratedContent] = useState<string>('');
   const [showRedline, setShowRedline] = useState(false);
 
   // Calculate decision deadline once to avoid impure function calls during render
@@ -375,9 +376,23 @@ const DocumentGenerationSuite: React.FC<DocumentGenerationSuiteProps> = ({
     setSelectedDocsQueue(prev => prev.includes(docType) ? prev.filter(d => d !== docType) : [...prev, docType]);
   };
 
+  const clearRewriteState = () => {
+    setLastRewriteMode(null);
+    setRewriteBaseContent('');
+    setShowRedline(false);
+  };
+
+  const closeGeneratedDocument = () => {
+    setSelectedDocument(null);
+    clearRewriteState();
+    setOriginalGeneratedContent('');
+  };
+
   const generateDocument = async (docType: DocumentType) => {
     setSelectedDocument(docType);
     setIsGenerating(true);
+    clearRewriteState();
+    setOriginalGeneratedContent('');
     
     // Simulate generation time based on document complexity
     const generationTime = docType === 'dossier' ? 8000 : docType === 'financial-model' ? 4000 : 2500;
@@ -453,7 +468,9 @@ const DocumentGenerationSuite: React.FC<DocumentGenerationSuiteProps> = ({
     }
 
     const contextApplied = applyTemplateContext(content, structuredIntake, lengthPreset);
-    setGeneratedContent(adjustByLength(contextApplied));
+    const adjusted = adjustByLength(contextApplied);
+    setGeneratedContent(adjusted);
+    setOriginalGeneratedContent(adjusted);
     setIsGenerating(false);
     onDocumentGenerated?.(docType, contextApplied);
   };
@@ -1974,6 +1991,20 @@ Adopt the above practices to strengthen trust, accelerate approvals, and improve
     setShowRedline(true);
   };
 
+  const hasPendingRewrite = Boolean(lastRewriteMode && rewriteBaseContent && rewriteBaseContent !== generatedContent);
+
+  const acceptRewrite = () => {
+    if (!hasPendingRewrite) return;
+    setOriginalGeneratedContent(generatedContent);
+    clearRewriteState();
+  };
+
+  const revertToOriginal = () => {
+    if (!originalGeneratedContent) return;
+    setGeneratedContent(originalGeneratedContent);
+    clearRewriteState();
+  };
+
   return (
     <div className="h-full bg-stone-50 p-6 overflow-y-auto">
       <div className="max-w-6xl mx-auto space-y-6">
@@ -2135,7 +2166,7 @@ Adopt the above practices to strengthen trust, accelerate approvals, and improve
                   {documentTemplates.find(d => d.id === selectedDocument)?.title}
                 </h3>
                 <button
-                  onClick={() => setSelectedDocument(null)}
+                  onClick={closeGeneratedDocument}
                   className="text-stone-500 hover:text-stone-700 font-bold"
                 >
                   ✗
@@ -2155,9 +2186,17 @@ Adopt the above practices to strengthen trust, accelerate approvals, and improve
                   {lastRewriteMode && (
                     <div className="flex items-center justify-between gap-3">
                       <div className="text-[11px] text-stone-500">Last rewrite applied: {lastRewriteMode}</div>
-                      <button onClick={() => setShowRedline(prev => !prev)} className="text-[11px] px-2 py-1 border border-stone-300 rounded text-stone-700 hover:bg-stone-50">
-                        {showRedline ? 'Hide Redline' : 'Show Redline'}
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button onClick={() => setShowRedline(prev => !prev)} className="text-[11px] px-2 py-1 border border-stone-300 rounded text-stone-700 hover:bg-stone-50">
+                          {showRedline ? 'Hide Redline' : 'Show Redline'}
+                        </button>
+                        <button onClick={acceptRewrite} disabled={!hasPendingRewrite} className={`text-[11px] px-2 py-1 rounded border ${hasPendingRewrite ? 'border-emerald-300 text-emerald-700 hover:bg-emerald-50' : 'border-stone-200 text-stone-400 cursor-not-allowed'}`}>
+                          Accept Rewrite
+                        </button>
+                        <button onClick={revertToOriginal} disabled={!originalGeneratedContent || !hasPendingRewrite} className={`text-[11px] px-2 py-1 rounded border ${originalGeneratedContent && hasPendingRewrite ? 'border-red-300 text-red-700 hover:bg-red-50' : 'border-stone-200 text-stone-400 cursor-not-allowed'}`}>
+                          Revert to Original
+                        </button>
+                      </div>
                     </div>
                   )}
                   {showRedline && rewriteBaseContent && rewriteBaseContent !== generatedContent && (
@@ -2194,7 +2233,7 @@ Adopt the above practices to strengthen trust, accelerate approvals, and improve
                     <button onClick={exportDocument} className="px-4 py-3 bg-blue-600 text-white rounded-lg font-bold text-sm hover:bg-blue-700 flex items-center justify-center gap-2">
                       <Download className="w-4 h-4" /> Download as PDF
                     </button>
-                    <button onClick={() => setSelectedDocument(null)} className="px-4 py-3 border border-stone-200 rounded-lg font-bold text-sm text-stone-700 hover:bg-stone-50 flex items-center justify-center gap-2">
+                    <button onClick={closeGeneratedDocument} className="px-4 py-3 border border-stone-200 rounded-lg font-bold text-sm text-stone-700 hover:bg-stone-50 flex items-center justify-center gap-2">
                       <FileText className="w-4 h-4" /> Generate Another
                     </button>
                   </div>
