@@ -45,6 +45,8 @@ const DocumentGenerationSuite: React.FC<DocumentGenerationSuiteProps> = ({
   const [generatedBatch, setGeneratedBatch] = useState<Array<{ id: DocumentType; title: string; content: string }>>([]);
   const [structuredIntake, setStructuredIntake] = useState<StructuredDocumentIntake>(createDefaultIntake());
   const [lastRewriteMode, setLastRewriteMode] = useState<RewriteMode | null>(null);
+  const [rewriteBaseContent, setRewriteBaseContent] = useState<string>('');
+  const [showRedline, setShowRedline] = useState(false);
 
   // Calculate decision deadline once to avoid impure function calls during render
   const [decisionDeadline] = useState(() => new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString());
@@ -1888,10 +1890,36 @@ Adopt the above practices to strengthen trust, accelerate approvals, and improve
     navigator.clipboard.writeText(generatedContent);
   };
 
+  const buildLineDiff = (before: string, after: string): Array<{ type: 'same' | 'removed' | 'added'; text: string; key: string }> => {
+    const beforeLines = before.split('\n');
+    const afterLines = after.split('\n');
+    const max = Math.max(beforeLines.length, afterLines.length);
+    const rows: Array<{ type: 'same' | 'removed' | 'added'; text: string; key: string }> = [];
+
+    for (let index = 0; index < max; index++) {
+      const oldLine = beforeLines[index];
+      const newLine = afterLines[index];
+
+      if (oldLine === newLine && oldLine !== undefined) {
+        rows.push({ type: 'same', text: oldLine, key: `same-${index}` });
+      } else {
+        if (oldLine !== undefined) {
+          rows.push({ type: 'removed', text: oldLine, key: `removed-${index}` });
+        }
+        if (newLine !== undefined) {
+          rows.push({ type: 'added', text: newLine, key: `added-${index}` });
+        }
+      }
+    }
+
+    return rows;
+  };
+
   const applyRewrite = (mode: RewriteMode) => {
     if (!generatedContent.trim()) return;
 
     const base = generatedContent;
+    setRewriteBaseContent(base);
     let updated = base;
 
     if (mode === 'formalize') {
@@ -1943,6 +1971,7 @@ Adopt the above practices to strengthen trust, accelerate approvals, and improve
 
     setGeneratedContent(updated);
     setLastRewriteMode(mode);
+    setShowRedline(true);
   };
 
   return (
@@ -2124,7 +2153,39 @@ Adopt the above practices to strengthen trust, accelerate approvals, and improve
                     <button onClick={() => applyRewrite('board-ready')} className="px-3 py-2 border border-stone-200 rounded text-xs font-semibold text-stone-700 hover:bg-stone-50">Board-Ready</button>
                   </div>
                   {lastRewriteMode && (
-                    <div className="text-[11px] text-stone-500">Last rewrite applied: {lastRewriteMode}</div>
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="text-[11px] text-stone-500">Last rewrite applied: {lastRewriteMode}</div>
+                      <button onClick={() => setShowRedline(prev => !prev)} className="text-[11px] px-2 py-1 border border-stone-300 rounded text-stone-700 hover:bg-stone-50">
+                        {showRedline ? 'Hide Redline' : 'Show Redline'}
+                      </button>
+                    </div>
+                  )}
+                  {showRedline && rewriteBaseContent && rewriteBaseContent !== generatedContent && (
+                    <div className="grid md:grid-cols-2 gap-3">
+                      <div className="border border-red-200 rounded-lg overflow-hidden">
+                        <div className="px-3 py-2 bg-red-50 text-red-800 text-xs font-bold">Before Rewrite</div>
+                        <div className="max-h-60 overflow-y-auto p-3 text-[11px] font-mono whitespace-pre-wrap text-stone-700">
+                          {rewriteBaseContent}
+                        </div>
+                      </div>
+                      <div className="border border-emerald-200 rounded-lg overflow-hidden">
+                        <div className="px-3 py-2 bg-emerald-50 text-emerald-800 text-xs font-bold">After Rewrite</div>
+                        <div className="max-h-60 overflow-y-auto p-3 text-[11px] font-mono whitespace-pre-wrap text-stone-700">
+                          {generatedContent}
+                        </div>
+                      </div>
+                      <div className="md:col-span-2 border border-stone-200 rounded-lg overflow-hidden">
+                        <div className="px-3 py-2 bg-stone-100 text-stone-700 text-xs font-bold">Redline</div>
+                        <div className="max-h-60 overflow-y-auto p-2 space-y-1 text-[11px] font-mono">
+                          {buildLineDiff(rewriteBaseContent, generatedContent).map((row) => (
+                            <div key={row.key} className={row.type === 'added' ? 'bg-emerald-50 text-emerald-900 px-2 py-0.5 rounded' : row.type === 'removed' ? 'bg-red-50 text-red-900 px-2 py-0.5 rounded line-through' : 'px-2 py-0.5 text-stone-600'}>
+                              {row.type === 'added' ? '+ ' : row.type === 'removed' ? '- ' : '  '}
+                              {row.text}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
                   )}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                     <button onClick={copyToClipboard} className="px-4 py-3 border border-stone-200 rounded-lg font-bold text-sm text-stone-700 hover:bg-stone-50 flex items-center justify-center gap-2">
