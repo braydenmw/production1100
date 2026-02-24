@@ -20,6 +20,7 @@ import {
 import { OutcomeLearningService } from '../services/OutcomeLearningService';
 import { LiveDataService } from '../services/LiveDataService';
 import { getChatSession, extractFileTextViaAI } from '../services/geminiService';
+import { AgentToolRegistry, AgentMemoryStore, registerBuiltInTools } from '../services/agent';
 import AdaptiveQuestionnaire from '../services/AdaptiveQuestionnaire';
 import { BWConsultantAgenticAI } from '../services/BWConsultantAgenticAI';
 import CaseStudyAnalyzer from '../services/CaseStudyAnalyzer';
@@ -532,6 +533,13 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, embedd
   const lastKernelSignalRef = useRef<string>('');
   const chatSession = useRef(getChatSession());
   const agenticAIRef = useRef(new BWConsultantAgenticAI());
+  const sessionId = useRef(crypto.randomUUID());
+  const agentRegistry = useRef((() => {
+    const r = new AgentToolRegistry();
+    registerBuiltInTools(r);
+    return r;
+  })());
+  const agentMemory = useRef(new AgentMemoryStore());
 
   const initializeExecutionTimeline = useCallback(() => {
     setExecutionTimeline([
@@ -1261,7 +1269,9 @@ Consultant operating rules:
 - If data is incomplete, ask the single highest-value question that improves decision quality.
 - Convert provided information into action-oriented outputs, not generic commentary.
 
-Respond naturally and helpfully. Keep responses focused and actionable.`;
+Respond naturally and helpfully. Keep responses focused and actionable.
+
+${agentRegistry.current.toManifest()}`;
   }, [caseStudy, resolvePolicyPack, consultantCaseBrief, consultantGateReady, consultantGateMissing]);
 
   // Process user input through real AI
@@ -1894,6 +1904,47 @@ Respond naturally and helpfully. Keep responses focused and actionable.`;
         }
       );
       setExecutionTaskStatus('response', 'completed', 'Primary response delivered');
+
+      // ── TOOL CALL EXECUTION LOOP ─────────────────────────────────────────────
+      // The AI may have emitted [[TOOL:name]]{...}[[/TOOL]] blocks.
+      // Detect them, execute, strip from visible text, then do a follow-up pass.
+      const toolCalls = AgentToolRegistry.parseToolCalls(responseContent);
+      if (toolCalls.length > 0) {
+        responseContent = AgentToolRegistry.stripToolCalls(responseContent);
+        const toolResultLines: string[] = [];
+        for (const call of toolCalls) {
+          try {
+            const result = await agentRegistry.current.execute(call.name, call.params);
+            const summary = (
+              (result.data as { summary?: string })?.summary ??
+              (result.success ? JSON.stringify(result.data).slice(0, 600) : `Error: ${result.error}`)
+            );
+            agentMemory.current.storeToolResult(sessionId.current, call.name, summary);
+            toolResultLines.push(`**${call.name}** (${result.latencyMs}ms):\n${summary}`);
+          } catch (toolErr) {
+            toolResultLines.push(`**${call.name}**: execution failed — ${String(toolErr)}`);
+          }
+        }
+        // Second AI pass: incorporate tool results into the response
+        const toolContext = toolResultLines.join('\n\n');
+        const augmented = await processWithAI(
+          `${userContent}\n\n[Live intelligence retrieved]:\n${toolContext}`,
+          `You have access to the tool results above. Use them to give a specific, data-grounded response. Do NOT emit any more tool calls.`
+        );
+        if (augmented && augmented.length > 20) {
+          responseContent = augmented;
+        } else {
+          responseContent = `${responseContent}\n\n${toolContext}`;
+        }
+      }
+      // Store this turn in memory for future context recall
+      agentMemory.current.storeFact(
+        sessionId.current,
+        `User: ${userContent.slice(0, 200)} | Response: ${responseContent.slice(0, 300)}`,
+        [caseStudy.country, caseStudy.sector, caseStudy.organizationName].filter(Boolean),
+        70
+      );
+      // ── END TOOL CALL EXECUTION LOOP ─────────────────────────────────────────
 
       const nextFollowUp = getHighestValueFollowUp(caseDraft);
       const trimmedUserContent = userContent.trim();
