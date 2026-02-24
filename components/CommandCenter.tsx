@@ -195,24 +195,24 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-50/40 via-transparent to-transparent" />
                 <div className="relative max-w-4xl mx-auto">
                     <h2 className="text-4xl md:text-5xl font-light text-center leading-tight mb-4 text-slate-900">
-                        A Neuro-Symbolic Economic Intelligence Engine
+                        BW Nexus AI &mdash; An Institutional Intelligence Operating System
                     </h2>
                     <p className="text-center text-lg md:text-xl font-light mb-12 max-w-3xl mx-auto text-slate-600">
-                        Not a chatbot. A <span className="text-blue-600 font-normal">Neuro-Symbolic Operating System</span> purpose-built for high-stakes strategic decision-making. 46+ proprietary formulas, a <span className="text-blue-600 font-normal">Regional Development Kernel</span>, partner intelligence scoring, causal problem-to-solution graphs, and adaptive case-method gating &mdash; applied to every region, government, company, and institution on Earth.
+                        I built this because the tools that exist weren&rsquo;t built for the problems I kept running into. This is a <span className="text-blue-600 font-normal">full operating system for strategic decisions</span> &mdash; part research analyst, part debate room, part document engine. You describe your situation. It builds the case. You walk away with something defensible.
                     </p>
                     <div id="brain" className="relative -top-28" />
                     <h2 className="text-3xl md:text-4xl font-bold text-slate-900 leading-tight mb-6">
-                        The Trust Gap in Artificial Intelligence
+                        What Is BW Nexus AI &mdash; and What Is the BW Consultant?
                     </h2>
                     <div className="space-y-4 mb-10">
                         <p className="text-lg text-slate-700 leading-relaxed text-justify">
-                            Every major language model&mdash;ChatGPT, Claude, Gemini&mdash;operates probabilistically. It predicts the next likely token from patterns in training data. That is useful for drafting ideas and summarizing text. It is not sufficient for high-stakes strategic decisions.
+                            BW Nexus AI is the technology platform of BW Global Advisory. Think of it as a full intelligence operating system &mdash; not a tool you open, paste something into, and get a paragraph back. It is a system you <em>work through</em>. You bring your situation. It brings the analysis.
                         </p>
                         <p className="text-lg text-slate-700 leading-relaxed text-justify">
-                            In decision environments involving public money, sovereign priorities, infrastructure, employment, or institutional capital, leaders are judged on defensibility. They must explain how conclusions were reached, what assumptions were used, which data was trusted, what uncertainty was modeled, and whether the same process yields the same answer tomorrow.
+                            The <strong className="text-slate-900">BW Consultant</strong> is the front door to that system. You have a conversation with it &mdash; describe what you&rsquo;re dealing with, what you&rsquo;re trying to achieve, where you&rsquo;re operating. As you type, the system is already building your case. It detects signals, identifies gaps, models your jurisdiction, and decides which questions matter most. By the time you&rsquo;re mid-conversation, a full institutional case study is forming behind the scenes.
                         </p>
                         <p className="text-lg text-slate-700 leading-relaxed text-justify">
-                            Standard AI tools can hallucinate under ambiguity, produce inconsistent responses to equivalent prompts, and hide reasoning inside opaque model behavior. They cannot reliably provide deterministic scoring, end-to-end traceability, or committee-ready audit evidence. <strong className="text-slate-900">BW Ai was built to close that trust gap.</strong>
+                            When the case is ready, the system recommends exactly which reports and letters your situation requires &mdash; and generates them with full traceability to method, evidence, and scoring logic. <strong className="text-slate-900">That is what makes it an OS, not a chatbot.</strong> Every response is grounded in deterministic analysis. Every document produced is audit-committee defensible.
                         </p>
                     </div>
 
@@ -230,7 +230,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                             </div>
                             <div className="p-6">
                                 <p className="text-sm text-slate-700 leading-relaxed text-justify">
-                                    Standard AI tools hallucinate facts and fabricated references under uncertainty. They offer limited explainability for internal reasoning behavior, produce non-deterministic outputs on repeated prompts, leave weak audit trails for high-stakes governance review, and are difficult to defend under board, ministry, or committee scrutiny.
+                                    Ask ChatGPT the same question twice and you will often get different answers. Ask it about a specific regulation and it may cite a rule that doesn&rsquo;t exist. Ask it to score a partnership opportunity and it will write something plausible &mdash; not something verifiable. In low-stakes environments, this is fine. When a government budget, a board decision, or a cross-border investment depends on your analysis, plausible is not good enough.
                                 </p>
                             </div>
                         </div>
@@ -247,7 +247,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                             </div>
                             <div className="p-6">
                                 <p className="text-sm text-slate-700 leading-relaxed text-justify">
-                                    BW Ai validates every input before scoring, runs it through a Regional Development Kernel with partner intelligence and causal graphs, gates it against a five-point Case Study Method Layer, and produces a full audit trail from intake to final conclusion. Deterministic scoring &mdash; same data, same outcome &mdash; with every conclusion traceable to formulas, assumptions, evidence, partner rankings, and governance readiness. Board-ready, audit-committee-defensible outputs for any region, any sector, any jurisdiction.
+                                    BW Nexus AI runs your situation through 46+ proprietary formulas &mdash; not estimates, not generated text, but calculated scores with traceable inputs. Every output comes with a method trail: what was used, how confident it is, and which assumptions were made. Run it again tomorrow with the same inputs and you get the same answer. That is the standard required for committee-ready, board-defensible strategic outputs.
                                 </p>
                             </div>
                         </div>
@@ -264,17 +264,17 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                 <div className="absolute inset-0 opacity-20"></div>
                 <div className="relative max-w-4xl mx-auto space-y-6">
                     {/* Removed empty photo/banner above script as requested */}
-                    <p className="text-sm font-bold text-blue-400 uppercase tracking-wider">Why This Exists</p>
+                    <p className="text-sm font-bold text-blue-400 uppercase tracking-wider">Why I Built This</p>
                     <p className="text-base text-slate-300 leading-relaxed text-justify">
-                        <strong className="text-white">Bright founders in Lagos. Brilliant projects in the Philippines. Life-saving initiatives in Bangladesh.</strong> All overlooked. Not for lack of capability or capital. For lack of <strong className="text-white">institutional translation.</strong> That's what this system was built to close.
+                        <strong className="text-white">A government minister in the Philippines gave me 30 minutes.</strong> I had no analyst team. No institutional database. No two-week turnaround. I had a laptop and a problem that needed an answer that could survive a committee room. That gap &mdash; between what the situation demanded and what any tool could produce &mdash; is why this exists.
                     </p>
                     <div className="bg-blue-950/50 border-l-4 border-r-4 border-blue-400 px-6 py-5 rounded-sm backdrop-blur-sm">
-                        <p className="text-sm font-bold text-blue-300 uppercase tracking-wider mb-4">The Real Opportunity Is Invisible</p>
+                        <p className="text-sm font-bold text-blue-300 uppercase tracking-wider mb-4">The Translation Problem Nobody Solved</p>
                         <p className="text-base text-slate-200 leading-relaxed text-justify mb-4">
-                            Capital flows to the largest markets. But the real wealth-generating capacity—the industries, the people, the supply chains—lives in the regional cities everyone overlooks. Everyone writes reports. Everyone wants the same intelligence. But the data is two years old. Where does someone start when they don't have the analyst budget, the skill, or access to current information? <strong className="text-white">That's the gap.</strong>
+                            The real decisions &mdash; the ones involving regional budgets, infrastructure concessions, cross-border investment, sovereign credit risk &mdash; have always required institutional-grade analysis. That analysis has always been gatekept by cost, by connections, by access to networks that most people don&rsquo;t have. A brilliant founder in Cebu, a regional planning office in Bangladesh, a mid-market bank entering a new corridor &mdash; they face the same information gap. <strong className="text-white">That&rsquo;s the gap this system closes.</strong>
                         </p>
                         <p className="text-base text-slate-200 leading-relaxed text-justify">
-                            This is a <strong className="text-white">100% dedicated global regional development system.</strong> Not here to replace what you're doing. Not here to be another report vendor. Here to provide the real-time institutional translation layer that lets you see what's actually happening in the cities and regions that the big markets depend on. Here to give you the ability to understand, evaluate, and act on opportunities that have been invisible simply because the translation was missing. <strong className="text-white">Below is how it thinks.</strong>
+                            I built BW Nexus AI to be a <strong className="text-white">full institutional translation layer</strong> &mdash; the kind of system that takes your real-world situation and converts it into evidence, scoring, and defensible conclusions without requiring a consultant retainer, a six-week process, or access to a Morgan Stanley analyst. You bring the problem. The system does the rest. <strong className="text-white">Below is exactly how.</strong>
                         </p>
                     </div>
                 </div>
@@ -302,7 +302,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                             </div>
                             <div className="p-6">
                                 <p className="text-sm text-slate-700 leading-relaxed text-justify">
-                                    A <strong>10&ndash;layer deterministic pipeline</strong> with adaptive multi-phase intake and case-method gating. Every input is validated, debated by five adversarial personas, scored by 46+ proprietary formulas, stress-tested across 5,000 scenarios, processed through 7 neuroscience models, filtered through a Global Data Fabric, and matched against ranked partners &mdash; all before a single word of output is generated. Nothing is skipped. Nothing is approximate. Every layer must pass before the next one fires.
+                                    Think of it like a quality-control line in a factory &mdash; but for decisions. Your input enters at one end. Before any output is produced, it passes through 10 distinct layers: intake validation, case classification, evidence scoring, adversarial debate, formula execution, Monte Carlo stress testing, neuroscience-model processing, governance gating, partner ranking, and output tracing. <strong>Nothing is skipped. Every layer must pass before the next fires.</strong> The NSIL Agentic Runtime streams this process live &mdash; you watch the system build your case in real time.
                                 </p>
                             </div>
                         </div>
@@ -319,7 +319,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                             </div>
                             <div className="p-6">
                                 <p className="text-sm text-slate-700 leading-relaxed text-justify">
-                                    <strong>1,307 lines of code</strong> implementing 7 mathematical models from published neuroscience research &mdash; Wilson-Cowan neural fields, Rao &amp; Ballard predictive processing, Friston&rsquo;s free energy principle, Itti &amp; Koch attention allocation, prospect theory emotional valence, global workspace theory, and Baddeley&rsquo;s working memory. These aren&rsquo;t simplified approximations. They model how the human brain allocates attention, weighs risk, and makes decisions under pressure &mdash; running live on your data, contextualised with governance signals, partner dynamics, and regional development indicators.
+                                    Most systems model the world. This one also models the people in it. <strong>Seven published neuroscience frameworks</strong> &mdash; Friston&rsquo;s free energy principle, prospect theory, global workspace theory, Wilson-Cowan neural fields, and others &mdash; run live on your data to simulate how decision-makers will allocate attention, weigh risk, and respond under pressure. In plain terms: the system doesn&rsquo;t just tell you what&rsquo;s true &mdash; it tells you what will land, what will be resisted, and what emotional dynamics are shaping the room.
                                 </p>
                             </div>
                         </div>
@@ -336,7 +336,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                             </div>
                             <div className="p-6">
                                 <p className="text-sm text-slate-700 leading-relaxed text-justify">
-                                    Before any recommendation reaches you, <strong>five adversarial personas</strong> debate it &mdash; each informed by governance readiness scores, partner intelligence rankings, and Global Data Fabric signals. The Skeptic hunts for deal-killers. The Advocate finds upside. The Regulator checks legality. The Accountant validates cash flow. The Operator tests execution. Beliefs update through Bayesian inference &mdash; not majority vote. Disagreements are preserved, not smoothed over. The Skeptic carries 1.2x weight because bad news matters more than good news.
+                                    Before any conclusion reaches you, <strong>five internal voices argue over it</strong>. The Skeptic looks for deal-killers. The Advocate finds the upside. The Regulator checks legality. The Accountant tests cash flow. The Operator asks whether it can actually be executed. Disagreements are preserved &mdash; not averaged out. The Skeptic carries 1.2&times; weight, because in institutional decisions, bad news costs more than good news earns. What you receive is a conclusion that has already survived a debate room.
                                 </p>
                             </div>
                         </div>
@@ -353,7 +353,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                             </div>
                             <div className="p-6">
                                 <p className="text-sm text-slate-700 leading-relaxed text-justify">
-                                    BW Ai doesn&rsquo;t wait for your next question. <strong>8 autonomous engines</strong> and a <strong>Regional Development Kernel</strong> run continuously &mdash; finding opportunities you haven&rsquo;t asked about, ranking ideal partners, mapping root causes to interventions through causal graphs, ingesting live policy, macro, and trade signals, and flagging ethical risks before any output is released. Every engine passes through IFC and UN SDG governance gates. <strong>8 Global Issue Packs</strong> (water, energy, logistics, housing, health, digital infrastructure, workforce, climate) provide domain-specific intelligence scaffolds for any region on Earth.
+                                    The system doesn&rsquo;t wait for you to ask the right question. <strong>Eight autonomous engines</strong> run continuously in the background &mdash; scanning for partner matches, mapping root causes to interventions through causal graphs, ingesting live policy and trade signals, and flagging governance or ethical risks before any output is released. The <strong>Planner/Executor runtime</strong> streams this process as you work: you can watch tasks queue, run, and complete in real time. The Regional Development Kernel covers every region on Earth across 8 domain packs: water, energy, logistics, housing, health, digital infrastructure, workforce, and climate.
                                 </p>
                             </div>
                         </div>
@@ -370,7 +370,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                             </div>
                             <div className="p-6">
                                 <p className="text-sm text-slate-700 leading-relaxed text-justify">
-                                    Most systems only analyse external conditions. BW Ai also analyses <strong>you</strong> &mdash; the person making the decision. <strong>7 reflexive engines</strong> detect your recurring priorities, surface hidden assets, identify unspoken barriers, map your investment lifecycle position, and reframe conclusions for every audience. A <strong>Case Study Method Layer</strong> enforces five gates &mdash; boundary clarity, objective quality, evidence sufficiency, rival explanations, and implementation feasibility &mdash; before any output generates. Nothing gets through until the method is satisfied.
+                                    Most systems analyze the problem. This one also analyzes <strong>how you&rsquo;re thinking about the problem</strong>. Seven reflexive engines detect your recurring priorities, surface hidden assets you haven&rsquo;t mentioned, identify the unspoken barriers shaping your constraints, and reframe conclusions for every audience &mdash; government, investor, board, or community. A <strong>five-gate Case Study Method Layer</strong> checks boundary clarity, objective quality, evidence sufficiency, rival explanations, and implementation feasibility. Nothing generates until the method is satisfied.
                                 </p>
                             </div>
                         </div>
@@ -387,7 +387,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                             </div>
                             <div className="p-6">
                                 <p className="text-sm text-slate-700 leading-relaxed text-justify">
-                                    Every score is calculated by <strong>46+ proprietary mathematical formulas</strong> &mdash; not LLM-generated estimates. DAG-scheduled execution ensures correct dependency order. Monte Carlo simulation stress-tests every result across 5,000 scenarios. Partner Fit, Delivery Reliability, Policy Alignment, and Local Legitimacy indices blend with PVI/CIS/CCS/RFI/SRA/FRS to rank ideal partners. Governance readiness gates outputs at 75%+. Every score traces back to the exact formula, exact inputs, and exact weights that produced it.
+                                    Every number you see was calculated &mdash; not generated. <strong>46+ proprietary formulas</strong> cover partner fit, delivery reliability, policy alignment, local legitimacy, financial viability, risk exposure, and governance readiness. A DAG scheduler manages formula dependencies so the execution order is always correct. Monte Carlo simulation stress-tests every result across 5,000 scenarios. Governance readiness gates outputs at 75%+. Every score traces back to its exact formula, exact inputs, and exact weights. Run it again tomorrow, same data, same answer.
                                 </p>
                             </div>
                         </div>
@@ -396,7 +396,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                     {/* Final caption */}
                     <div className="bg-gradient-to-r from-slate-900 to-blue-900 rounded-xl p-6 md:p-8 text-center">
                         <p className="text-base md:text-lg text-white/90 leading-relaxed text-justify max-w-4xl mx-auto">
-                            A 10-layer intelligence pipeline. 7 neuroscience models from published research. 5 adversarial personas debating every recommendation. 46+ proprietary formulas. 8 autonomous engines. 7 reflexive engines. A Regional Development Kernel with partner scoring, causal graphs, and adaptive case-method gating. A Global Data Fabric with real-time signal ingestion. <strong className="text-white">No other operating system in the world combines all of these for global regional development and cross-border investment.</strong> This is what makes BW Ai a sovereign-grade national strategic asset &mdash; not a dashboard, not a chatbot, not a consulting deck with a login screen.
+                            One conversation with the BW Consultant becomes a structured case study. That case study drives formula scoring, adversarial debate, partner ranking, and document generation. Every response streams live. Every output carries a confidence score, a provenance trail, and a compliance check for your jurisdiction. The result &mdash; a board memo, a government submission, a due-diligence brief, a partner letter &mdash; is fully traceable from your first sentence to the final page. <strong className="text-white">That is not a chatbot. That is an institutional intelligence operating system.</strong>
                         </p>
                         <button onClick={() => setShowFormulas(true)} className="inline-flex items-center gap-2 text-white/80 hover:text-white text-sm font-semibold transition-colors mt-4">
                             <GitBranch size={16} /> The Intelligence Architecture: How The System Works &rarr;
@@ -415,9 +415,9 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                     <div className="absolute inset-0 bg-gradient-to-r from-slate-900/95 to-blue-900/80" />
                 </div>
                 <div className="relative max-w-4xl mx-auto text-center">
-                    <h2 className="text-3xl md:text-4xl font-bold text-white leading-tight mb-4">&ldquo;You don&rsquo;t need to be a data scientist.&rdquo;</h2>
+                    <h2 className="text-3xl md:text-4xl font-bold text-white leading-tight mb-4">&ldquo;You just describe your situation. The system figures out the rest.&rdquo;</h2>
                     <p className="text-lg text-slate-300 leading-relaxed text-justify max-w-3xl mx-auto">
-                        The interface is simple by design. Under the hood, BW Ai runs as a <strong className="text-white">digital strategy boardroom</strong>: specialized engines, formula evaluators, and agentic routines process your case continuously, pressure-test assumptions, and return decisions in actionable form. You are not receiving generic advice; you are receiving structured intelligence built to survive scrutiny and move to execution.
+                        You don&rsquo;t need to know which formula applies, which jurisdiction pack to select, or which document your situation requires. The <strong className="text-white">BW Consultant</strong> learns your case as the conversation develops. It detects signals while you type, builds the case model in the background, checks compliance for your jurisdiction, and tells you exactly what to generate when you&rsquo;re ready. The system is the analyst. You are the decision-maker.
                     </p>
                 </div>
             </section>
