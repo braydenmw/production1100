@@ -3057,7 +3057,7 @@ Each selected output must include:
               <Bot size={24} className="text-white" />
               <div>
                 <h1 className="text-xl font-bold text-white">BW Consultant</h1>
-                <span className="text-blue-200 text-xs">Powered by NSIL v6.0 • Case Study Builder</span>
+                <span className="text-blue-200 text-xs">Powered by NSIL Agentic Runtime • Case Study Builder</span>
               </div>
             </div>
           </div>
@@ -3315,7 +3315,7 @@ Each selected output must include:
 
             {/* NSIL Footer */}
             <div className="px-4 py-2 bg-blue-50 border-t border-blue-200 text-[10px] text-blue-700">
-              <strong>NSIL v6.0</strong> — Sovereign-grade intelligence • Real-time analysis • Professional insights
+              <strong>NSIL Agentic Runtime</strong> — Sovereign-grade intelligence • Real-time analysis • Professional insights
             </div>
           </div>
 

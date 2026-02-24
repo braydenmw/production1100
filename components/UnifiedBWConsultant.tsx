@@ -353,7 +353,7 @@ export const UnifiedBWConsultant: React.FC<UnifiedBWConsultantProps> = ({
                 </div>
               </form>
               <div className="px-4 py-2 bg-blue-50 border-t border-blue-200 text-[10px] text-blue-700">
-                <strong>NSIL v6.0</strong> — Proactive intelligence activates when you provide
+                <strong>NSIL Agentic Runtime</strong> — Proactive intelligence activates when you provide
               </div>
             </div>
           </div>

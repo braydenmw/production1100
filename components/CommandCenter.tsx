@@ -542,7 +542,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                             <div className="absolute inset-0 bg-gradient-to-r from-blue-900/85 via-blue-800/70 to-blue-900/50" />
                             <div className="relative z-10 flex items-center gap-3">
                                 <h3 className="text-xl font-bold text-white">BW Consultant</h3>
-                                <span className="text-blue-200 text-xs">Powered by NSIL v7.0</span>
+                                <span className="text-blue-200 text-xs">Powered by NSIL Agentic Runtime</span>
                             </div>
                             <p className="relative z-10 text-xs text-blue-200 hidden md:block">Sovereign-grade intelligence • Real-time analysis • Professional insights</p>
                         </div>
@@ -3155,8 +3155,8 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                         {/* Popup header */}
                         <div className="sticky top-0 z-10 bg-gradient-to-r from-slate-900 to-slate-800 rounded-t-lg px-8 py-6 flex items-center justify-between">
                             <div>
-                                <p className="text-blue-400 uppercase tracking-[0.2em] text-sm font-bold mb-1">NSIL v7.0 — How It Thinks</p>
-                                <h3 className="text-2xl font-bold text-white">Inside the NSIL &mdash; Every Layer, Formula & Engine</h3>
+                                <p className="text-blue-400 uppercase tracking-[0.2em] text-sm font-bold mb-1">NSIL Runtime — How It Thinks Now</p>
+                                <h3 className="text-2xl font-bold text-white">Inside the NSIL &mdash; Current Layers, Formulas &amp; Engines</h3>
                             </div>
                             <button onClick={() => setShowFormulas(false)} className="text-slate-400 hover:text-white transition-colors p-2">
                                 <X size={24} />
@@ -3166,9 +3166,9 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                         <div className="p-6 md:p-8 space-y-6 text-sm text-slate-700 leading-relaxed">
 
                             <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-sm mb-6">
-                                <p className="text-sm text-slate-900 font-semibold mb-2">BW Ai v7.0: The Intelligence Architecture</p>
+                                <p className="text-sm text-slate-900 font-semibold mb-2">BW AI: Current Intelligence Architecture</p>
                                 <p className="text-sm text-slate-700">
-                                    This is <strong>how the system thinks.</strong> Every input you provide enters a deterministic 10-layer pipeline with adaptive multi-phase intake, a Regional Development Kernel, partner intelligence scoring, causal problem-to-solution graphs, and case-method gating. It validates, debates, scores, stress-tests, and synthesises analysis. The same input always produces the same output class. No guessing. No black boxes. Every layer has explicit logic, full auditability, and mathematical rigor. Here&rsquo;s the complete architecture.
+                                    This is <strong>how the system thinks today.</strong> Every input enters a deterministic 10-layer pipeline with adaptive multi-phase intake, a Regional Development Kernel, partner intelligence scoring, causal problem-to-solution graphs, and case-method gating. The current runtime now adds <strong>streaming responses</strong>, <strong>reactive draft analysis while users type</strong>, a <strong>concurrent planner/executor timeline</strong>, and <strong>confidence + source provenance</strong> on outputs. It validates, debates, scores, stress-tests, and synthesises analysis with explicit logic and auditability.
                                 </p>
                             </div>
 
@@ -3453,19 +3453,20 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
 
                             <div className="bg-blue-50 border border-blue-200 rounded-sm p-4 mt-4">
                                 <p className="text-sm text-slate-700 font-semibold mb-2">
-                                    Complete System Architecture &mdash; v7.0
+                                    Complete System Architecture &mdash; Current Runtime
                                 </p>
                                 <p className="text-sm text-slate-700 mb-3">
-                                    NSIL v7.0 is built on:
+                                    NSIL current runtime is built on:
                                 </p>
                                 <ul className="list-disc list-inside space-y-1 pl-2 text-sm text-slate-700 mb-3">
-                                    <li><strong>22+ Specialized Intelligence Engines</strong> — Input Shield, Persona Engine, Counterfactual Engine, Outcome Tracker, Unbiased Analysis, Creative Synthesis, Cross-Domain Transfer, Autonomous Goal, Ethical Reasoning, Self-Evolving Algorithm, Adaptive Learning, Emotional Intelligence, Scenario Simulation, plus 8 more proactive and reflexive engines</li>
+                                    <li><strong>34+ Specialized Intelligence Engines</strong> — Input Shield, Persona Engine, Counterfactual Engine, Outcome Tracker, Unbiased Analysis, Creative Synthesis, Cross-Domain Transfer, Autonomous Goal, Ethical Reasoning, Self-Evolving Algorithm, Adaptive Learning, Emotional Intelligence, Scenario Simulation, plus proactive and reflexive engines</li>
                                     <li><strong>12 Core Algorithm Engines</strong> — From vector memory retrieval to frontier intelligence with negotiation simulation</li>
                                     <li><strong>10-Layer Deterministic Pipeline</strong> — Laws &rarr; Shield &rarr; Boardroom &rarr; Engine &rarr; Stress Test &rarr; Brain &rarr; Autonomous &rarr; Proactive &rarr; Output &rarr; Reflexive</li>
                                     <li><strong>46+ Proprietary Formulas</strong> — Strategic core indices, advanced evaluation matrices, structural assessments, risk models, financial metrics, operational scores, market analysis, governance frameworks, partner scoring</li>
                                     <li><strong>7 Neuroscience Models</strong> — Wilson-Cowan, Predictive Coding, Free Energy Principle, Attention, Emotional Processing, Global Workspace, Working Memory</li>
                                     <li><strong>Regional Development Kernel</strong> — RegionalDevelopmentOrchestrator, Partner Intelligence Engine, Problem-to-Solution Graph, Global Data Fabric, Outcome Learning Service</li>
                                     <li><strong>Case Study Method Layer</strong> — 5-gate methodological validation enforced across all entry paths before any output generates</li>
+                                    <li><strong>Reactive Agentic Runtime</strong> — Streamed responses, draft-time signal extraction, concurrent planner/executor tasks, and message-level provenance confidence</li>
                                     <li><strong>8 Global Issue Packs</strong> — Water Security, Energy Transition, Logistics Corridors, Housing Systems, Health Systems, Digital Infrastructure, Workforce Transition, Climate Resilience</li>
                                     <li><strong>Output at Scale</strong> — 156+ letter templates, 247+ document outputs, adaptive intake-to-generation flow, full case study analysis, multi-audience translation, partner-aware institutional drafting</li>
                                 </ul>
