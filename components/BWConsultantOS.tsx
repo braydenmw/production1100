@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import { OutcomeLearningService } from '../services/OutcomeLearningService';
 import { LiveDataService } from '../services/LiveDataService';
-import { getChatSession } from '../services/geminiService';
+import { getChatSession, extractFileTextViaAI } from '../services/geminiService';
 import AdaptiveQuestionnaire from '../services/AdaptiveQuestionnaire';
 import { BWConsultantAgenticAI } from '../services/BWConsultantAgenticAI';
 import CaseStudyAnalyzer from '../services/CaseStudyAnalyzer';
@@ -1194,22 +1194,33 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, embedd
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run once on mount
 
-  // Read file content
+  // Read file content — uses Gemini multimodal for binary documents (PDF, DOCX, etc.)
   const readFileContent = useCallback(async (file: File): Promise<string> => {
     const lowerName = file.name.toLowerCase();
+
+    // Binary/structured documents that Gemini can read natively via multimodal
+    const useAIExtraction = [
+      '.pdf', '.docx', '.doc', '.pptx', '.xlsx', '.png', '.jpg', '.jpeg', '.webp', '.gif'
+    ].some(ext => lowerName.endsWith(ext));
+
+    if (useAIExtraction) {
+      return extractFileTextViaAI(file);
+    }
+
+    // Plain-text formats — read directly and truncate
     const isText = file.type.startsWith('text/') || 
-      ['.txt', '.md', '.csv', '.json', '.html', '.xml', '.ts', '.tsx', '.js', '.jsx', '.pdf'].some(ext => lowerName.endsWith(ext));
-    
-    if (!isText || lowerName.endsWith('.pdf')) {
-      return `[${file.name}] — Binary document uploaded and indexed by filename for evidence tracking`;
+      ['.txt', '.md', '.csv', '.json', '.html', '.xml', '.ts', '.tsx', '.js', '.jsx'].some(ext => lowerName.endsWith(ext));
+
+    if (isText) {
+      try {
+        const text = await file.text();
+        return `[${file.name}]\n${text.slice(0, 8000)}${text.length > 8000 ? '\n...(truncated)' : ''}`;
+      } catch {
+        return `[${file.name}] — Unable to read file content`;
+      }
     }
-    
-    try {
-      const text = await file.text();
-      return `[${file.name}]\n${text.slice(0, 5000)}${text.length > 5000 ? '\n...(truncated)' : ''}`;
-    } catch {
-      return `[${file.name}] — Unable to read file content`;
-    }
+
+    return `[${file.name}] — File type not supported. Please convert to PDF, DOCX, or plain text.`;
   }, []);
 
   const buildConsultantPrompt = useCallback((userInput: string, context: string) => {

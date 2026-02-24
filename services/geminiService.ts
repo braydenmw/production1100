@@ -975,3 +975,92 @@ export const runCopilotAnalysis = async (query: string, context: string): Promis
     };
 };
 
+// ============================================================================
+// DOCUMENT EXTRACTION — reads PDF/DOCX/image via Gemini multimodal inline data
+// ============================================================================
+
+// MIME types Gemini can process via inlineData
+const GEMINI_SUPPORTED_MIME_TYPES: Record<string, string> = {
+  '.pdf':  'application/pdf',
+  '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  '.doc':  'application/msword',
+  '.pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+  '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  '.png':  'image/png',
+  '.jpg':  'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.webp': 'image/webp',
+  '.gif':  'image/gif',
+};
+
+/**
+ * Converts an ArrayBuffer to a base64 string without hitting the stack-size
+ * limit that btoa(String.fromCharCode(...largeArray)) causes on big files.
+ */
+const arrayBufferToBase64 = (buffer: ArrayBuffer): string => {
+  const bytes = new Uint8Array(buffer);
+  let binary = '';
+  const chunkSize = 8192;
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+  }
+  return btoa(binary);
+};
+
+/**
+ * Uses Gemini multimodal to extract all meaningful text/data from a file.
+ * Supports PDF, DOCX, PPTX, XLSX, images.
+ * Returns a formatted string suitable for inclusion in the chat context.
+ */
+export const extractFileTextViaAI = async (file: File): Promise<string> => {
+  const lowerName = file.name.toLowerCase();
+
+  // Determine MIME type
+  const ext = Object.keys(GEMINI_SUPPORTED_MIME_TYPES).find(e => lowerName.endsWith(e));
+  const mimeType = ext ? GEMINI_SUPPORTED_MIME_TYPES[ext] : (file.type || 'application/octet-stream');
+
+  // Size guard — Gemini inline data limit is ~20 MB; enforce 18 MB to be safe
+  const MAX_BYTES = 18 * 1024 * 1024;
+  if (file.size > MAX_BYTES) {
+    return `[${file.name}] — File too large for direct AI extraction (${(file.size / 1024 / 1024).toFixed(1)} MB). Please reduce to under 18 MB or paste the key text directly in the chat.`;
+  }
+
+  const apiKey = getGeminiApiKey();
+  if (!apiKey) {
+    return `[${file.name}] — Gemini API key not configured; document content could not be extracted.`;
+  }
+
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    const base64Data = arrayBufferToBase64(arrayBuffer);
+
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+
+    const result = await model.generateContent([
+      {
+        inlineData: {
+          mimeType,
+          data: base64Data,
+        },
+      },
+      `Extract ALL key information from this document comprehensively. Include: organizations involved, countries and jurisdictions, project or case objectives, decisions required, financial figures and amounts, timelines and dates, stakeholders and their roles, key findings, risk factors, legal or regulatory references, and any other substantive content. Present the extracted information in a clear, structured format so an analyst can immediately understand the full context of the document. Do not summarise — be thorough.`,
+    ]);
+
+    const extracted = result.response.text().trim();
+    if (!extracted) {
+      return `[${file.name}] — Document processed but no text content could be extracted (the file may be image-only or password-protected).`;
+    }
+
+    return `[${file.name}]\n${extracted}`;
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    // If Gemini rejects the MIME type, fall through with a helpful message
+    if (msg.includes('MIME') || msg.includes('unsupported') || msg.includes('invalid')) {
+      return `[${file.name}] — Document format not supported for AI extraction. Please convert to PDF or paste the key text directly.`;
+    }
+    console.error('extractFileTextViaAI error:', err);
+    return `[${file.name}] — Document extraction failed: ${msg}. Please paste the key content directly in your message.`;
+  }
+};
+
