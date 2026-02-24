@@ -1465,10 +1465,37 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                         {/* What Makes This Different */}
                         <section className="py-8 px-6 md:px-8 bg-slate-50 border-b border-slate-200">
                             <div className="max-w-4xl mx-auto">
-                                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-5 mb-6">
-                                    <h3 className="text-lg font-semibold text-slate-900 mb-3">Most tools generate text. This system validates reality.</h3>
+
+                                {/* BW Consultant intro */}
+                                <div className="bg-white border border-blue-200 rounded-xl p-6 mb-6 shadow-sm">
+                                    <div className="flex items-start gap-4 mb-4">
+                                        <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl flex items-center justify-center flex-shrink-0">
+                                            <span className="text-white font-bold text-sm">BW</span>
+                                        </div>
+                                        <div>
+                                            <h3 className="text-lg font-semibold text-slate-900 leading-tight">BW Consultant</h3>
+                                            <p className="text-xs text-blue-600 font-medium mt-0.5">Powered by NSIL Agentic Runtime &bull; Case Study Builder</p>
+                                        </div>
+                                    </div>
+
+                                    {/* 5-Phase Flow */}
+                                    <div className="flex items-center gap-1 mb-5 overflow-x-auto pb-1">
+                                        {[
+                                            { label: 'Intake', color: 'bg-blue-100 text-blue-700 border-blue-300' },
+                                            { label: 'Discovery', color: 'bg-indigo-100 text-indigo-700 border-indigo-300' },
+                                            { label: 'Analysis', color: 'bg-amber-100 text-amber-700 border-amber-300' },
+                                            { label: 'Recommendations', color: 'bg-orange-100 text-orange-700 border-orange-300' },
+                                            { label: 'Generation', color: 'bg-emerald-100 text-emerald-700 border-emerald-300' },
+                                        ].map((phase, i, arr) => (
+                                            <div key={phase.label} className="flex items-center gap-1 flex-shrink-0">
+                                                <div className={`px-3 py-1.5 rounded-full border text-xs font-semibold ${phase.color}`}>{phase.label}</div>
+                                                {i < arr.length - 1 && <span className="text-slate-300 text-sm">&rarr;</span>}
+                                            </div>
+                                        ))}
+                                    </div>
+
                                     <p className="text-sm text-slate-700 leading-relaxed">
-                                        Your inputs are treated as hypotheses, not facts. A SAT Contradiction Solver checks for logical inconsistencies. Five adversarial personas debate every angle. Monte Carlo simulation tests 5,000 scenarios. Nothing reaches a document until it has passed boundary, evidence, and feasibility checks. The workflow runs across <strong className="text-blue-700">three stages</strong> &mdash; each designed to transform raw inputs into rigorous, auditable, board-ready intelligence.
+                                        BW Consultant is the intake and reasoning engine. You describe your opportunity through conversation &mdash; it builds the structured case as you go. What begins as a brief becomes a full intelligence brief: scope, financials, risk, compliance, and stakeholder mapping all captured, validated, and ready to send through the adversarial analysis and output stages. The 10-step framework below shows exactly what each intake phase captures.
                                     </p>
                                 </div>
 
@@ -1482,8 +1509,8 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                                             <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-sm font-bold">1</div>
                                             <span className="text-xs text-blue-600 uppercase tracking-wider font-bold">STAGE ONE</span>
                                         </div>
-                                        <h4 className="text-base font-semibold text-slate-900 mb-2 group-hover:text-blue-700">Structured Intake</h4>
-                                        <p className="text-xs text-slate-600">Capture scope, context, financials, risk, compliance, and partnership terms across 10 structured dimensions</p>
+                                        <h4 className="text-base font-semibold text-slate-900 mb-2 group-hover:text-blue-700">Adaptive Intake</h4>
+                                        <p className="text-xs text-slate-600">BW Consultant captures 10 dimensions through conversation &mdash; scope, financials, risk, compliance, and partnership terms</p>
                                         <p className="text-xs text-blue-600 mt-3 font-medium group-hover:underline">Click to explore &rarr;</p>
                                     </button>
 
@@ -1519,10 +1546,10 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                         {/* The 10 Steps Grid */}
                         <section className="py-8 px-6 md:px-8 bg-white">
                             <div className="max-w-4xl mx-auto">
-                                <p className="text-blue-600 uppercase tracking-[0.2em] text-xs mb-3 font-bold">STAGE 1 &mdash; STRUCTURED INTAKE</p>
-                                <h3 className="text-xl font-semibold text-slate-900 mb-2">The Ten-Step Protocol</h3>
-                                <p className="text-sm text-slate-600 mb-1">Most users complete this in 30&ndash;45 minutes. Each step captures a critical dimension of your opportunity. By the end, you have clear scope, quantified assumptions, full risk visibility, and a consistent dataset the reasoning engine can trust.</p>
-                                <p className="text-sm text-slate-500 mb-6">Click any step to see what it captures:</p>
+                                <p className="text-blue-600 uppercase tracking-[0.2em] text-xs mb-3 font-bold">BW CONSULTANT &mdash; INTAKE PHASE</p>
+                                <h3 className="text-xl font-semibold text-slate-900 mb-2">What Gets Captured Across 10 Dimensions</h3>
+                                <p className="text-sm text-slate-600 mb-1">Most users complete this in 30&ndash;45 minutes. BW Consultant builds this picture through conversation &mdash; asking the right questions in sequence so you never face a blank form. By the end, the system has clear scope, quantified assumptions, full risk visibility, and a consistent dataset the reasoning engine can trust.</p>
+                                <p className="text-sm text-slate-500 mb-6">Click any dimension to see what gets captured:</p>
 
                                 <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
                                     {tenStepProtocol.map((item) => (
