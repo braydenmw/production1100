@@ -55,16 +55,16 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
     // Handle location search - SIMPLIFIED Gemini-first approach
 
     const tenStepProtocol = [
-        { step: 1, title: "Identity & Foundation", description: "Establish organizational credibility, legal structure, and competitive positioning.", details: ["Organization name, type, and legal structure", "Registration/incorporation details", "Key leadership and governance structure", "Historical track record and credentials", "Competitive positioning statement", "Core competencies and differentiators"] },
-        { step: 2, title: "Mandate & Strategy", description: "Define strategic vision, objectives, target partner profile, and value proposition.", details: ["Strategic vision and mission alignment", "Short, medium, and long-term objectives", "Target partner/investor profile", "Value proposition articulation", "Strategic fit assessment criteria", "Success metrics and KPIs"] },
-        { step: 3, title: "Market & Context", description: "Analyze market dynamics, regulatory environment, and macro-economic factors.", details: ["Market size and growth projections", "Competitive landscape analysis", "Regulatory environment assessment", "Regulatory Friction Index (RFI) scoring", "Macro-economic factors and trends", "Industry-specific dynamics", "Regional context and opportunities"], gliEnabled: true, gliNote: "BW Intel Fact Sheet provides GDP, demographics, trade data, and regulatory friction scores" },
-        { step: 4, title: "Partners & Ecosystem", description: "Map stakeholder landscape, alignment scores, and relationship dynamics.", details: ["Stakeholder identification and mapping", "Counterparty Integrity Score (CIS) verification", "Alignment score calculations", "Relationship strength assessment", "Ecosystem dependencies", "Partnership synergy analysis", "Stakeholder communication strategy"], gliEnabled: true, gliNote: "BW Intel shows major employers, foreign companies, and government contacts" },
-        { step: 5, title: "Financial Model", description: "Structure investment requirements, revenue projections, and ROI scenarios.", details: ["Investment requirements breakdown", "Revenue model and projections", "Cost structure analysis", "ROI scenario modeling (base/best/worst)", "Funding sources and terms", "Financial sustainability metrics"], gliEnabled: true, gliNote: "BW Intel provides tax incentives, economic zones, and cost indicators" },
-        { step: 6, title: "Risk & Mitigation", description: "Identify and quantify risks with probability/impact matrices and mitigation plans.", details: ["Risk identification and categorization", "Probability and impact assessment", "Risk matrix visualization", "Policy Shock Sensitivity (PSS) scenarios", "Mitigation strategies per risk", "Contingency planning", "Risk monitoring framework"], gliEnabled: true, gliNote: "BW Intel includes political, economic, natural, and regulatory risk assessments" },
-        { step: 7, title: "Resources & Capability", description: "Assess organizational readiness, team strength, and capability gaps.", details: ["Current resource inventory", "Team capabilities assessment", "Capability gap analysis", "Training and development needs", "Resource acquisition strategy", "Organizational readiness score"], gliEnabled: true, gliNote: "BW Intel shows labor pool quality, universities, and workforce data" },
-        { step: 8, title: "Execution Plan", description: "Define implementation roadmap, milestones, dependencies, and go/no-go gates.", details: ["Implementation roadmap with phases", "Milestone definitions and timelines", "Dependency mapping", "Go/no-go decision gates", "Resource allocation per phase", "Critical path identification"], gliEnabled: true, gliNote: "BW Intel provides entry timeline guidance and infrastructure readiness" },
-        { step: 9, title: "Governance & Monitoring", description: "Establish oversight structure, decision matrices, and performance tracking.", details: ["Governance structure design", "Decision-making authority matrix", "Reporting cadence and format", "Performance tracking metrics", "Escalation procedures", "Audit and compliance framework"], gliEnabled: true, gliNote: "BW Intel shows government structure, leadership, and regulatory framework" },
-        { step: 10, title: "Scoring & Readiness", description: "Final validation and readiness assessment with go/no-go recommendation.", details: ["Composite readiness score calculation", "Strength/weakness summary", "Final risk assessment", "Go/no-go recommendation", "Pre-launch checklist", "Success probability index (SPI)"], gliEnabled: true, gliNote: "BW Intel provides composite scores, comparison analysis, and data quality metrics" }
+        { step: 1, title: "Opportunity Definition", description: "Project name, type, sector, target region, investment scale, and timeline. The foundation everything else builds on.", details: ["Project name and type", "Sector and industry classification", "Target region and jurisdiction", "Investment scale and range", "Project timeline and phasing", "Primary opportunity thesis"] },
+        { step: 2, title: "Strategic Alignment", description: "Alignment with national and regional policy, SDG mapping, government priority status, and bilateral agreements.", details: ["National and regional policy alignment", "SDG mapping and development goals", "Government priority status", "Bilateral and multilateral agreements", "Strategic fit with host jurisdiction", "Policy environment assessment"] },
+        { step: 3, title: "Market Analysis", description: "Demand drivers, supply gaps, competitive landscape, pricing dynamics, and growth trajectory.", details: ["Demand drivers and market size", "Supply gap identification", "Competitive landscape analysis", "Pricing dynamics and benchmarks", "Growth trajectory and projections", "Market entry strategy"], gliEnabled: true, gliNote: "Live intelligence enriches market sizing with GDP, trade flows, and sector benchmarks" },
+        { step: 4, title: "Financial Structure", description: "CAPEX, OPEX, revenue model, funding mix, IRR targets, payback expectations, and currency exposure.", details: ["CAPEX and OPEX breakdown", "Revenue model and streams", "Funding mix and sources", "IRR targets and returns", "Payback period expectations", "Currency exposure and hedging"], gliEnabled: true, gliNote: "Tax incentive data, economic zone structures, and cost indicators inform financial modelling" },
+        { step: 5, title: "Risk Assessment", description: "Political, regulatory, operational, financial, environmental, and social risks with probability and impact scoring.", details: ["Political and regulatory risk", "Operational risk factors", "Financial and currency risk", "Environmental and social risk", "Probability and impact scoring", "Risk matrix and mitigations"], gliEnabled: true, gliNote: "Political, economic, natural, and regulatory risk scores sourced from live intelligence" },
+        { step: 6, title: "Stakeholder Mapping", description: "Government bodies, investors, partners, communities, and regulators — mapped by influence, interest, and engagement strategy.", details: ["Government bodies and ministries", "Investor and capital partner profiles", "Delivery and implementation partners", "Community and civil society", "Regulators and compliance bodies", "Influence, interest, and engagement matrix"], gliEnabled: true, gliNote: "Major employers, foreign company presence, and key government contacts surfaced from live data" },
+        { step: 7, title: "Implementation Pathway", description: "Phasing, milestones, dependencies, critical path, resource requirements, and decision gates.", details: ["Project phases and sequencing", "Milestone definitions and timelines", "Dependency mapping", "Critical path analysis", "Resource requirements per phase", "Go/no-go decision gates"], gliEnabled: true, gliNote: "Entry timeline guidance and infrastructure readiness indicators from live intelligence" },
+        { step: 8, title: "Compliance Requirements", description: "Permits, licenses, environmental approvals, sector-specific regulations, and international standards.", details: ["Permits and licensing requirements", "Environmental approvals and assessments", "Sector-specific regulatory obligations", "International standards compliance", "Anti-bribery and sanctions screening", "GDPR and data handling where applicable"], gliEnabled: true, gliNote: "Jurisdiction-specific regulatory frameworks and compliance risk flags applied automatically" },
+        { step: 9, title: "Partnership Terms", description: "Equity split, governance structure, decision rights, exit mechanisms, IP ownership, and non-compete clauses.", details: ["Equity split and ownership structure", "Governance and decision-making rights", "Exit mechanisms and triggers", "IP ownership and licensing", "Non-compete and exclusivity provisions", "Dispute resolution framework"] },
+        { step: 10, title: "Success Metrics", description: "KPIs, monitoring framework, reporting requirements, adjustment triggers, and exit criteria.", details: ["KPI definition and measurement", "Monitoring and evaluation framework", "Reporting cadence and format", "Adjustment triggers and thresholds", "Exit criteria and conditions", "Final readiness and go/no-go score"], gliEnabled: true, gliNote: "Composite readiness scores, comparison baselines, and data quality confidence metrics" }
     ];
 
 
@@ -87,7 +87,6 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                         <button onClick={() => scrollToSection('mission')} className="hover:text-blue-600 transition-colors">Mission</button>
                         <button onClick={() => scrollToSection('platform')} className="hover:text-blue-600 transition-colors">The Platform</button>
                         <button onClick={() => scrollToSection('brain')} className="hover:text-blue-600 transition-colors">The Brain</button>
-                        <button onClick={() => setShowProtocolDetails(true)} className="hover:text-blue-600 transition-colors">Protocol</button>
                         <button onClick={() => { setUnifiedActiveTab('proof'); setShowUnifiedSystemOverview(true); }} className="hover:text-blue-600 transition-colors">Proof</button>
                         <button onClick={() => scrollToSection('partnerships')} className="hover:text-blue-600 transition-colors">Partnerships</button>
                     </div>
@@ -1451,14 +1450,14 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                         {/* Header */}
                         <section className="py-10 px-6 md:px-8 bg-gradient-to-r from-slate-900 to-slate-800">
                             <div className="max-w-4xl mx-auto">
-                                <p className="text-blue-400 uppercase tracking-[0.2em] text-sm mb-3 font-bold">BW CONSULTANT</p>
-                                <h2 className="text-2xl md:text-3xl font-light text-white mb-2">You Talk. It Thinks. Then It Builds.</h2>
+                                <p className="text-blue-400 uppercase tracking-[0.2em] text-sm mb-3 font-bold">HOW THE SYSTEM WORKS</p>
+                                <h2 className="text-2xl md:text-3xl font-light text-white mb-2">From First Input to Final Document</h2>
                                 <p className="text-base text-blue-300 mb-4 flex items-center gap-2 font-medium">
                                     <span className="inline-block w-2 h-2 bg-blue-400 rounded-full"></span>
-                                    No forms. No templates. Just a conversation.
+                                    Three stages. One continuous evidence chain.
                                 </p>
                                 <p className="text-base text-slate-300 leading-relaxed">
-                                    BW Consultant is an agentic AI that works the way a senior analyst does — it asks the right questions, challenges your assumptions, and builds the case brief as you talk. By the time you&rsquo;re done, the system has enough structured, validated intelligence to run the full analysis engine.
+                                    This page explains exactly how the system works &mdash; from the moment you start a conversation to the final board-ready documents it produces. Adaptive intake captures your opportunity in measurable terms. Adversarial analysis stress-tests every claim across 46+ formulas and 5,000 scenarios. Institutional output turns every score, debate, and simulation result into documents your decision-makers can act on.
                                 </p>
                             </div>
                         </section>
@@ -1467,9 +1466,9 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                         <section className="py-8 px-6 md:px-8 bg-slate-50 border-b border-slate-200">
                             <div className="max-w-4xl mx-auto">
                                 <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-5 mb-6">
-                                    <h3 className="text-lg font-semibold text-slate-900 mb-3">Most AI tools generate text. BW Consultant validates reality.</h3>
+                                    <h3 className="text-lg font-semibold text-slate-900 mb-3">Most tools generate text. This system validates reality.</h3>
                                     <p className="text-sm text-slate-700 leading-relaxed">
-                                        Your inputs aren&rsquo;t taken at face value &mdash; they&rsquo;re treated as hypotheses. The system cross-checks them against live data, runs them through adversarial personas, and tests them across 5,000 scenarios before anything reaches a document. The conversation feeds <strong className="text-blue-700">three stages</strong>, each designed to transform what you know into something a board can act on.
+                                        Your inputs are treated as hypotheses, not facts. A SAT Contradiction Solver checks for logical inconsistencies. Five adversarial personas debate every angle. Monte Carlo simulation tests 5,000 scenarios. Nothing reaches a document until it has passed boundary, evidence, and feasibility checks. The workflow runs across <strong className="text-blue-700">three stages</strong> &mdash; each designed to transform raw inputs into rigorous, auditable, board-ready intelligence.
                                     </p>
                                 </div>
 
@@ -1484,7 +1483,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                                             <span className="text-xs text-blue-600 uppercase tracking-wider font-bold">STAGE ONE</span>
                                         </div>
                                         <h4 className="text-base font-semibold text-slate-900 mb-2 group-hover:text-blue-700">Structured Intake</h4>
-                                        <p className="text-xs text-slate-600">BW Consultant captures scope, mandate, context, and constraints through natural conversation</p>
+                                        <p className="text-xs text-slate-600">Capture scope, context, financials, risk, compliance, and partnership terms across 10 structured dimensions</p>
                                         <p className="text-xs text-blue-600 mt-3 font-medium group-hover:underline">Click to explore &rarr;</p>
                                     </button>
 
@@ -1520,9 +1519,10 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                         {/* The 10 Steps Grid */}
                         <section className="py-8 px-6 md:px-8 bg-white">
                             <div className="max-w-4xl mx-auto">
-                                <p className="text-blue-600 uppercase tracking-[0.2em] text-xs mb-3 font-bold">WHAT BW CONSULTANT CAPTURES</p>
-                                <h3 className="text-xl font-semibold text-slate-900 mb-2">Ten Dimensions. One Conversation.</h3>
-                                <p className="text-sm text-slate-600 mb-6">BW Consultant builds this picture as you talk &mdash; no forms, no fields to fill. Click any dimension to see what it captures:</p>
+                                <p className="text-blue-600 uppercase tracking-[0.2em] text-xs mb-3 font-bold">STAGE 1 &mdash; STRUCTURED INTAKE</p>
+                                <h3 className="text-xl font-semibold text-slate-900 mb-2">The Ten-Step Protocol</h3>
+                                <p className="text-sm text-slate-600 mb-1">Most users complete this in 30&ndash;45 minutes. Each step captures a critical dimension of your opportunity. By the end, you have clear scope, quantified assumptions, full risk visibility, and a consistent dataset the reasoning engine can trust.</p>
+                                <p className="text-sm text-slate-500 mb-6">Click any step to see what it captures:</p>
 
                                 <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
                                     {tenStepProtocol.map((item) => (
@@ -1578,43 +1578,72 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                             </div>
                         </section>
 
-                        {/* What Happens After Intake */}
+                        {/* Stage 2 — Adversarial Analysis */}
                         <section className="py-8 px-6 md:px-8 bg-slate-50 border-t border-slate-200">
                             <div className="max-w-4xl mx-auto">
-                                <h3 className="text-lg font-semibold text-slate-900 mb-4">What the System Does With It</h3>
+                                <p className="text-amber-600 uppercase tracking-[0.2em] text-xs mb-3 font-bold">STAGE 2 &mdash; ADVERSARIAL ANALYSIS</p>
+                                <h3 className="text-xl font-semibold text-slate-900 mb-3">Every Claim Gets Stress-Tested</h3>
                                 <p className="text-sm text-slate-700 leading-relaxed mb-6">
-                                    Once BW Consultant has enough to work with, the analysis engine activates. Your conversation becomes a structured dataset &mdash; scored, stress-tested, and cross-referenced against live intelligence. The system runs every formula, runs every argument, and compiles the output into institutional-grade deliverables ready for any decision-maker.
+                                    Once intake is complete, the system stress-tests every claim. A SAT Contradiction Solver checks for logical inconsistencies across your inputs. Five adversarial personas &mdash; Skeptic, Advocate, Regulator, Accountant, Operator &mdash; debate the opportunity using Bayesian inference. 38+ proprietary formulas calculate risk-adjusted returns, stakeholder alignment, and strategic positioning. Monte Carlo simulation runs 5,000 scenarios to show you the real distribution of outcomes, not just the optimistic case.
                                 </p>
-
                                 <div className="grid md:grid-cols-2 gap-4">
-                                    <div className="bg-white border border-slate-200 rounded-lg p-5">
+                                    <div className="bg-white border border-amber-200 rounded-lg p-5">
                                         <h4 className="text-sm font-bold text-slate-900 mb-3 flex items-center gap-2">
-                                            <Shield size={16} className="text-blue-600" />
-                                            What Gets Validated
+                                            <Shield size={16} className="text-amber-600" />
+                                            What Gets Tested
                                         </h4>
                                         <ul className="space-y-2 text-xs text-slate-600">
-                                            <li className="flex items-start gap-2"><CheckCircle2 size={12} className="text-blue-500 mt-0.5" /> Input contradictions (SAT Solver)</li>
-                                            <li className="flex items-start gap-2"><CheckCircle2 size={12} className="text-blue-500 mt-0.5" /> Financial projections vs benchmarks</li>
-                                            <li className="flex items-start gap-2"><CheckCircle2 size={12} className="text-blue-500 mt-0.5" /> Risk tolerance vs growth targets</li>
-                                            <li className="flex items-start gap-2"><CheckCircle2 size={12} className="text-blue-500 mt-0.5" /> Resource allocation vs timeline</li>
-                                            <li className="flex items-start gap-2"><CheckCircle2 size={12} className="text-blue-500 mt-0.5" /> Ethical compliance gates</li>
+                                            <li className="flex items-start gap-2"><CheckCircle2 size={12} className="text-amber-500 mt-0.5" /> Input contradictions via SAT Solver</li>
+                                            <li className="flex items-start gap-2"><CheckCircle2 size={12} className="text-amber-500 mt-0.5" /> Five adversarial personas debate every angle</li>
+                                            <li className="flex items-start gap-2"><CheckCircle2 size={12} className="text-amber-500 mt-0.5" /> 38+ proprietary scoring formulas</li>
+                                            <li className="flex items-start gap-2"><CheckCircle2 size={12} className="text-amber-500 mt-0.5" /> Monte Carlo across 5,000 scenarios</li>
+                                            <li className="flex items-start gap-2"><CheckCircle2 size={12} className="text-amber-500 mt-0.5" /> Regional Development Kernel with causal graphs</li>
+                                            <li className="flex items-start gap-2"><CheckCircle2 size={12} className="text-amber-500 mt-0.5" /> Partner Intelligence Engine rankings</li>
                                         </ul>
                                     </div>
-                                    <div className="bg-white border border-slate-200 rounded-lg p-5">
+                                    <div className="bg-white border border-amber-200 rounded-lg p-5">
                                         <h4 className="text-sm font-bold text-slate-900 mb-3 flex items-center gap-2">
-                                            <FileCheck size={16} className="text-emerald-600" />
-                                            What Gets Produced
+                                            <FileCheck size={16} className="text-amber-600" />
+                                            What Comes Out
                                         </h4>
                                         <ul className="space-y-2 text-xs text-slate-600">
-                                            <li className="flex items-start gap-2"><CheckCircle2 size={12} className="text-emerald-500 mt-0.5" /> Quantified scores with confidence intervals</li>
-                                            <li className="flex items-start gap-2"><CheckCircle2 size={12} className="text-emerald-500 mt-0.5" /> Risk matrix with mitigations</li>
-                                            <li className="flex items-start gap-2"><CheckCircle2 size={12} className="text-emerald-500 mt-0.5" /> Adversarial debate transcripts</li>
-                                            <li className="flex items-start gap-2"><CheckCircle2 size={12} className="text-emerald-500 mt-0.5" /> Board-ready documents</li>
-                                            <li className="flex items-start gap-2"><CheckCircle2 size={12} className="text-emerald-500 mt-0.5" /> Professional letter templates</li>
+                                            <li className="flex items-start gap-2"><CheckCircle2 size={12} className="text-amber-500 mt-0.5" /> Quantified scores with confidence intervals</li>
+                                            <li className="flex items-start gap-2"><CheckCircle2 size={12} className="text-amber-500 mt-0.5" /> Risk matrix with mitigations</li>
+                                            <li className="flex items-start gap-2"><CheckCircle2 size={12} className="text-amber-500 mt-0.5" /> Adversarial debate transcripts</li>
+                                            <li className="flex items-start gap-2"><CheckCircle2 size={12} className="text-amber-500 mt-0.5" /> Outcome distribution from simulation</li>
+                                            <li className="flex items-start gap-2"><CheckCircle2 size={12} className="text-amber-500 mt-0.5" /> Structural twin region benchmarks</li>
+                                            <li className="flex items-start gap-2"><CheckCircle2 size={12} className="text-amber-500 mt-0.5" /> Ranked co-investor and partner shortlists</li>
                                         </ul>
                                     </div>
                                 </div>
+                            </div>
+                        </section>
 
+                        {/* Stage 3 — Institutional Output */}
+                        <section className="py-8 px-6 md:px-8 bg-white border-t border-slate-200">
+                            <div className="max-w-4xl mx-auto">
+                                <p className="text-emerald-600 uppercase tracking-[0.2em] text-xs mb-3 font-bold">STAGE 3 &mdash; INSTITUTIONAL OUTPUT</p>
+                                <h3 className="text-xl font-semibold text-slate-900 mb-3">Every Score Becomes a Document</h3>
+                                <p className="text-sm text-slate-700 leading-relaxed mb-6">
+                                    Every score, every debate conclusion, every simulation result flows into document generation. 247 document types across 15 categories. 156 letter templates for every stage of deal-making. All populated with your actual data, exact scores, and traceable reasoning &mdash; not AI-generated placeholder text. The 15th category, Case Study Intelligence, lets you upload existing reports, proposals, or case studies and receive full NSIL analysis: scored sections, adversarial debate, historical parallels, and recommended documents.
+                                </p>
+                                <div className="grid md:grid-cols-3 gap-4">
+                                    <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4 text-center">
+                                        <p className="text-3xl font-bold text-emerald-700 mb-1">247+</p>
+                                        <p className="text-xs font-semibold text-slate-700">Document Types</p>
+                                        <p className="text-xs text-slate-500 mt-1">Across 15 categories, covering the full project lifecycle</p>
+                                    </div>
+                                    <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4 text-center">
+                                        <p className="text-3xl font-bold text-emerald-700 mb-1">156+</p>
+                                        <p className="text-xs font-semibold text-slate-700">Letter Templates</p>
+                                        <p className="text-xs text-slate-500 mt-1">For every stage of deal-making, LOIs to closing briefs</p>
+                                    </div>
+                                    <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4 text-center">
+                                        <p className="text-3xl font-bold text-emerald-700 mb-1">100%</p>
+                                        <p className="text-xs font-semibold text-slate-700">Your Data</p>
+                                        <p className="text-xs text-slate-500 mt-1">Exact scores and reasoning &mdash; no AI placeholder text</p>
+                                    </div>
+                                </div>
                             </div>
                         </section>
 
