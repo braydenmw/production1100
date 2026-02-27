@@ -52,7 +52,7 @@ interface Message {
   };
 }
 
-type ExecutionTaskStatus = 'queued' | 'running' | 'completed' | 'failed';
+type ExecutionTaskStatus = 'queued' | 'running' | 'completed' | 'failed' | 'skipped';
 
 interface ExecutionTask {
   id: 'ingestion' | 'response' | 'insight' | 'followup';
@@ -115,6 +115,62 @@ interface PendingAction {
   category: 'document' | 'notify' | 'submit' | 'escalate';
   status: 'pending' | 'approved' | 'executing' | 'done' | 'rejected';
 }
+
+interface ConsultantAuditEvent {
+  event?: string;
+  requestId?: string;
+  timestamp?: string;
+  provider?: string;
+  intent?: string;
+  taskType?: string;
+  durationMs?: number;
+  error?: string;
+  attempts?: Array<{ provider?: string; ok?: boolean; detail?: string }>;
+  [key: string]: unknown;
+}
+
+interface ConsultantReplayMeta {
+  requestId: string;
+  createdAt?: string;
+  replayHash?: string;
+  hasPayload?: boolean;
+  sourceRequestId?: string | null;
+}
+
+interface ConsultantAuditTrendMetrics {
+  windowHours: number;
+  current: { replaySuccess: number; replayFallback: number; replayError: number };
+  previous: { replaySuccess: number; replayFallback: number; replayError: number };
+  delta: { replaySuccess: number; replayFallback: number; replayError: number };
+  providerMetrics?: {
+    bedrock: {
+      current: { replaySuccess: number; replayFallback: number; replayError: number };
+      previous: { replaySuccess: number; replayFallback: number; replayError: number };
+      delta: { replaySuccess: number; replayFallback: number; replayError: number };
+    };
+    gemini: {
+      current: { replaySuccess: number; replayFallback: number; replayError: number };
+      previous: { replaySuccess: number; replayFallback: number; replayError: number };
+      delta: { replaySuccess: number; replayFallback: number; replayError: number };
+    };
+    openai: {
+      current: { replaySuccess: number; replayFallback: number; replayError: number };
+      previous: { replaySuccess: number; replayFallback: number; replayError: number };
+      delta: { replaySuccess: number; replayFallback: number; replayError: number };
+    };
+  };
+}
+
+type ConsultantAuditEventFilter =
+  | 'all'
+  | 'replay_events'
+  | 'consultant_request'
+  | 'consultant_error'
+  | 'consultant_replay_request'
+  | 'consultant_replay_error'
+  | 'consultant_replay_fallback';
+
+type ConsultantAuditProviderFilter = 'all' | 'bedrock' | 'gemini' | 'openai';
 
 const LOCALES: { code: string; label: string }[] = [
   { code: 'en', label: 'EN' },
@@ -532,6 +588,26 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, embedd
   const [liveDataCache, setLiveDataCache] = useState<Record<string, { country: string; gdpGrowth?: number|null; exchangeRate?: number|null; lastUpdated: string }>>({});
   const [showOnboarding, setShowOnboarding] = useState(true);
   const [complianceWarnings, setComplianceWarnings] = useState<string[]>([]);
+  const [consultantAuditEvents, setConsultantAuditEvents] = useState<ConsultantAuditEvent[]>([]);
+  const [consultantAuditMeta, setConsultantAuditMeta] = useState<{ count: number; limit: number } | null>(null);
+  const [consultantAuditLoading, setConsultantAuditLoading] = useState(false);
+  const [consultantAuditError, setConsultantAuditError] = useState('');
+  const [consultantAuditExporting, setConsultantAuditExporting] = useState(false);
+  const [consultantAuditEventFilter, setConsultantAuditEventFilter] = useState<ConsultantAuditEventFilter>('all');
+  const [consultantAuditProviderFilter, setConsultantAuditProviderFilter] = useState<ConsultantAuditProviderFilter>('all');
+  const [consultantAuditSearch, setConsultantAuditSearch] = useState('');
+  const [consultantAuditWindowMode, setConsultantAuditWindowMode] = useState<'all' | '24h'>('all');
+  const [consultantAuditPage, setConsultantAuditPage] = useState(1);
+  const [consultantAuditCopiedRequestId, setConsultantAuditCopiedRequestId] = useState('');
+  const [consultantAuditTrends, setConsultantAuditTrends] = useState<ConsultantAuditTrendMetrics | null>(null);
+  const [consultantAuditAutoRefresh, setConsultantAuditAutoRefresh] = useState(false);
+  const [consultantAuditLookupRequestId, setConsultantAuditLookupRequestId] = useState('');
+  const [consultantAuditLookupLoading, setConsultantAuditLookupLoading] = useState(false);
+  const [consultantAuditLookupEvents, setConsultantAuditLookupEvents] = useState<ConsultantAuditEvent[]>([]);
+  const [consultantReplayMeta, setConsultantReplayMeta] = useState<ConsultantReplayMeta | null>(null);
+  const [consultantRetryLoading, setConsultantRetryLoading] = useState(false);
+  const [consultantRetrySource, setConsultantRetrySource] = useState<'none' | 'backend-replay' | 'local-fallback'>('none');
+  const [consultantRetryReason, setConsultantRetryReason] = useState('');
 
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -1035,7 +1111,7 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, embedd
     return lines.join('\n');
   }, [caseStudy, pilotSelectedAddOns, pilotAllOptions, activeIssuePack.label, caseMethodGaps, regionalKernel.governanceReadiness]);
 
-  const pilotSelectedAddOnPrompts = useMemo(() => {
+  const _pilotSelectedAddOnPrompts = useMemo(() => {
     return pilotSelectedAddOns
       .map((id) => pilotAllOptions.get(id))
       .filter((option): option is { id: string; label: string; prompt: string } => Boolean(option))
@@ -1239,6 +1315,8 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, embedd
 
   const buildConsultantPrompt = useCallback((userInput: string, context: string) => {
     const policyPack = resolvePolicyPack(caseStudy);
+    const caseReadiness = computeReadiness(caseStudy);
+    const isOpeningMessage = caseReadiness < 20 && userInput.trim().length < 30;
     return `You are BW Consultant AI, an expert business intelligence consultant. Operate in mixed-initiative autonomous mode.
 
 Current case context:
@@ -1255,6 +1333,9 @@ ${consultantGateReady ? 'READY' : `BLOCKED: ${consultantGateMissing.join('; ')}`
 
 User's latest input: "${userInput}"
 Phase context: ${context}
+${isOpeningMessage ? `
+INTAKE MODE — Case readiness is below 20% and no case profile exists yet. Introduce yourself briefly as BW Consultant AI, then in a single natural response collect all four mandatory intake fields: (1) client name and role, (2) organization name and type, (3) country and jurisdiction this concerns, (4) the specific objective or problem to be resolved. Ask for all four together — do not give strategic advice yet. You must know WHO, WHERE, and WHAT before delivering analysis.` : caseReadiness < 50 ? `
+DISCOVERY MODE — Case is ${caseReadiness}% complete. While answering the user, actively surface the single most critical missing field and ask for it.` : ''}
 
 Autonomous operating instructions:
 - First, answer the user's actual request directly (including non-case or off-topic questions).
@@ -1278,18 +1359,40 @@ Consultant operating rules:
 Respond naturally and helpfully. Keep responses focused and actionable.
 
 ${agentRegistry.current.toManifest()}`;
-  }, [caseStudy, resolvePolicyPack, consultantCaseBrief, consultantGateReady, consultantGateMissing]);
+  }, [caseStudy, resolvePolicyPack, consultantCaseBrief, consultantGateReady, consultantGateMissing, computeReadiness]);
 
   // Process user input through real AI
   const processWithAI = useCallback(async (userInput: string, context: string): Promise<string> => {
-    const trimmedInput = userInput.trim();
-    const isGreetingOnly = /^(hi|hello|hey|good\s+(morning|afternoon|evening)|yo|sup)[!.\s]*$/i.test(trimmedInput);
-    if (isGreetingOnly) {
-      return `Hello — I'm ready to help. Share your situation, and I'll answer directly while building your case in the background.`;
-    }
-
     try {
       const systemPrompt = buildConsultantPrompt(userInput, context);
+      try {
+        const endpointResponse = await fetch('/api/ai/consultant', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: userInput,
+            context: {
+              phase: context,
+              caseStudy,
+              consultantCaseBrief,
+              consultantGateReady,
+              consultantGateMissing
+            },
+            systemPrompt
+          })
+        });
+
+        if (endpointResponse.ok) {
+          const payload = await endpointResponse.json();
+          const endpointText = (payload?.text || '').trim();
+          if (endpointText) {
+            return endpointText;
+          }
+        }
+      } catch (endpointError) {
+        console.warn('Unified consultant endpoint unavailable, using legacy chat session:', endpointError);
+      }
+
       const response = await chatSession.current.sendMessage({
         message: `${systemPrompt}\n\nUser says: ${userInput}`
       });
@@ -1304,21 +1407,13 @@ ${agentRegistry.current.toManifest()}`;
       console.error('AI processing error:', error);
       return "I can continue from current context and still move this forward. Share your decision owner, jurisdiction, and objective, and I will proceed.";
     }
-  }, [buildConsultantPrompt]);
+  }, [buildConsultantPrompt, caseStudy, consultantCaseBrief, consultantGateReady, consultantGateMissing]);
 
   const processWithAIStream = useCallback(async (
     userInput: string,
     context: string,
     onChunk: (text: string) => void
   ): Promise<string> => {
-    const trimmedInput = userInput.trim();
-    const isGreetingOnly = /^(hi|hello|hey|good\s+(morning|afternoon|evening)|yo|sup)[!.\s]*$/i.test(trimmedInput);
-    if (isGreetingOnly) {
-      const greeting = `Hello — I'm ready to help. Share your situation, and I'll answer directly while building your case in the background.`;
-      onChunk(greeting);
-      return greeting;
-    }
-
     try {
       const systemPrompt = buildConsultantPrompt(userInput, context);
       const stream = await chatSession.current.sendMessageStream({
@@ -1873,7 +1968,18 @@ ${agentRegistry.current.toManifest()}`;
       const liveReadiness = computeReadiness(caseDraft);
       const inferredPhase: CasePhase = liveReadiness < 55 ? 'discovery' : liveReadiness < 80 ? 'analysis' : 'recommendations';
       setCurrentPhase(inferredPhase);
-      setExecutionTaskStatus('ingestion', 'completed', `Case readiness inferred at ${liveReadiness}% (${inferredPhase})`);
+      const extractedFieldCount = [
+        extractedSignals.userName, extractedSignals.organizationName, extractedSignals.organizationType,
+        extractedSignals.contactRole, extractedSignals.country, extractedSignals.jurisdiction,
+        extractedSignals.objectives, extractedSignals.currentMatter, extractedSignals.constraints,
+        extractedSignals.targetAudience, extractedSignals.decisionDeadline
+      ].filter(v => v && String(v).trim().length > 0).length;
+      const ingestionDetail = extractedFieldCount > 0
+        ? `${extractedFieldCount} field${extractedFieldCount !== 1 ? 's' : ''} extracted — readiness ${liveReadiness}% (${inferredPhase})`
+        : liveReadiness < 15
+          ? `No case data in message — intake pending (readiness: ${liveReadiness}%)`
+          : `Readiness ${liveReadiness}% (${inferredPhase}) — intake ongoing`;
+      setExecutionTaskStatus('ingestion', 'completed', ingestionDetail);
       let responseProvenance = buildMessageProvenance(caseDraft, liveReadiness);
 
       const assistantMessageId = crypto.randomUUID();
@@ -1885,18 +1991,30 @@ ${agentRegistry.current.toManifest()}`;
         phase: userMessagePhase
       }]);
 
-      setExecutionTaskStatus('insight', 'running', 'Running NSIL signal extraction in parallel');
-      const agenticInsightsPromise = (async () => {
-        try {
-          const insights = await agenticAIRef.current.consult(toAgenticParams(caseDraft), 'case_discovery');
-          setExecutionTaskStatus('insight', 'completed', `${insights.length} insight${insights.length === 1 ? '' : 's'} generated`);
-          return insights;
-        } catch (agenticError) {
-          console.warn('Agentic insight generation failed:', agenticError);
-          setExecutionTaskStatus('insight', 'failed', 'Insight scan unavailable for this turn');
-          return [];
-        }
-      })();
+      const trimmedUserContent = userContent.trim();
+      const isGreetingOnly = /^(hi|hello|hey|good\s+(morning|afternoon|evening)|yo|sup)[!.\s]*$/i.test(trimmedUserContent);
+      const shouldRunInsights = liveReadiness >= 25 && !isGreetingOnly;
+      const agenticInsightsPromise = shouldRunInsights
+        ? (async () => {
+            setExecutionTaskStatus('insight', 'running', 'Running NSIL signal extraction in parallel');
+            try {
+              const insights = await agenticAIRef.current.consult(toAgenticParams(caseDraft), 'case_discovery');
+              setExecutionTaskStatus('insight', 'completed', `${insights.length} insight${insights.length === 1 ? '' : 's'} generated`);
+              return insights;
+            } catch (agenticError) {
+              console.warn('Agentic insight generation failed:', agenticError);
+              setExecutionTaskStatus('insight', 'failed', 'Insight scan unavailable for this turn');
+              return [];
+            }
+          })()
+        : (() => {
+            setExecutionTaskStatus('insight', 'skipped',
+              liveReadiness < 25
+                ? `Case readiness ${liveReadiness}% — scan requires intake data`
+                : 'Greeting turn — intelligence scan deferred'
+            );
+            return Promise.resolve([]);
+          })();
 
       setExecutionTaskStatus('response', 'running', 'Streaming consultant response');
       setIsStreamingResponse(true);
@@ -1947,23 +2065,25 @@ ${agentRegistry.current.toManifest()}`;
       agentMemory.current.storeFact(
         sessionId.current,
         `User: ${userContent.slice(0, 200)} | Response: ${responseContent.slice(0, 300)}`,
-        [caseStudy.country, caseStudy.sector, caseStudy.organizationName].filter(Boolean),
+        [caseStudy.country, caseStudy.situationType, caseStudy.organizationName].filter(Boolean),
         70
       );
       // ── END TOOL CALL EXECUTION LOOP ─────────────────────────────────────────
 
       const nextFollowUp = getHighestValueFollowUp(caseDraft);
-      const trimmedUserContent = userContent.trim();
-      const isGreetingOnly = /^(hi|hello|hey|good\s+(morning|afternoon|evening)|yo|sup)[!.\s]*$/i.test(trimmedUserContent);
       const likelyDirectQuestion = /\?|\b(explain|what|why|how|who|can you|could you|should we)\b/i.test(trimmedUserContent);
 
-      setExecutionTaskStatus('followup', 'running', 'Evaluating next highest-value clarification');
-      if (nextFollowUp && !isGreetingOnly && (liveReadiness < 80 || likelyDirectQuestion)) {
-        responseContent = `${responseContent}\n\nOne high-value detail to improve decision quality:\n${nextFollowUp}`;
-        setAdaptiveQuestionsAsked(prev => prev + 1);
-        setExecutionTaskStatus('followup', 'completed', 'Follow-up question appended');
+      if (isGreetingOnly || liveReadiness < 10) {
+        setExecutionTaskStatus('followup', 'skipped', 'Intake not started — identity and objectives pending');
       } else {
-        setExecutionTaskStatus('followup', 'completed', 'No follow-up needed for this turn');
+        setExecutionTaskStatus('followup', 'running', 'Evaluating next highest-value clarification');
+        if (nextFollowUp && (liveReadiness < 80 || likelyDirectQuestion)) {
+          responseContent = `${responseContent}\n\nOne high-value detail to improve decision quality:\n${nextFollowUp}`;
+          setAdaptiveQuestionsAsked(prev => prev + 1);
+          setExecutionTaskStatus('followup', 'completed', 'Follow-up question appended');
+        } else {
+          setExecutionTaskStatus('followup', 'completed', 'No follow-up needed for this turn');
+        }
       }
 
       setMessages(prev => prev.map((msg) => (
@@ -2052,8 +2172,11 @@ ${agentRegistry.current.toManifest()}`;
     buildMessageProvenance,
     readinessScore,
     toAgenticParams,
-    getHighestValueFollowUp
-    ,extractConsultantSignals
+    getHighestValueFollowUp,
+    extractConsultantSignals,
+    fetchLiveIntelForCountry,
+    processWithAI,
+    queueAction
   ]);
 
   // Handle file selection
@@ -2661,7 +2784,7 @@ Use concrete facts from the case. No template language. Write the complete repor
       setIsLoading(false);
       setGeneratingProgress(null);
     }
-  }, [selectedDocs, generationScope, readinessScore, allowAllDocumentAccess, recommendedDocs, processWithAI, caseStudy, getCriticalCaseGaps, consultantCaseBrief, consultantGateReady, consultantGateMissing, realLifeMatterPack, pilotSelectedAddOnPrompts, outputDepthSpec, activeIssuePack.label, regionalKernel]);
+  }, [selectedDocs, generationScope, readinessScore, allowAllDocumentAccess, recommendedDocs, processWithAI, caseStudy, getCriticalCaseGaps, consultantCaseBrief, consultantGateReady, consultantGateMissing, realLifeMatterPack, outputDepthSpec, regionalKernel]);
 
   // Phase indicator
   const phaseLabels: Record<CasePhase, { label: string; description: string }> = {
@@ -2783,6 +2906,446 @@ Use concrete facts from the case. No template language. Write the complete repor
     anchor.click();
     URL.revokeObjectURL(url);
   }, []);
+
+  const loadConsultantAuditEvents = useCallback(async (limit = 40) => {
+    setConsultantAuditLoading(true);
+    setConsultantAuditError('');
+    try {
+      const hoursQuery = consultantAuditWindowMode === '24h' ? '&hours=24' : '';
+      const response = await fetch(`/api/ai/consultant/audit?limit=${limit}${hoursQuery}`);
+      if (!response.ok) {
+        throw new Error(`Audit API returned ${response.status}`);
+      }
+
+      const data = await response.json();
+      const events = Array.isArray(data?.events) ? data.events as ConsultantAuditEvent[] : [];
+      setConsultantAuditEvents(events);
+      setConsultantAuditMeta({
+        count: Number(data?.count) || events.length,
+        limit: Number(data?.limit) || limit
+      });
+
+      if (consultantAuditWindowMode === '24h') {
+        try {
+          const metricsResponse = await fetch('/api/ai/consultant/audit-metrics?hours=24');
+          if (metricsResponse.ok) {
+            const metrics = await metricsResponse.json();
+            setConsultantAuditTrends(metrics as ConsultantAuditTrendMetrics);
+          }
+        } catch {
+          setConsultantAuditTrends(null);
+        }
+      } else {
+        setConsultantAuditTrends(null);
+      }
+    } catch (error) {
+      setConsultantAuditError(error instanceof Error ? error.message : 'Unable to load consultant audit events');
+      setConsultantAuditTrends(null);
+    } finally {
+      setConsultantAuditLoading(false);
+    }
+  }, [consultantAuditWindowMode]);
+
+  const renderTrend = useCallback((value: number, inverse = false) => {
+    if (value === 0) {
+      return '→ 0';
+    }
+    const isPositive = value > 0;
+    const arrow = isPositive ? '↑' : '↓';
+    const adjusted = inverse ? (isPositive ? 'worse' : 'better') : (isPositive ? 'better' : 'worse');
+    return `${arrow} ${Math.abs(value)} (${adjusted})`;
+  }, []);
+
+  const handleExportConsultantAudit = useCallback(async (format: 'json' | 'jsonl') => {
+    setConsultantAuditExporting(true);
+    setConsultantAuditError('');
+    try {
+      const hoursQuery = consultantAuditWindowMode === '24h' ? '&hours=24' : '';
+      const response = await fetch(`/api/ai/consultant/audit-export?format=${format}&limit=1000${hoursQuery}`);
+      if (!response.ok) {
+        throw new Error(`Export API returned ${response.status}`);
+      }
+
+      const content = await response.text();
+      triggerFileDownload(
+        content,
+        format === 'json' ? `consultant-audit-${Date.now()}.json` : `consultant-audit-${Date.now()}.jsonl`,
+        format === 'json' ? 'application/json' : 'application/x-ndjson'
+      );
+    } catch (error) {
+      setConsultantAuditError(error instanceof Error ? error.message : 'Unable to export consultant audit events');
+    } finally {
+      setConsultantAuditExporting(false);
+    }
+  }, [triggerFileDownload, consultantAuditWindowMode]);
+
+  const consultantAuditSummary = useMemo(() => {
+    const requestEvents = consultantAuditEvents.filter((event) => event.event === 'consultant_request').length;
+    const errorEvents = consultantAuditEvents.filter((event) => event.event === 'consultant_error').length;
+    const replaySuccessEvents = consultantAuditEvents.filter((event) => event.event === 'consultant_replay_request').length;
+    const replayErrorEvents = consultantAuditEvents.filter((event) => event.event === 'consultant_replay_error').length;
+    const replayFallbackEvents = consultantAuditEvents.filter((event) => event.event === 'consultant_replay_fallback').length;
+    return { requestEvents, errorEvents, replaySuccessEvents, replayErrorEvents, replayFallbackEvents };
+  }, [consultantAuditEvents]);
+
+  const consultantHealthThresholds = useMemo(() => {
+    const toBoundedNumber = (value: unknown, fallback: number, min: number, max: number) => {
+      const parsed = Number(value);
+      if (!Number.isFinite(parsed)) return fallback;
+      return Math.min(max, Math.max(min, parsed));
+    };
+
+    const env = (() => {
+      try {
+        return (import.meta as unknown as { env?: Record<string, unknown> }).env ?? {};
+      } catch {
+        return {} as Record<string, unknown>;
+      }
+    })() as Record<string, unknown>;
+
+    return {
+      healthyMinSuccess: toBoundedNumber(env.VITE_CONSULTANT_HEALTHY_MIN_SUCCESS, 0.7, 0, 1),
+      warningMinSuccess: toBoundedNumber(env.VITE_CONSULTANT_WARNING_MIN_SUCCESS, 0.45, 0, 1),
+      fallbackHighRatio: toBoundedNumber(env.VITE_CONSULTANT_FALLBACK_HIGH_RATIO, 0.25, 0, 1),
+      errorHighRatio: toBoundedNumber(env.VITE_CONSULTANT_ERROR_HIGH_RATIO, 0.2, 0, 1),
+      warningMaxErrorRatio: toBoundedNumber(env.VITE_CONSULTANT_WARNING_MAX_ERROR_RATIO, 0.5, 0, 1)
+    };
+  }, []);
+
+  const evaluateConsultantReplayHealth = useCallback((counts: { replaySuccess: number; replayFallback: number; replayError: number }) => {
+    const { replaySuccess, replayFallback, replayError } = counts;
+    const total = replaySuccess + replayFallback + replayError;
+
+    if (total === 0) {
+      return {
+        label: 'No Data',
+        className: 'bg-stone-100 text-stone-700 border-stone-200',
+        detail: 'No retry events in current window'
+      };
+    }
+
+    const successRate = replaySuccess / total;
+    const highFallback = replayFallback > Math.max(1, Math.floor(total * consultantHealthThresholds.fallbackHighRatio));
+    const highError = replayError > Math.max(1, Math.floor(total * consultantHealthThresholds.errorHighRatio));
+
+    if (successRate >= consultantHealthThresholds.healthyMinSuccess && !highFallback && !highError) {
+      return {
+        label: 'Healthy',
+        className: 'bg-green-50 text-green-700 border-green-200',
+        detail: `Success ${Math.round(successRate * 100)}%`
+      };
+    }
+
+    if (
+      successRate >= consultantHealthThresholds.warningMinSuccess
+      && replayError <= Math.max(2, Math.floor(total * consultantHealthThresholds.warningMaxErrorRatio))
+    ) {
+      return {
+        label: 'Warning',
+        className: 'bg-amber-50 text-amber-700 border-amber-200',
+        detail: `Success ${Math.round(successRate * 100)}%`
+      };
+    }
+
+    return {
+      label: 'Critical',
+      className: 'bg-red-50 text-red-700 border-red-200',
+      detail: `Success ${Math.round(successRate * 100)}%`
+    };
+  }, [consultantHealthThresholds]);
+
+  const consultantRetryHealth = useMemo(() => {
+    if (!consultantAuditTrends) {
+      return null;
+    }
+    return evaluateConsultantReplayHealth(consultantAuditTrends.current);
+  }, [consultantAuditTrends, evaluateConsultantReplayHealth]);
+
+  const consultantThresholdTooltip = useMemo(() => (
+    `Thresholds — Healthy≥${Math.round(consultantHealthThresholds.healthyMinSuccess * 100)}%, Warning≥${Math.round(consultantHealthThresholds.warningMinSuccess * 100)}%, FallbackHigh>${Math.round(consultantHealthThresholds.fallbackHighRatio * 100)}%, ErrorHigh>${Math.round(consultantHealthThresholds.errorHighRatio * 100)}%, WarningMaxError≤${Math.round(consultantHealthThresholds.warningMaxErrorRatio * 100)}%`
+  ), [consultantHealthThresholds]);
+
+  const consultantProviderTrendSummary = useMemo(() => {
+    if (!consultantAuditTrends?.providerMetrics) {
+      return [] as string[];
+    }
+
+    const providerLabel: Record<'bedrock' | 'gemini' | 'openai', string> = {
+      bedrock: 'Bedrock',
+      gemini: 'Gemini',
+      openai: 'OpenAI'
+    };
+
+    return (['bedrock', 'gemini', 'openai'] as const).map((provider) => {
+      const metrics = consultantAuditTrends.providerMetrics?.[provider];
+      if (!metrics) {
+        return `${providerLabel[provider]}: n/a`;
+      }
+
+      const total = metrics.current.replaySuccess + metrics.current.replayFallback + metrics.current.replayError;
+      const successRate = total > 0 ? Math.round((metrics.current.replaySuccess / total) * 100) : 0;
+      return `${providerLabel[provider]} OK ${renderTrend(metrics.delta.replaySuccess)} • FB ${renderTrend(metrics.delta.replayFallback, true)} • ER ${renderTrend(metrics.delta.replayError, true)} • Success ${total > 0 ? `${successRate}%` : 'n/a'}`;
+    });
+  }, [consultantAuditTrends, renderTrend]);
+
+  const consultantProviderHealthBadges = useMemo(() => {
+    if (!consultantAuditTrends?.providerMetrics) {
+      return [] as Array<{ providerKey: ConsultantAuditProviderFilter; provider: string; label: string; className: string; detail: string }>;
+    }
+
+    const providerLabel: Record<'bedrock' | 'gemini' | 'openai', string> = {
+      bedrock: 'Bedrock',
+      gemini: 'Gemini',
+      openai: 'OpenAI'
+    };
+
+    return (['bedrock', 'gemini', 'openai'] as const).map((provider) => {
+      const metrics = consultantAuditTrends.providerMetrics?.[provider];
+      const health = evaluateConsultantReplayHealth(metrics?.current ?? { replaySuccess: 0, replayFallback: 0, replayError: 0 });
+      return {
+        providerKey: provider,
+        provider: providerLabel[provider],
+        label: health.label,
+        className: health.className,
+        detail: health.detail
+      };
+    });
+  }, [consultantAuditTrends, evaluateConsultantReplayHealth]);
+
+  const handleProviderHealthBadgeClick = useCallback((provider: ConsultantAuditProviderFilter) => {
+    if (provider === 'all') return;
+    setConsultantAuditProviderFilter(provider);
+    setConsultantAuditEventFilter('replay_events');
+    setConsultantAuditPage(1);
+  }, []);
+
+  const filteredConsultantAuditEvents = useMemo(() => {
+    const needle = consultantAuditSearch.trim().toLowerCase();
+    const replayEventSet = new Set(['consultant_replay_request', 'consultant_replay_error', 'consultant_replay_fallback']);
+    return consultantAuditEvents.filter((event) => {
+      if (consultantAuditEventFilter === 'replay_events') {
+        if (!replayEventSet.has(String(event.event || ''))) {
+          return false;
+        }
+      } else if (consultantAuditEventFilter !== 'all' && event.event !== consultantAuditEventFilter) {
+        return false;
+      }
+      if (consultantAuditProviderFilter !== 'all' && event.provider !== consultantAuditProviderFilter) {
+        return false;
+      }
+      if (!needle) {
+        return true;
+      }
+
+      const haystack = `${event.requestId || ''} ${event.intent || ''} ${event.taskType || ''} ${event.error || ''}`.toLowerCase();
+      return haystack.includes(needle);
+    });
+  }, [consultantAuditEvents, consultantAuditEventFilter, consultantAuditProviderFilter, consultantAuditSearch]);
+
+  const consultantAuditPageSize = 10;
+  const consultantAuditTotalPages = Math.max(1, Math.ceil(filteredConsultantAuditEvents.length / consultantAuditPageSize));
+  const pagedConsultantAuditEvents = useMemo(() => {
+    const page = Math.min(Math.max(consultantAuditPage, 1), consultantAuditTotalPages);
+    const start = (page - 1) * consultantAuditPageSize;
+    return filteredConsultantAuditEvents.slice(start, start + consultantAuditPageSize);
+  }, [filteredConsultantAuditEvents, consultantAuditPage, consultantAuditTotalPages]);
+
+  useEffect(() => {
+    setConsultantAuditPage(1);
+  }, [consultantAuditEventFilter, consultantAuditProviderFilter, consultantAuditSearch]);
+
+  useEffect(() => {
+    if (consultantAuditPage > consultantAuditTotalPages) {
+      setConsultantAuditPage(consultantAuditTotalPages);
+    }
+  }, [consultantAuditPage, consultantAuditTotalPages]);
+
+  const handleCopyConsultantRequestId = useCallback(async (requestId?: string) => {
+    if (!requestId) return;
+    try {
+      await navigator.clipboard.writeText(requestId);
+      setConsultantAuditCopiedRequestId(requestId);
+      window.setTimeout(() => setConsultantAuditCopiedRequestId(''), 1500);
+    } catch {
+      setConsultantAuditError('Unable to copy request ID');
+    }
+  }, []);
+
+  const handleLookupConsultantRequest = useCallback(async (requestIdOverride?: string) => {
+    const requestId = (requestIdOverride ?? consultantAuditLookupRequestId).trim();
+    if (!requestId) {
+      setConsultantAuditLookupEvents([]);
+      setConsultantAuditError('Enter a request ID to lookup');
+      return;
+    }
+
+    setConsultantAuditLookupLoading(true);
+    setConsultantAuditError('');
+    setConsultantReplayMeta(null);
+    try {
+      const response = await fetch(`/api/ai/consultant/audit/${encodeURIComponent(requestId)}`);
+      if (!response.ok) {
+        throw new Error(response.status === 404 ? 'Request ID not found in audit log' : `Lookup API returned ${response.status}`);
+      }
+
+      const payload = await response.json();
+      const events = Array.isArray(payload?.events) ? payload.events as ConsultantAuditEvent[] : [];
+      setConsultantAuditLookupRequestId(requestId);
+      setConsultantAuditLookupEvents(events);
+
+      try {
+        const replayResponse = await fetch(`/api/ai/consultant/replay/${encodeURIComponent(requestId)}`);
+        if (replayResponse.ok) {
+          const replayPayload = await replayResponse.json();
+          setConsultantReplayMeta({
+            requestId: String(replayPayload?.requestId || requestId),
+            createdAt: replayPayload?.createdAt,
+            replayHash: replayPayload?.replayHash,
+            hasPayload: Boolean(replayPayload?.hasPayload),
+            sourceRequestId: replayPayload?.sourceRequestId ?? null
+          });
+        }
+      } catch {
+        // Ignore replay metadata lookup errors and continue with audit detail rendering
+      }
+    } catch (error) {
+      setConsultantAuditLookupEvents([]);
+      setConsultantReplayMeta(null);
+      setConsultantAuditError(error instanceof Error ? error.message : 'Unable to lookup request ID');
+    } finally {
+      setConsultantAuditLookupLoading(false);
+    }
+  }, [consultantAuditLookupRequestId]);
+
+  const handleRetryConsultantRequest = useCallback(async (requestId?: string) => {
+    const resolvedRequestId = (requestId || consultantAuditLookupRequestId).trim();
+    if (!resolvedRequestId) {
+      setConsultantAuditError('Select or enter a request ID before retrying');
+      return;
+    }
+
+    const referenceEvent = consultantAuditLookupEvents.find((event) => event.requestId === resolvedRequestId)
+      || consultantAuditEvents.find((event) => event.requestId === resolvedRequestId);
+
+    const retryPrompt = [
+      `Retry request ${resolvedRequestId}.`,
+      referenceEvent?.taskType ? `Task type: ${referenceEvent.taskType}.` : '',
+      referenceEvent?.intent ? `Intent: ${referenceEvent.intent}.` : '',
+      'Continue from the current case context and return actionable next steps.'
+    ].filter(Boolean).join(' ');
+
+    setConsultantRetryLoading(true);
+    setConsultantAuditError('');
+    setConsultantRetrySource('none');
+    setConsultantRetryReason('');
+    setShowWorkspaceModal(false);
+    setCurrentPhase('analysis');
+
+    const retryUserMessageId = crypto.randomUUID();
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: retryUserMessageId,
+        role: 'user',
+        content: retryPrompt,
+        timestamp: new Date(),
+        phase: 'analysis'
+      }
+    ]);
+
+    try {
+      let responseText = '';
+      let replayFallbackReason = '';
+
+      try {
+        const replayResponse = await fetch(`/api/ai/consultant/replay/${encodeURIComponent(resolvedRequestId)}/retry`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (replayResponse.ok) {
+          const replayPayload = await replayResponse.json();
+          responseText = String(replayPayload?.text || '').trim();
+          if (responseText) {
+            setConsultantRetrySource('backend-replay');
+            setConsultantRetryReason('Executed using stored replay payload');
+          }
+        } else if (replayResponse.status !== 404 && replayResponse.status !== 409) {
+          throw new Error(`Replay API returned ${replayResponse.status}`);
+        } else {
+          replayFallbackReason = replayResponse.status === 404
+            ? 'Replay record not found; used local context fallback'
+            : 'Replay payload unavailable; used local context fallback';
+        }
+      } catch (replayError) {
+        replayFallbackReason = replayError instanceof Error
+          ? `Replay endpoint failed (${replayError.message}); used local context fallback`
+          : 'Replay endpoint failed; used local context fallback';
+        console.warn('Replay endpoint unavailable, using local retry flow:', replayError);
+      }
+
+      if (!responseText) {
+        responseText = await processWithAI(
+          retryPrompt,
+          `Retry mode from consultant audit request ${resolvedRequestId}. Use current case file and produce concrete guidance.`
+        );
+        setConsultantRetrySource('local-fallback');
+        setConsultantRetryReason(replayFallbackReason || 'Local context retry path used');
+
+        try {
+          await fetch('/api/ai/consultant/replay/fallback', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              sourceRequestId: resolvedRequestId,
+              reason: 'local_fallback',
+              detail: replayFallbackReason || 'Local context retry path used'
+            })
+          });
+          await loadConsultantAuditEvents(40);
+        } catch {
+          // non-blocking metric logging
+        }
+      }
+
+      const provenance = buildMessageProvenance(caseStudy, computeReadiness(caseStudy), [`Retry request: ${resolvedRequestId}`]);
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: crypto.randomUUID(),
+          role: 'assistant',
+          content: responseText,
+          timestamp: new Date(),
+          phase: 'analysis',
+          provenance
+        }
+      ]);
+    } catch (error) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: crypto.randomUUID(),
+          role: 'assistant',
+          content: 'Retry execution failed. Please review the request details and try again.',
+          timestamp: new Date(),
+          phase: 'analysis'
+        }
+      ]);
+      setConsultantAuditError(error instanceof Error ? error.message : 'Retry execution failed');
+    } finally {
+      setConsultantRetryLoading(false);
+    }
+  }, [
+    consultantAuditLookupRequestId,
+    consultantAuditLookupEvents,
+    consultantAuditEvents,
+    processWithAI,
+    buildMessageProvenance,
+    caseStudy,
+    computeReadiness,
+    loadConsultantAuditEvents
+  ]);
 
   const handleExportMissionAuditJson = useCallback(() => {
     if (!missionAuditExportPayload) return;
@@ -3054,6 +3617,30 @@ Use concrete facts from the case. No template language. Write the complete repor
     caseStudy.objectives,
     missionCaseInput
   ]);
+
+  useEffect(() => {
+    if (!showWorkspaceModal) return;
+    void loadConsultantAuditEvents(40);
+  }, [showWorkspaceModal, loadConsultantAuditEvents]);
+
+  useEffect(() => {
+    if (!showWorkspaceModal) return;
+    void loadConsultantAuditEvents(40);
+  }, [consultantAuditWindowMode, showWorkspaceModal, loadConsultantAuditEvents]);
+
+  useEffect(() => {
+    if (!showWorkspaceModal || !consultantAuditAutoRefresh) {
+      return;
+    }
+
+    const intervalId = window.setInterval(() => {
+      void loadConsultantAuditEvents(40);
+    }, 30000);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, [showWorkspaceModal, consultantAuditAutoRefresh, loadConsultantAuditEvents]);
 
   const handleRunAutonomyCycle = useCallback(() => {
     const snapshot = MissionGraphService.runCycleFromCaseInput(missionCaseInput);
@@ -3633,7 +4220,9 @@ Use concrete facts from the case. No template language. Write the complete repor
                               ? 'bg-blue-50 text-blue-700 border-blue-200'
                               : task.status === 'failed'
                                 ? 'bg-red-50 text-red-700 border-red-200'
-                                : 'bg-stone-100 text-stone-600 border-stone-200'
+                                : task.status === 'skipped'
+                                  ? 'bg-amber-50 text-amber-700 border-amber-200'
+                                  : 'bg-stone-100 text-stone-600 border-stone-200'
                         }`}>
                           {task.status.toUpperCase()}
                         </span>
@@ -5070,6 +5659,302 @@ Use concrete facts from the case. No template language. Write the complete repor
                   )}
                 </div>
               )}
+
+              <div className="mt-6 bg-white border border-stone-200 shadow-sm p-4">
+                <div className="flex items-start justify-between gap-3 mb-3">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-bold text-slate-900">Consultant Audit Trail</h3>
+                      {consultantAuditWindowMode === '24h' && consultantRetryHealth && (
+                        <span
+                          className={`text-[10px] px-1.5 py-0.5 border ${consultantRetryHealth.className}`}
+                          title={consultantThresholdTooltip}
+                        >
+                          {consultantRetryHealth.label}
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-[11px] text-slate-600">
+                      Window: {consultantAuditWindowMode === '24h' ? 'Last 24h' : 'All time'} • Recent Events: {consultantAuditMeta?.count ?? consultantAuditEvents.length} • Requests: {consultantAuditSummary.requestEvents} • Errors: {consultantAuditSummary.errorEvents} • Replay OK: {consultantAuditSummary.replaySuccessEvents} • Replay Errors: {consultantAuditSummary.replayErrorEvents} • Fallback Events: {consultantAuditSummary.replayFallbackEvents} • Visible: {filteredConsultantAuditEvents.length}
+                    </div>
+                    {consultantAuditWindowMode === '24h' && consultantAuditTrends && (
+                      <div className="text-[10px] text-slate-600 mt-0.5">
+                        Trend vs previous 24h • Replay OK: {renderTrend(consultantAuditTrends.delta.replaySuccess)} • Fallback: {renderTrend(consultantAuditTrends.delta.replayFallback, true)} • Status: {consultantRetryHealth?.detail || 'n/a'}
+                      </div>
+                    )}
+                    {consultantAuditWindowMode === '24h' && consultantProviderTrendSummary.length > 0 && (
+                      <div className="text-[10px] text-slate-600 mt-0.5">
+                        By provider • {consultantProviderTrendSummary.join(' • ')}
+                      </div>
+                    )}
+                    {consultantAuditWindowMode === '24h' && consultantProviderHealthBadges.length > 0 && (
+                      <div className="flex flex-wrap items-center gap-1 mt-1">
+                        {consultantProviderHealthBadges.map((badge) => (
+                          <button
+                            type="button"
+                            key={`provider-health-${badge.provider}`}
+                            onClick={() => handleProviderHealthBadgeClick(badge.providerKey)}
+                            className={`text-[10px] px-1.5 py-0.5 border ${badge.className}`}
+                            title={`${badge.detail} • Click to filter replay events for ${badge.provider}`}
+                          >
+                            {badge.provider}: {badge.label}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    {consultantAuditWindowMode === '24h' && (
+                      <div className="text-[10px] text-slate-500 mt-0.5">
+                        Thresholds • Healthy≥{Math.round(consultantHealthThresholds.healthyMinSuccess * 100)}% • Warning≥{Math.round(consultantHealthThresholds.warningMinSuccess * 100)}% • FallbackHigh&gt;{Math.round(consultantHealthThresholds.fallbackHighRatio * 100)}% • ErrorHigh&gt;{Math.round(consultantHealthThresholds.errorHighRatio * 100)}%
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <label className="inline-flex items-center gap-1 border border-stone-300 bg-white px-2 py-1 text-[11px] text-slate-700">
+                      <input
+                        type="checkbox"
+                        checked={consultantAuditAutoRefresh}
+                        onChange={(e) => setConsultantAuditAutoRefresh(e.target.checked)}
+                        className="h-3 w-3"
+                      />
+                      Auto 30s
+                    </label>
+                    <button
+                      onClick={() => void loadConsultantAuditEvents(40)}
+                      disabled={consultantAuditLoading}
+                      className="inline-flex items-center gap-1 border border-stone-300 bg-stone-50 px-2.5 py-1 text-[11px] font-medium text-slate-700 hover:bg-stone-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {consultantAuditLoading ? <Loader2 size={12} className="animate-spin" /> : <CheckCircle2 size={12} />}
+                      Refresh
+                    </button>
+                    <button
+                      onClick={() => void handleExportConsultantAudit('json')}
+                      disabled={consultantAuditExporting}
+                      className="inline-flex items-center gap-1 border border-stone-300 bg-stone-50 px-2.5 py-1 text-[11px] font-medium text-slate-700 hover:bg-stone-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <Download size={12} />
+                      JSON
+                    </button>
+                    <button
+                      onClick={() => void handleExportConsultantAudit('jsonl')}
+                      disabled={consultantAuditExporting}
+                      className="inline-flex items-center gap-1 border border-stone-300 bg-stone-50 px-2.5 py-1 text-[11px] font-medium text-slate-700 hover:bg-stone-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <Download size={12} />
+                      JSONL
+                    </button>
+                  </div>
+                </div>
+
+                <div className="mb-3 grid grid-cols-1 md:grid-cols-4 gap-2">
+                  <select
+                    value={consultantAuditWindowMode}
+                    onChange={(e) => setConsultantAuditWindowMode(e.target.value as 'all' | '24h')}
+                    className="border border-stone-300 bg-white px-2 py-1 text-[11px] text-slate-700"
+                    title="Audit metric window"
+                  >
+                    <option value="all">All time</option>
+                    <option value="24h">Last 24h</option>
+                  </select>
+
+                  <select
+                    value={consultantAuditEventFilter}
+                    onChange={(e) => setConsultantAuditEventFilter(e.target.value as ConsultantAuditEventFilter)}
+                    className="border border-stone-300 bg-white px-2 py-1 text-[11px] text-slate-700"
+                    title="Filter by event type"
+                  >
+                    <option value="all">All events</option>
+                    <option value="replay_events">Replay (all)</option>
+                    <option value="consultant_request">Requests</option>
+                    <option value="consultant_error">Errors</option>
+                    <option value="consultant_replay_request">Replay Success</option>
+                    <option value="consultant_replay_error">Replay Errors</option>
+                    <option value="consultant_replay_fallback">Replay Fallback</option>
+                  </select>
+
+                  <select
+                    value={consultantAuditProviderFilter}
+                    onChange={(e) => setConsultantAuditProviderFilter(e.target.value as ConsultantAuditProviderFilter)}
+                    className="border border-stone-300 bg-white px-2 py-1 text-[11px] text-slate-700"
+                    title="Filter by provider"
+                  >
+                    <option value="all">All providers</option>
+                    <option value="bedrock">Bedrock</option>
+                    <option value="gemini">Gemini</option>
+                    <option value="openai">OpenAI</option>
+                  </select>
+
+                  <input
+                    value={consultantAuditSearch}
+                    onChange={(e) => setConsultantAuditSearch(e.target.value)}
+                    placeholder="Search request ID / intent / error"
+                    className="border border-stone-300 bg-white px-2 py-1 text-[11px] text-slate-700 md:col-span-2"
+                  />
+
+                  <button
+                    onClick={() => {
+                      setConsultantAuditEventFilter('all');
+                      setConsultantAuditProviderFilter('all');
+                      setConsultantAuditSearch('');
+                      setConsultantAuditPage(1);
+                    }}
+                    className="border border-stone-300 bg-stone-50 px-2 py-1 text-[11px] font-medium text-slate-700 hover:bg-stone-100 md:col-start-4"
+                  >
+                    Clear Filters
+                  </button>
+                </div>
+
+                <div className="mb-3 grid grid-cols-1 md:grid-cols-4 gap-2">
+                  <input
+                    value={consultantAuditLookupRequestId}
+                    onChange={(e) => setConsultantAuditLookupRequestId(e.target.value)}
+                    placeholder="Jump to request ID"
+                    className="border border-stone-300 bg-white px-2 py-1 text-[11px] text-slate-700 md:col-span-2"
+                  />
+                  <button
+                    onClick={() => void handleLookupConsultantRequest()}
+                    disabled={consultantAuditLookupLoading}
+                    className="border border-stone-300 bg-stone-50 px-2 py-1 text-[11px] font-medium text-slate-700 hover:bg-stone-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {consultantAuditLookupLoading ? 'Looking up...' : 'View Request'}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setConsultantAuditLookupRequestId('');
+                      setConsultantAuditLookupEvents([]);
+                      setConsultantReplayMeta(null);
+                      setConsultantRetrySource('none');
+                      setConsultantRetryReason('');
+                    }}
+                    className="border border-stone-300 bg-stone-50 px-2 py-1 text-[11px] font-medium text-slate-700 hover:bg-stone-100"
+                  >
+                    Clear View
+                  </button>
+                </div>
+
+                {consultantAuditError && (
+                  <div className="mb-2 border border-red-200 bg-red-50 px-2 py-1 text-[11px] text-red-700">
+                    {consultantAuditError}
+                  </div>
+                )}
+
+                {filteredConsultantAuditEvents.length === 0 ? (
+                  <p className="text-sm text-slate-500">No consultant audit events match the current filters.</p>
+                ) : (
+                  <>
+                  <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+                    {pagedConsultantAuditEvents.map((event, index) => (
+                      <div key={`${event.requestId || 'no-id'}-${event.timestamp || index}`} className="border border-stone-200 bg-stone-50 px-3 py-2">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className={`text-[10px] px-1.5 py-0.5 border ${
+                            event.event === 'consultant_error'
+                              ? 'bg-red-50 text-red-700 border-red-200'
+                              : 'bg-green-50 text-green-700 border-green-200'
+                          }`}>
+                            {(event.event || 'unknown').toUpperCase()}
+                          </span>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => void handleLookupConsultantRequest(event.requestId)}
+                              disabled={!event.requestId || consultantAuditLookupLoading}
+                              className="inline-flex items-center gap-1 border border-stone-300 bg-white px-1.5 py-0.5 text-[10px] text-slate-700 hover:bg-stone-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                              title="Open full request timeline"
+                            >
+                              View
+                            </button>
+                            <button
+                              onClick={() => void handleCopyConsultantRequestId(event.requestId)}
+                              disabled={!event.requestId}
+                              className="inline-flex items-center gap-1 border border-stone-300 bg-white px-1.5 py-0.5 text-[10px] text-slate-700 hover:bg-stone-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                              title="Copy request ID"
+                            >
+                              {consultantAuditCopiedRequestId === event.requestId ? <Check size={10} /> : <Copy size={10} />}
+                              {consultantAuditCopiedRequestId === event.requestId ? 'Copied' : 'Copy ID'}
+                            </button>
+                            <span className="text-[10px] text-slate-500">{event.timestamp ? new Date(event.timestamp).toLocaleString() : 'No timestamp'}</span>
+                          </div>
+                        </div>
+                        <p className="mt-1 text-xs text-slate-700">
+                          Request: {event.requestId || 'n/a'} • Provider: {event.provider || 'n/a'} • Intent: {event.intent || 'n/a'}
+                        </p>
+                        {event.error && <p className="mt-1 text-xs text-red-700">Error: {event.error}</p>}
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-2 flex items-center justify-between">
+                    <span className="text-[11px] text-slate-600">Page {consultantAuditPage} of {consultantAuditTotalPages}</span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setConsultantAuditPage((prev) => Math.max(1, prev - 1))}
+                        disabled={consultantAuditPage <= 1}
+                        className="border border-stone-300 bg-stone-50 px-2 py-1 text-[11px] font-medium text-slate-700 hover:bg-stone-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Prev
+                      </button>
+                      <button
+                        onClick={() => setConsultantAuditPage((prev) => Math.min(consultantAuditTotalPages, prev + 1))}
+                        disabled={consultantAuditPage >= consultantAuditTotalPages}
+                        className="border border-stone-300 bg-stone-50 px-2 py-1 text-[11px] font-medium text-slate-700 hover:bg-stone-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Next
+                      </button>
+                    </div>
+                  </div>
+                  </>
+                )}
+
+                {consultantAuditLookupEvents.length > 0 && (
+                  <div className="mt-3 border border-blue-200 bg-blue-50 px-3 py-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-[11px] font-semibold text-blue-900">
+                        Request Drill-down: {consultantAuditLookupRequestId}
+                      </p>
+                      <div className="flex items-center gap-2">
+                        {consultantReplayMeta && (
+                          <span className={`text-[10px] px-1.5 py-0.5 border ${
+                            consultantReplayMeta.hasPayload
+                              ? 'bg-green-50 text-green-700 border-green-200'
+                              : 'bg-amber-50 text-amber-700 border-amber-200'
+                          }`}>
+                            Replay {consultantReplayMeta.hasPayload ? 'AVAILABLE' : 'UNAVAILABLE'}
+                          </span>
+                        )}
+                        <button
+                          onClick={() => void handleRetryConsultantRequest(consultantAuditLookupRequestId)}
+                          disabled={consultantRetryLoading}
+                          className="inline-flex items-center gap-1 border border-blue-300 bg-white px-2 py-1 text-[11px] font-medium text-blue-800 hover:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {consultantRetryLoading ? <Loader2 size={11} className="animate-spin" /> : <PlayCircle size={11} />}
+                          Retry Request
+                        </button>
+                      </div>
+                    </div>
+                    <p className="text-[10px] text-blue-700 mt-0.5">Timeline events: {consultantAuditLookupEvents.length}</p>
+                    {consultantReplayMeta?.replayHash && (
+                      <p className="text-[10px] text-blue-800 mt-0.5">
+                        Replay Hash: {consultantReplayMeta.replayHash.slice(0, 12)}...{consultantReplayMeta.replayHash.slice(-8)}
+                      </p>
+                    )}
+                    {consultantRetrySource !== 'none' && (
+                      <p className="text-[10px] text-blue-800 mt-0.5">
+                        Last Retry Path: {consultantRetrySource === 'backend-replay' ? 'Backend Replay' : 'Local Fallback'}{consultantRetryReason ? ` — ${consultantRetryReason}` : ''}
+                      </p>
+                    )}
+                    <div className="mt-2 space-y-2 max-h-48 overflow-y-auto pr-1">
+                      {consultantAuditLookupEvents.map((event, index) => (
+                        <div key={`${event.requestId || consultantAuditLookupRequestId}-${event.timestamp || index}-detail`} className="border border-blue-200 bg-white px-2 py-1.5">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-[10px] text-blue-800 font-semibold">{(event.event || 'unknown').toUpperCase()}</span>
+                            <span className="text-[10px] text-slate-500">{event.timestamp ? new Date(event.timestamp).toLocaleString() : 'No timestamp'}</span>
+                          </div>
+                          <p className="mt-1 text-[11px] text-slate-700">Provider: {event.provider || 'n/a'} • Intent: {event.intent || 'n/a'} • Task: {event.taskType || 'n/a'}</p>
+                          {event.error && <p className="mt-1 text-[11px] text-red-700">Error: {event.error}</p>}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
 
               {/* Open Full Platform Button */}
               <div className="mt-6 text-center">

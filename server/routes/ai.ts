@@ -1,7 +1,15 @@
 import { Router, Request, Response } from 'express';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import fs from 'fs/promises';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { createHash } from 'crypto';
 
 const router = Router();
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const DATA_DIR = path.join(__dirname, '..', 'data');
+const CONSULTANT_AUDIT_FILE = path.join(DATA_DIR, 'consultant-audit.jsonl');
+const CONSULTANT_REPLAY_FILE = path.join(DATA_DIR, 'consultant-replay.jsonl');
 
 // Lazy initialize Gemini - API key is read at request time, not module load time
 let genAI: GoogleGenerativeAI | null = null;
@@ -52,6 +60,546 @@ CONTEXT:
 - You operate to close the "100-Year Confidence Gap".
 - Your output should feel like a high-level intelligence dossier backed by real data.
 `;
+
+const CONSULTANT_SYSTEM_INSTRUCTION = `
+You are BW Consultant AI for Nexus Intelligence OS v7.0.
+
+Operating mode:
+- Be direct, practical, and client-facing.
+- First answer the user's explicit request.
+- Then identify the single highest-value missing detail.
+- Ask at most one follow-up question unless user asks for more.
+
+Response quality rules:
+- Keep recommendations actionable and specific.
+- Avoid vague claims.
+- If context is incomplete, state assumptions briefly.
+- Preserve professional tone suitable for executive and government stakeholders.
+`;
+
+type ConsultantIntent =
+  | 'report_build'
+  | 'information_lookup'
+  | 'strategy_advice'
+  | 'risk_assessment'
+  | 'clarification'
+  | 'general';
+
+const detectConsultantIntent = (message: string): ConsultantIntent => {
+  const text = message.toLowerCase();
+
+  if (/\breport\b|\bbrief\b|\bsubmission\b|\bdocument\b|\bdraft\b|\bsummary\b/.test(text)) {
+    return 'report_build';
+  }
+  if (/\bfind\b|\bsearch\b|\bsource\b|\bevidence\b|\bcitation\b|\bdata\b/.test(text)) {
+    return 'information_lookup';
+  }
+  if (/\brisk\b|\bthreat\b|\bcompliance\b|\bregulator\b|\baudit\b/.test(text)) {
+    return 'risk_assessment';
+  }
+  if (/\bstrategy\b|\bplan\b|\bapproach\b|\brecommend\b|\bnext step\b/.test(text)) {
+    return 'strategy_advice';
+  }
+  if (/\bwhat do you mean\b|\bclarify\b|\bconfused\b|\bnot sure\b|\bexplain\b/.test(text)) {
+    return 'clarification';
+  }
+
+  return 'general';
+};
+
+const buildIntentDirective = (intent: ConsultantIntent): string => {
+  switch (intent) {
+    case 'report_build':
+      return 'Focus on building report-ready structure: key points, evidence gaps, and immediate next inputs required.';
+    case 'information_lookup':
+      return 'Focus on extracting, organizing, and validating relevant information before conclusions.';
+    case 'risk_assessment':
+      return 'Focus on risk exposure, controls, assumptions, and mitigation sequence.';
+    case 'strategy_advice':
+      return 'Focus on decision options, trade-offs, and a recommended path with rationale.';
+    case 'clarification':
+      return 'Use plain language to clarify user intent and ask one concise clarifying question if needed.';
+    default:
+      return 'Provide a concise, actionable response and ask one useful follow-up only if it improves outcomes.';
+  }
+};
+
+type ConsultantProvider = 'bedrock' | 'gemini' | 'openai';
+
+interface ConsultantProviderAttempt {
+  provider: ConsultantProvider;
+  ok: boolean;
+  detail?: string;
+}
+
+type ConsultantTaskType =
+  | 'report_build'
+  | 'info_lookup'
+  | 'risk_review'
+  | 'strategy_support'
+  | 'general_assist';
+
+const CONSULTANT_ALLOWED_TASK_TYPES = new Set<ConsultantTaskType>([
+  'report_build',
+  'info_lookup',
+  'risk_review',
+  'strategy_support',
+  'general_assist'
+]);
+
+const CONSULTANT_MAX_MESSAGE_CHARS = 6000;
+const CONSULTANT_MAX_CONTEXT_CHARS = 14000;
+const CONSULTANT_MAX_RESPONSE_CHARS = 7000;
+const CONSULTANT_PROVIDER_TIMEOUT_MS = Number(process.env.CONSULTANT_PROVIDER_TIMEOUT_MS || 20000);
+const CONSULTANT_AUDIT_REDACTION_ENABLED = process.env.CONSULTANT_AUDIT_REDACTION_ENABLED !== 'false';
+const CONSULTANT_AUDIT_EXPORT_MAX = 5000;
+const CONSULTANT_REPLAY_STORE_PAYLOAD = process.env.CONSULTANT_REPLAY_STORE_PAYLOAD !== 'false';
+
+interface ConsultantReplayPayload {
+  message: string;
+  context: unknown;
+  systemPrompt?: string;
+  modelOrder: ConsultantProvider[];
+  taskType: ConsultantTaskType;
+}
+
+interface ConsultantReplayRecord {
+  requestId: string;
+  createdAt: string;
+  replayHash: string;
+  hasPayload: boolean;
+  payload?: ConsultantReplayPayload;
+  sourceRequestId?: string;
+}
+
+const withTimeout = async <T>(promise: Promise<T>, timeoutMs: number, label: string): Promise<T> => {
+  let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
+  const timeoutPromise = new Promise<T>((_, reject) => {
+    timeoutHandle = setTimeout(() => reject(new Error(`${label} timed out after ${timeoutMs}ms`)), timeoutMs);
+  });
+
+  try {
+    return await Promise.race([promise, timeoutPromise]);
+  } finally {
+    if (timeoutHandle) {
+      clearTimeout(timeoutHandle);
+    }
+  }
+};
+
+const sanitizeConsultantMessage = (message: string): string => {
+  const normalized = message.split('\0').join('').trim();
+  if (normalized.length > CONSULTANT_MAX_MESSAGE_CHARS) {
+    return normalized.slice(0, CONSULTANT_MAX_MESSAGE_CHARS);
+  }
+  return normalized;
+};
+
+const sanitizeConsultantContext = (context: unknown): { context: unknown; truncated: boolean } => {
+  if (context === undefined || context === null) {
+    return { context: null, truncated: false };
+  }
+
+  try {
+    const serialized = JSON.stringify(context);
+    if (!serialized) {
+      return { context: null, truncated: false };
+    }
+
+    if (serialized.length <= CONSULTANT_MAX_CONTEXT_CHARS) {
+      return { context, truncated: false };
+    }
+
+    return {
+      context: {
+        truncated: true,
+        preview: serialized.slice(0, CONSULTANT_MAX_CONTEXT_CHARS)
+      },
+      truncated: true
+    };
+  } catch {
+    return { context: null, truncated: false };
+  }
+};
+
+const normalizeConsultantOutput = (rawText: string): string => {
+  const text = rawText.trim().slice(0, CONSULTANT_MAX_RESPONSE_CHARS);
+  if (!text) {
+    return 'I can assist with your report and next actions. Share the exact objective, jurisdiction, and decision deadline, and I will proceed.';
+  }
+
+  const firstQuestionIndex = text.indexOf('?');
+  if (firstQuestionIndex === -1) {
+    return text;
+  }
+
+  const before = text.slice(0, firstQuestionIndex + 1);
+  const after = text.slice(firstQuestionIndex + 1).replace(/\?/g, '.');
+  return `${before}${after}`;
+};
+
+const redactText = (value: string): string => {
+  return value
+    .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, '[REDACTED_EMAIL]')
+    .replace(/\b(?:\+?\d{1,3}[\s-]?)?(?:\(?\d{2,4}\)?[\s-]?)?\d{3,4}[\s-]?\d{3,4}\b/g, '[REDACTED_PHONE]')
+    .replace(/\b(?:sk-[A-Za-z0-9]{16,}|AKIA[0-9A-Z]{16}|AIza[A-Za-z0-9_-]{20,})\b/g, '[REDACTED_TOKEN]');
+};
+
+const redactAuditValue = (value: unknown): unknown => {
+  if (!CONSULTANT_AUDIT_REDACTION_ENABLED) {
+    return value;
+  }
+
+  if (typeof value === 'string') {
+    return redactText(value);
+  }
+
+  if (Array.isArray(value)) {
+    return value.map((item) => redactAuditValue(item));
+  }
+
+  if (value && typeof value === 'object') {
+    const result: Record<string, unknown> = {};
+    for (const [key, nestedValue] of Object.entries(value as Record<string, unknown>)) {
+      if (/message|prompt|context|content|query|input|output|details|error/i.test(key)) {
+        result[key] = typeof nestedValue === 'string' ? redactText(nestedValue) : redactAuditValue(nestedValue);
+      } else {
+        result[key] = redactAuditValue(nestedValue);
+      }
+    }
+    return result;
+  }
+
+  return value;
+};
+
+const redactAuditEvent = (event: Record<string, unknown>): Record<string, unknown> => {
+  const redacted = redactAuditValue(event) as Record<string, unknown>;
+  if (CONSULTANT_AUDIT_REDACTION_ENABLED) {
+    redacted.redactionApplied = true;
+  }
+  return redacted;
+};
+
+const ensureConsultantAuditDataDir = async () => {
+  try {
+    await fs.mkdir(DATA_DIR, { recursive: true });
+  } catch {
+    // no-op
+  }
+};
+
+const buildReplayHash = (payload: ConsultantReplayPayload): string => {
+  return createHash('sha256').update(JSON.stringify(payload)).digest('hex');
+};
+
+const persistConsultantReplayRecord = async (record: ConsultantReplayRecord) => {
+  await ensureConsultantAuditDataDir();
+  await fs.appendFile(CONSULTANT_REPLAY_FILE, `${JSON.stringify(record)}\n`, 'utf8');
+};
+
+const readConsultantReplayRecord = async (requestId: string): Promise<ConsultantReplayRecord | null> => {
+  try {
+    await ensureConsultantAuditDataDir();
+    const raw = await fs.readFile(CONSULTANT_REPLAY_FILE, 'utf8');
+    const rows = raw
+      .split('\n')
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .map((line) => {
+        try {
+          return JSON.parse(line) as ConsultantReplayRecord;
+        } catch {
+          return null;
+        }
+      })
+      .filter((row): row is ConsultantReplayRecord => Boolean(row));
+
+    for (let i = rows.length - 1; i >= 0; i -= 1) {
+      if (rows[i].requestId === requestId) {
+        return rows[i];
+      }
+    }
+    return null;
+  } catch {
+    return null;
+  }
+};
+
+const persistConsultantAuditEvent = async (event: Record<string, unknown>) => {
+  await ensureConsultantAuditDataDir();
+  const eventToPersist = redactAuditEvent(event);
+  await fs.appendFile(CONSULTANT_AUDIT_FILE, `${JSON.stringify(eventToPersist)}\n`, 'utf8');
+};
+
+const readConsultantAuditEvents = async (limit = 100, windowHours?: number): Promise<Record<string, unknown>[]> => {
+  try {
+    await ensureConsultantAuditDataDir();
+    const raw = await fs.readFile(CONSULTANT_AUDIT_FILE, 'utf8');
+    const rows = raw
+      .split('\n')
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .map((line) => {
+        try {
+          return JSON.parse(line) as Record<string, unknown>;
+        } catch {
+          return null;
+        }
+      })
+      .filter((row): row is Record<string, unknown> => Boolean(row));
+
+    let filteredRows = rows;
+    if (typeof windowHours === 'number' && Number.isFinite(windowHours) && windowHours > 0) {
+      const cutoffMs = Date.now() - Math.floor(windowHours * 60 * 60 * 1000);
+      filteredRows = rows.filter((row) => {
+        const timestamp = typeof row.timestamp === 'string' ? Date.parse(row.timestamp) : NaN;
+        return Number.isFinite(timestamp) && timestamp >= cutoffMs;
+      });
+    }
+
+    return filteredRows.slice(-Math.max(1, Math.min(limit, 1000))).reverse();
+  } catch {
+    return [];
+  }
+};
+
+const readAllConsultantAuditEvents = async (): Promise<Record<string, unknown>[]> => {
+  try {
+    await ensureConsultantAuditDataDir();
+    const raw = await fs.readFile(CONSULTANT_AUDIT_FILE, 'utf8');
+    return raw
+      .split('\n')
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .map((line) => {
+        try {
+          return JSON.parse(line) as Record<string, unknown>;
+        } catch {
+          return null;
+        }
+      })
+      .filter((row): row is Record<string, unknown> => Boolean(row));
+  } catch {
+    return [];
+  }
+};
+
+const countAuditMetric = (events: Record<string, unknown>[], eventName: string): number => (
+  events.filter((event) => event.event === eventName).length
+);
+
+interface ReplayMetricCounts {
+  replaySuccess: number;
+  replayFallback: number;
+  replayError: number;
+}
+
+const normalizeConsultantProvider = (value: unknown): ConsultantProvider | null => {
+  const normalized = String(value || '').toLowerCase();
+  if (normalized === 'bedrock' || normalized === 'gemini' || normalized === 'openai') {
+    return normalized;
+  }
+  return null;
+};
+
+const getReplayMetricCounts = (events: Record<string, unknown>[], provider?: ConsultantProvider): ReplayMetricCounts => {
+  const scopedEvents = typeof provider === 'string'
+    ? events.filter((event) => normalizeConsultantProvider(event.provider) === provider)
+    : events;
+
+  return {
+    replaySuccess: countAuditMetric(scopedEvents, 'consultant_replay_request'),
+    replayFallback: countAuditMetric(scopedEvents, 'consultant_replay_fallback'),
+    replayError: countAuditMetric(scopedEvents, 'consultant_replay_error')
+  };
+};
+
+const logConsultantAuditEvent = async (event: Record<string, unknown>) => {
+  const redactedForConsole = redactAuditEvent(event);
+  console.log('[ConsultantAudit]', JSON.stringify(redactedForConsole));
+  try {
+    await persistConsultantAuditEvent(event);
+  } catch (error) {
+    console.warn('[ConsultantAudit] Persist failed:', error instanceof Error ? error.message : 'Unknown error');
+  }
+};
+
+const parseProviderOrder = (input: unknown): ConsultantProvider[] => {
+  const defaultOrder: ConsultantProvider[] = ['bedrock', 'gemini', 'openai'];
+  if (!Array.isArray(input)) return defaultOrder;
+
+  const normalized = input
+    .map((value) => String(value).toLowerCase())
+    .filter((value): value is ConsultantProvider => value === 'bedrock' || value === 'gemini' || value === 'openai');
+
+  return normalized.length > 0 ? Array.from(new Set(normalized)) : defaultOrder;
+};
+
+const buildConsultantPrompt = (message: string, intent: ConsultantIntent, context?: unknown, systemPrompt?: string) => `
+INTENT: ${intent}
+INTENT DIRECTIVE: ${buildIntentDirective(intent)}
+
+CONTEXT:
+${context ? JSON.stringify(context, null, 2) : 'No structured context provided.'}
+
+SYSTEM CASE PROMPT:
+${typeof systemPrompt === 'string' ? systemPrompt : 'N/A'}
+
+USER MESSAGE:
+${message}
+
+OUTPUT FORMAT:
+1) Direct response to user request.
+2) Optional next step bullets (max 3) when helpful.
+3) One follow-up question only if it materially improves quality.
+`;
+
+const invokeConsultantWithGemini = async (prompt: string): Promise<string> => {
+  const ai = getGenAI();
+  if (!ai) {
+    throw new Error('Gemini unavailable: GEMINI_API_KEY missing');
+  }
+
+  const model = ai.getGenerativeModel({
+    model: 'gemini-2.0-flash',
+    systemInstruction: CONSULTANT_SYSTEM_INSTRUCTION,
+    generationConfig: {
+      temperature: 0.4,
+      maxOutputTokens: 1800
+    }
+  });
+
+  const result = await model.generateContent(prompt);
+  const text = result.response.text()?.trim() || '';
+  if (!text) {
+    throw new Error('Gemini returned empty response');
+  }
+  return text;
+};
+
+const invokeConsultantWithOpenAI = async (prompt: string): Promise<string> => {
+  const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+  if (!OPENAI_API_KEY) {
+    throw new Error('OpenAI unavailable: OPENAI_API_KEY missing');
+  }
+
+  const controller = new AbortController();
+  const timeoutHandle = setTimeout(() => controller.abort(), CONSULTANT_PROVIDER_TIMEOUT_MS);
+
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${OPENAI_API_KEY}`,
+      'Content-Type': 'application/json'
+    },
+    signal: controller.signal,
+    body: JSON.stringify({
+      model: 'gpt-4.1-mini',
+      messages: [
+        { role: 'system', content: CONSULTANT_SYSTEM_INSTRUCTION },
+        { role: 'user', content: prompt }
+      ],
+      temperature: 0.4,
+      max_tokens: 1800
+    })
+  });
+
+  clearTimeout(timeoutHandle);
+
+  if (!response.ok) {
+    throw new Error(`OpenAI request failed: ${response.status}`);
+  }
+
+  const data = await response.json();
+  const text = data?.choices?.[0]?.message?.content?.trim() || '';
+  if (!text) {
+    throw new Error('OpenAI returned empty response');
+  }
+  return text;
+};
+
+const invokeConsultantWithBedrock = async (prompt: string): Promise<string> => {
+  const AWS_REGION = process.env.AWS_REGION;
+  if (!AWS_REGION) {
+    throw new Error('Bedrock unavailable: AWS_REGION missing');
+  }
+
+  const { BedrockRuntimeClient, InvokeModelCommand } = await import('@aws-sdk/client-bedrock-runtime');
+
+  let accessKeyId = process.env.AWS_ACCESS_KEY_ID;
+  let secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
+
+  if ((!accessKeyId || !secretAccessKey) && process.env.AWS_BEDROCK_API_KEY) {
+    try {
+      const decoded = Buffer.from(process.env.AWS_BEDROCK_API_KEY, 'base64').toString('utf-8').replace(/^[^\x20-\x7E]+/, '');
+      const separatorIndex = decoded.indexOf(':');
+      if (separatorIndex > 0) {
+        accessKeyId = decoded.slice(0, separatorIndex);
+        secretAccessKey = decoded.slice(separatorIndex + 1);
+      }
+    } catch {
+      throw new Error('Bedrock unavailable: failed to decode AWS_BEDROCK_API_KEY');
+    }
+  }
+
+  const client = new BedrockRuntimeClient({
+    region: AWS_REGION,
+    ...(accessKeyId && secretAccessKey ? { credentials: { accessKeyId, secretAccessKey } } : {})
+  });
+
+  const command = new InvokeModelCommand({
+    modelId: process.env.BEDROCK_CONSULTANT_MODEL_ID || 'anthropic.claude-3-sonnet-20240229-v1:0',
+    contentType: 'application/json',
+    accept: 'application/json',
+    body: JSON.stringify({
+      anthropic_version: 'bedrock-2023-05-31',
+      max_tokens: 1800,
+      temperature: 0.4,
+      system: CONSULTANT_SYSTEM_INSTRUCTION,
+      messages: [{ role: 'user', content: prompt }]
+    })
+  });
+
+  const response = await client.send(command);
+  const payload = JSON.parse(new TextDecoder().decode(response.body));
+  const text = payload?.content?.[0]?.text?.trim() || '';
+
+  if (!text) {
+    throw new Error('Bedrock returned empty response');
+  }
+  return text;
+};
+
+const runConsultantBroker = async (
+  prompt: string,
+  order: ConsultantProvider[]
+): Promise<{ text: string; provider: ConsultantProvider; attempts: ConsultantProviderAttempt[] }> => {
+  const attempts: ConsultantProviderAttempt[] = [];
+
+  for (const provider of order) {
+    try {
+      const text = await withTimeout(
+        provider === 'bedrock'
+          ? invokeConsultantWithBedrock(prompt)
+          : provider === 'gemini'
+            ? invokeConsultantWithGemini(prompt)
+            : invokeConsultantWithOpenAI(prompt),
+        CONSULTANT_PROVIDER_TIMEOUT_MS,
+        `${provider} provider`
+      );
+
+      attempts.push({ provider, ok: true });
+      return { text, provider, attempts };
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : 'Unknown provider error';
+      attempts.push({ provider, ok: false, detail });
+    }
+  }
+
+  const details = attempts.map((attempt) => `${attempt.provider}: ${attempt.detail || 'failed'}`).join(' | ');
+  throw new Error(`No consultant providers succeeded. ${details}`);
+};
 
 // Middleware to check API key
 const requireApiKey = (_req: Request, res: Response, next: () => void) => {
@@ -125,6 +673,7 @@ router.post('/chat', requireApiKey, async (req: Request, res: Response) => {
       type: 'strategy',
       title: 'Copilot Response',
       description: text,
+      text,
       content: text,
       confidence: 85
     });
@@ -132,6 +681,362 @@ router.post('/chat', requireApiKey, async (req: Request, res: Response) => {
     console.error('AI chat error:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     res.status(500).json({ error: 'Failed to process chat', details: errorMessage });
+  }
+});
+
+// Unified BW Consultant endpoint with model-broker fallback (Bedrock -> Gemini -> OpenAI)
+router.post('/consultant', async (req: Request, res: Response) => {
+  const requestId = crypto.randomUUID();
+  const start = Date.now();
+
+  try {
+    const { message, context, systemPrompt, modelOrder, taskType } = req.body;
+
+    if (!message || typeof message !== 'string') {
+      return res.status(400).json({ error: 'message is required' });
+    }
+
+    const normalizedTaskType: ConsultantTaskType = (typeof taskType === 'string' ? taskType : 'general_assist') as ConsultantTaskType;
+    if (!CONSULTANT_ALLOWED_TASK_TYPES.has(normalizedTaskType)) {
+      return res.status(400).json({
+        error: 'Invalid taskType',
+        allowedTaskTypes: Array.from(CONSULTANT_ALLOWED_TASK_TYPES)
+      });
+    }
+
+    const sanitizedMessage = sanitizeConsultantMessage(message);
+    if (!sanitizedMessage) {
+      return res.status(400).json({ error: 'message must not be empty' });
+    }
+
+    const sanitizedContextResult = sanitizeConsultantContext(context);
+
+    const providerOrder = parseProviderOrder(modelOrder);
+    const replayPayload: ConsultantReplayPayload = {
+      message: sanitizedMessage,
+      context: sanitizedContextResult.context,
+      systemPrompt: typeof systemPrompt === 'string' ? systemPrompt : undefined,
+      modelOrder: providerOrder,
+      taskType: normalizedTaskType
+    };
+    const replayHash = buildReplayHash(replayPayload);
+
+    const intent = detectConsultantIntent(sanitizedMessage);
+    const prompt = buildConsultantPrompt(sanitizedMessage, intent, sanitizedContextResult.context, systemPrompt);
+    const brokerResult = await runConsultantBroker(prompt, providerOrder);
+    const normalizedText = normalizeConsultantOutput(brokerResult.text);
+
+    const replayRecord: ConsultantReplayRecord = {
+      requestId,
+      createdAt: new Date().toISOString(),
+      replayHash,
+      hasPayload: CONSULTANT_REPLAY_STORE_PAYLOAD,
+      ...(CONSULTANT_REPLAY_STORE_PAYLOAD ? { payload: replayPayload } : {})
+    };
+
+    try {
+      await persistConsultantReplayRecord(replayRecord);
+    } catch (replayError) {
+      console.warn('Consultant replay persist failed:', replayError instanceof Error ? replayError.message : 'Unknown error');
+    }
+
+    await logConsultantAuditEvent({
+      event: 'consultant_request',
+      requestId,
+      timestamp: new Date().toISOString(),
+      taskType: normalizedTaskType,
+      intent,
+      provider: brokerResult.provider,
+      attempts: brokerResult.attempts,
+      durationMs: Date.now() - start,
+      inputChars: sanitizedMessage.length,
+      outputChars: normalizedText.length,
+      contextTruncated: sanitizedContextResult.truncated,
+      replayHash,
+      replayStored: CONSULTANT_REPLAY_STORE_PAYLOAD
+    });
+
+    return res.json({
+      requestId,
+      taskType: normalizedTaskType,
+      text: normalizedText,
+      intent,
+      provider: brokerResult.provider,
+      attempts: brokerResult.attempts,
+      confidence: 0.86,
+      model: brokerResult.provider === 'gemini' ? 'gemini-2.0-flash' : brokerResult.provider,
+      replayHash,
+      replayAvailable: CONSULTANT_REPLAY_STORE_PAYLOAD
+    });
+  } catch (error) {
+    console.error('Consultant endpoint error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    await logConsultantAuditEvent({
+      event: 'consultant_error',
+      requestId,
+      timestamp: new Date().toISOString(),
+      durationMs: Date.now() - start,
+      error: errorMessage
+    });
+    return res.status(500).json({ error: 'Failed to process consultant request', details: errorMessage });
+  }
+});
+
+router.get('/consultant/replay/:requestId', async (req: Request, res: Response) => {
+  try {
+    const requestId = req.params.requestId;
+    const record = await readConsultantReplayRecord(requestId);
+    if (!record) {
+      return res.status(404).json({ error: 'Replay record not found' });
+    }
+
+    return res.json({
+      requestId: record.requestId,
+      createdAt: record.createdAt,
+      replayHash: record.replayHash,
+      hasPayload: record.hasPayload,
+      sourceRequestId: record.sourceRequestId || null
+    });
+  } catch (error) {
+    console.error('Consultant replay lookup error:', error);
+    return res.status(500).json({ error: 'Failed to lookup consultant replay record' });
+  }
+});
+
+router.post('/consultant/replay/:requestId/retry', async (req: Request, res: Response) => {
+  const sourceRequestId = req.params.requestId;
+  const retryRequestId = crypto.randomUUID();
+  const start = Date.now();
+
+  try {
+    const sourceRecord = await readConsultantReplayRecord(sourceRequestId);
+    if (!sourceRecord) {
+      return res.status(404).json({ error: 'Replay record not found' });
+    }
+    if (!sourceRecord.hasPayload || !sourceRecord.payload) {
+      return res.status(409).json({ error: 'Replay payload unavailable for this request' });
+    }
+
+    const payload = sourceRecord.payload;
+    const intent = detectConsultantIntent(payload.message);
+    const prompt = buildConsultantPrompt(payload.message, intent, payload.context, payload.systemPrompt);
+    const brokerResult = await runConsultantBroker(prompt, payload.modelOrder);
+    const normalizedText = normalizeConsultantOutput(brokerResult.text);
+
+    const retryReplayHash = buildReplayHash(payload);
+    const retryRecord: ConsultantReplayRecord = {
+      requestId: retryRequestId,
+      createdAt: new Date().toISOString(),
+      replayHash: retryReplayHash,
+      hasPayload: CONSULTANT_REPLAY_STORE_PAYLOAD,
+      sourceRequestId,
+      ...(CONSULTANT_REPLAY_STORE_PAYLOAD ? { payload } : {})
+    };
+    await persistConsultantReplayRecord(retryRecord);
+
+    await logConsultantAuditEvent({
+      event: 'consultant_replay_request',
+      requestId: retryRequestId,
+      sourceRequestId,
+      timestamp: new Date().toISOString(),
+      taskType: payload.taskType,
+      intent,
+      provider: brokerResult.provider,
+      attempts: brokerResult.attempts,
+      durationMs: Date.now() - start,
+      replayHash: retryReplayHash,
+      replayStored: CONSULTANT_REPLAY_STORE_PAYLOAD
+    });
+
+    return res.json({
+      requestId: retryRequestId,
+      sourceRequestId,
+      taskType: payload.taskType,
+      text: normalizedText,
+      intent,
+      provider: brokerResult.provider,
+      attempts: brokerResult.attempts,
+      confidence: 0.86,
+      model: brokerResult.provider === 'gemini' ? 'gemini-2.0-flash' : brokerResult.provider,
+      replayHash: retryReplayHash,
+      replayAvailable: CONSULTANT_REPLAY_STORE_PAYLOAD
+    });
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Consultant replay retry error:', error);
+    await logConsultantAuditEvent({
+      event: 'consultant_replay_error',
+      requestId: retryRequestId,
+      sourceRequestId,
+      timestamp: new Date().toISOString(),
+      durationMs: Date.now() - start,
+      error: errorMessage
+    });
+    return res.status(500).json({ error: 'Failed to retry consultant request', details: errorMessage });
+  }
+});
+
+router.post('/consultant/replay/fallback', async (req: Request, res: Response) => {
+  try {
+    const { sourceRequestId, reason, detail } = req.body ?? {};
+
+    if (!sourceRequestId || typeof sourceRequestId !== 'string') {
+      return res.status(400).json({ error: 'sourceRequestId is required' });
+    }
+
+    await logConsultantAuditEvent({
+      event: 'consultant_replay_fallback',
+      requestId: crypto.randomUUID(),
+      sourceRequestId,
+      timestamp: new Date().toISOString(),
+      reason: typeof reason === 'string' ? reason : 'Local fallback path used',
+      detail: typeof detail === 'string' ? detail : ''
+    });
+
+    return res.json({ success: true });
+  } catch (error) {
+    console.error('Consultant replay fallback log error:', error);
+    return res.status(500).json({ error: 'Failed to record replay fallback' });
+  }
+});
+
+// Consultant audit history (persistent JSONL log)
+router.get('/consultant/audit', async (req: Request, res: Response) => {
+  try {
+    const limitValue = Number(req.query.limit ?? 100);
+    const limit = Number.isFinite(limitValue) ? Math.max(1, Math.min(1000, Math.floor(limitValue))) : 100;
+    const hoursValue = Number(req.query.hours);
+    const windowHours = Number.isFinite(hoursValue) && hoursValue > 0 ? Math.min(24 * 30, Math.floor(hoursValue)) : undefined;
+    const events = await readConsultantAuditEvents(limit, windowHours);
+
+    return res.json({
+      count: events.length,
+      limit,
+      windowHours: windowHours ?? null,
+      events
+    });
+  } catch (error) {
+    console.error('Consultant audit read error:', error);
+    return res.status(500).json({ error: 'Failed to read consultant audit events' });
+  }
+});
+
+router.get('/consultant/audit/:requestId', async (req: Request, res: Response) => {
+  try {
+    const requestId = req.params.requestId;
+    const events = await readConsultantAuditEvents(1000);
+    const matching = events.filter((event) => event.requestId === requestId);
+
+    if (matching.length === 0) {
+      return res.status(404).json({ error: 'Audit event not found' });
+    }
+
+    return res.json({ requestId, events: matching });
+  } catch (error) {
+    console.error('Consultant audit lookup error:', error);
+    return res.status(500).json({ error: 'Failed to read consultant audit event' });
+  }
+});
+
+router.get('/consultant/audit-export', async (req: Request, res: Response) => {
+  try {
+    const format = String(req.query.format || 'json').toLowerCase();
+    const limitValue = Number(req.query.limit ?? 500);
+    const limit = Number.isFinite(limitValue)
+      ? Math.max(1, Math.min(CONSULTANT_AUDIT_EXPORT_MAX, Math.floor(limitValue)))
+      : 500;
+    const hoursValue = Number(req.query.hours);
+    const windowHours = Number.isFinite(hoursValue) && hoursValue > 0 ? Math.min(24 * 30, Math.floor(hoursValue)) : undefined;
+
+    const events = await readConsultantAuditEvents(limit, windowHours);
+    const nowIso = new Date().toISOString();
+    const summary = {
+      exportedAt: nowIso,
+      count: events.length,
+      limit,
+      windowHours: windowHours ?? null,
+      redactionEnabled: CONSULTANT_AUDIT_REDACTION_ENABLED,
+      eventTypes: Array.from(new Set(events.map((event) => String(event.event || 'unknown'))))
+    };
+
+    if (format === 'jsonl') {
+      const rows = [JSON.stringify({ summary }), ...events.map((event) => JSON.stringify(event))].join('\n');
+      res.setHeader('Content-Type', 'application/x-ndjson; charset=utf-8');
+      res.setHeader('Content-Disposition', `attachment; filename="consultant-audit-export-${Date.now()}.jsonl"`);
+      return res.send(rows);
+    }
+
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    return res.json({ summary, events });
+  } catch (error) {
+    console.error('Consultant audit export error:', error);
+    return res.status(500).json({ error: 'Failed to export consultant audit events' });
+  }
+});
+
+router.get('/consultant/audit-metrics', async (req: Request, res: Response) => {
+  try {
+    const hoursValue = Number(req.query.hours ?? 24);
+    const windowHours = Number.isFinite(hoursValue) && hoursValue > 0
+      ? Math.min(24 * 30, Math.floor(hoursValue))
+      : 24;
+
+    const allEvents = await readAllConsultantAuditEvents();
+    const nowMs = Date.now();
+    const currentCutoffMs = nowMs - windowHours * 60 * 60 * 1000;
+    const previousCutoffMs = nowMs - (windowHours * 2) * 60 * 60 * 1000;
+
+    const currentWindowEvents = allEvents.filter((event) => {
+      const timestamp = typeof event.timestamp === 'string' ? Date.parse(event.timestamp) : NaN;
+      return Number.isFinite(timestamp) && timestamp >= currentCutoffMs;
+    });
+
+    const previousWindowEvents = allEvents.filter((event) => {
+      const timestamp = typeof event.timestamp === 'string' ? Date.parse(event.timestamp) : NaN;
+      return Number.isFinite(timestamp) && timestamp >= previousCutoffMs && timestamp < currentCutoffMs;
+    });
+
+    const current = getReplayMetricCounts(currentWindowEvents);
+    const previous = getReplayMetricCounts(previousWindowEvents);
+
+    const providers: ConsultantProvider[] = ['bedrock', 'gemini', 'openai'];
+    const providerMetrics = providers.reduce<Record<ConsultantProvider, {
+      current: ReplayMetricCounts;
+      previous: ReplayMetricCounts;
+      delta: ReplayMetricCounts;
+    }>>((acc, provider) => {
+      const providerCurrent = getReplayMetricCounts(currentWindowEvents, provider);
+      const providerPrevious = getReplayMetricCounts(previousWindowEvents, provider);
+      acc[provider] = {
+        current: providerCurrent,
+        previous: providerPrevious,
+        delta: {
+          replaySuccess: providerCurrent.replaySuccess - providerPrevious.replaySuccess,
+          replayFallback: providerCurrent.replayFallback - providerPrevious.replayFallback,
+          replayError: providerCurrent.replayError - providerPrevious.replayError
+        }
+      };
+      return acc;
+    }, {} as Record<ConsultantProvider, {
+      current: ReplayMetricCounts;
+      previous: ReplayMetricCounts;
+      delta: ReplayMetricCounts;
+    }>);
+
+    return res.json({
+      windowHours,
+      current,
+      previous,
+      providerMetrics,
+      delta: {
+        replaySuccess: current.replaySuccess - previous.replaySuccess,
+        replayFallback: current.replayFallback - previous.replayFallback,
+        replayError: current.replayError - previous.replayError
+      }
+    });
+  } catch (error) {
+    console.error('Consultant audit metrics error:', error);
+    return res.status(500).json({ error: 'Failed to compute consultant audit metrics' });
   }
 });
 
@@ -165,17 +1070,17 @@ router.post('/generate-section', requireApiKey, async (req: Request, res: Respon
 // Streaming generation (Server-Sent Events)
 router.post('/generate-stream', requireApiKey, async (req: Request, res: Response) => {
   try {
-    const { section, params } = req.body;
+    const { section, params, prompt } = req.body;
     
     const model = getGenAI()!.getGenerativeModel({ 
       model: 'gemini-2.0-flash',
       systemInstruction: SYSTEM_INSTRUCTION
     });
     
-    const opportunityContext = params.specificOpportunity ? `Focused on: ${params.specificOpportunity}` : '';
-    const prompt = `Generate the '${section}' section for a strategic report on ${params.organizationName}. 
-    Target Market: ${params.country}. 
-    Intent: ${params.strategicIntent}.
+    const opportunityContext = params?.specificOpportunity ? `Focused on: ${params.specificOpportunity}` : '';
+    const streamPrompt = prompt || `Generate the '${section || 'analysis'}' section for a strategic report on ${params?.organizationName || 'the organization'}. 
+    Target Market: ${params?.country || 'unspecified'}. 
+    Intent: ${params?.strategicIntent || 'analysis'}.
     ${opportunityContext}
     Format: Professional markdown, concise executive style.`;
     
@@ -184,7 +1089,7 @@ router.post('/generate-stream', requireApiKey, async (req: Request, res: Respons
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
     
-    const result = await model.generateContentStream(prompt);
+    const result = await model.generateContentStream(streamPrompt);
     
     for await (const chunk of result.stream) {
       const text = chunk.text();
