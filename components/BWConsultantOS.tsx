@@ -14,7 +14,7 @@ import {
   Bot, Send, Paperclip, Loader2, X,
   FileText, Mail, Briefcase, Shield, BarChart3, Users, Scale, 
   Globe, FileCheck, PenTool, Download, Copy, Check,
-  HelpCircle, ChevronRight,
+  HelpCircle, ChevronRight, BookOpen,
   ThumbsUp, ThumbsDown, Languages, Zap, AlertTriangle, CheckCircle2, PlayCircle
 } from 'lucide-react';
 import { OutcomeLearningService } from '../services/OutcomeLearningService';
@@ -637,6 +637,7 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, embedd
   const [pilotModeEnabled, _setPilotModeEnabled] = useState(true);
   const [showPilotWindow, setShowPilotWindow] = useState(false);
   const [showPilotHowTo, setShowPilotHowTo] = useState(false);
+  const [showAboutBWGA, setShowAboutBWGA] = useState(false);
   const [pilotFocus, setPilotFocus] = useState<PilotModeFocus>('new-markets');
   const [pilotSelectedAddOns, setPilotSelectedAddOns] = useState<string[]>([]);
   const [pilotOptionPreferences, setPilotOptionPreferences] = useState<Record<string, PilotOptionPreference>>({});
@@ -4172,6 +4173,16 @@ Use concrete facts from the case. No template language. Write the complete repor
             ))}
           </div>
 
+          {/* About Button */}
+          <button
+            onClick={() => setShowAboutBWGA(true)}
+            className="relative z-10 px-3 py-2 bg-white/10 hover:bg-white/20 text-white text-sm font-medium flex items-center gap-1.5 border border-white/20 transition-all"
+            title="About BW Global Advisory"
+          >
+            <BookOpen size={14} />
+            About
+          </button>
+
           {/* Language Selector */}
           <div className="relative z-10 flex items-center gap-1 mr-2">
             <Languages size={14} className="text-blue-200" />
@@ -5611,6 +5622,77 @@ Use concrete facts from the case. No template language. Write the complete repor
             </div>
           </div>
         )}
+
+      {/* About BWGA Modal */}
+      {showAboutBWGA && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="w-full max-w-3xl max-h-[90vh] bg-white border border-stone-200 shadow-2xl flex flex-col overflow-hidden">
+            {/* Modal Header */}
+            <div
+              className="px-6 py-5 relative overflow-hidden"
+              style={{
+                backgroundImage: 'url(https://images.unsplash.com/photo-1677442136019-21780ecad995?w=1400&h=300&fit=crop&q=80)',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+              }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-900/90 via-blue-800/85 to-blue-900/80" />
+              <div className="relative z-10 flex items-center justify-between">
+                <div>
+                  <p className="text-blue-200 uppercase tracking-wider text-[10px] font-semibold mb-1">The Story Behind</p>
+                  <h2 className="text-xl font-bold text-white">BW Global Advisory</h2>
+                  <p className="text-blue-200 text-xs mt-1">Built from the ground up. For everyone.</p>
+                </div>
+                <button
+                  onClick={() => setShowAboutBWGA(false)}
+                  className="p-2 hover:bg-white/10 text-white border border-white/20 transition-all"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+            </div>
+
+            {/* Scrollable Content */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-5">
+
+              <p className="text-sm text-slate-700 leading-relaxed">
+                BWGA wasn't founded in a glass skyscraper in New York or London. It was born on the edge of the developing world, in a small coastal city where the gap between potential and opportunity is painfully clear. We watched regional leaders — mayors, entrepreneurs, councils — work tirelessly to attract investment. They had the vision, the drive, the raw assets. But they didn't have the structured methodology, the global benchmarking data, or the institutional language that opens doors at the World Bank, AIIB, or a sovereign wealth fund boardroom.
+              </p>
+
+              <p className="text-sm text-slate-700 leading-relaxed">
+                The practice exists because of a simple observation: every "new idea" is old somewhere. The 1963 Philippine Integrated Socioeconomic Plan, Special Economic Zones across 80+ countries, PPP frameworks across 150+ nations — they all follow the same methodology. Growth poles. Investment incentives. Sectoral planning. Infrastructure corridors. The names update. The practice persists. From that came the question: what if you could build a system that internalised 60+ years of documented practice across 150 countries and made it available to anyone, anywhere, instantly?
+              </p>
+
+              <p className="text-sm text-slate-700 leading-relaxed">
+                BWGA Ai is the answer. Not a chatbot. Not a search engine. A complete digital boardroom that reasons through investment, trade, and development problems with the depth that previously required a team of senior consultants, weeks of research, and hundreds of thousands of dollars. It takes what already worked — in Shenzhen's special economic zones, Penang's electronics corridor, Medellín's urban reinvention, Rwanda's governance transformation, Estonia's digital-first state — and extracts the transferable principles: the sequencing, the stakeholder architecture, the policy triggers, the conditions that let a place transform. The knowledge always existed. It just sat locked inside decades of reports, across continents, in frameworks most practitioners never see. This system makes it accessible, synthesised, and actionable.
+              </p>
+
+              {/* Quote */}
+              <div className="border-l-4 border-blue-600 pl-4 py-2 bg-blue-50">
+                <p className="text-sm text-slate-800 leading-relaxed font-medium italic">
+                  "Every 'new idea' is old somewhere. The child learns what the parent already knows. The past isn't historical interest. The past is the solution library."
+                </p>
+                <p className="text-xs text-slate-500 mt-2">— Brayden Walls, Founder &amp; Sole Developer</p>
+              </div>
+
+              {/* The Founder */}
+              <div className="border border-stone-200 bg-stone-50 p-4">
+                <h3 className="text-sm font-bold text-slate-900 mb-2">The Founder</h3>
+                <p className="text-sm text-slate-700 leading-relaxed">
+                  I'm Brayden Walls — the founder and sole developer behind BWGA Ai. For more than 16 months I've been living, researching, and building in the Philippines — on the ground, in communities where economic potential is enormous but the tools to unlock it simply don't exist. I watched the same pattern repeat everywhere: ambitious businesses with incomplete information, regional governments unable to translate their advantages into investor language, unproductive meetings built on mismatched expectations. Places like Mindanao, regional Australia, communities across the Pacific — they all wanted the same thing: to be seen, to be understood, to have a fair shot. So I taught myself to code, studied every economic development framework I could find, and spent over a year turning that knowledge into a complete reasoning system — one that thinks through problems the way a team of senior consultants would, but faster, cheaper, and available to anyone.
+                </p>
+              </div>
+
+              <div className="border-t border-stone-200 pt-4">
+                <p className="text-xs text-slate-500 text-center">
+                  BW Global Advisory — Built from the edge of the developing world, for the whole world.
+                </p>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Workspace Modal */}
       {showWorkspaceModal && (
