@@ -27,7 +27,7 @@ const DocumentModal: React.FC<DocumentModalProps> = ({ activeDocument, onClose }
 
     const getTitle = () => {
         switch (activeDocument) {
-            case 'user-manual': return 'BWGA Ai - User Manual';
+            case 'user-manual': return 'BW Ai - User Manual';
             case 'terms': return 'Terms & Conditions';
             case 'privacy': return 'Privacy Policy';
             case 'ethics': return 'Ethical AI Framework';
@@ -83,10 +83,10 @@ const UserManualContent: React.FC = () => (
         {/* Cover / Title */}
         <div className="text-center border-b border-slate-200 pb-8">
             <p className="text-xs text-amber-600 uppercase tracking-[0.3em] font-semibold mb-2">Official User Manual</p>
-            <h1 className="text-3xl font-light text-slate-900 mb-2">BWGA Ai</h1>
-            <h2 className="text-lg text-slate-500 font-light">Nexus Intelligence Operating System v6.0</h2>
-            <p className="text-xs text-slate-400 mt-4">Version 6.0 * February 2026 * R&D Phase</p>
-            <p className="text-xs text-slate-400">Developed in Melbourne, Australia & Manila, Philippines</p>
+            <h1 className="text-3xl font-light text-slate-900 mb-2">BW Ai</h1>
+            <h2 className="text-lg text-slate-500 font-light">Nexus Intelligence Operating System v7.0</h2>
+            <p className="text-xs text-slate-400 mt-4">Version 7.0 * February 2026 * R&D Phase</p>
+            <p className="text-xs text-slate-400">Developed in Melbourne, Australia & Pagadian City, Philippines</p>
         </div>
 
         {/* Table of Contents */}
@@ -123,8 +123,8 @@ const UserManualContent: React.FC = () => (
         {/* Chapter 1 */}
         <div>
             <h3 className="text-lg font-semibold text-slate-900 mb-3 border-b border-amber-400 pb-2">1. Welcome & Getting Started</h3>
-            <p className="mb-3">Thank you for choosing BWGA Ai. This manual will guide you through every feature of the platform, from your first search to exporting board-ready documents.</p>
-            <p className="mb-3"><strong>What is BWGA Ai?</strong> It is a Sovereign-Grade Intelligence Operating System designed to help regional communities, businesses, government agencies, and first-time exporters produce institutional-quality strategic analysis - the same calibre of work that multinational corporations commission from top-tier consulting firms.</p>
+            <p className="mb-3">Thank you for choosing BW Ai. This manual will guide you through every feature of the platform, from your first search to exporting board-ready documents.</p>
+            <p className="mb-3"><strong>What is BW Ai?</strong> It is a Sovereign-Grade Intelligence Operating System designed to help regional communities, businesses, government agencies, and first-time exporters produce institutional-quality strategic analysis - the same calibre of work that multinational corporations commission from top-tier consulting firms.</p>
             <p className="mb-3">The platform is not a chatbot. It is a structured intelligence pipeline that:</p>
             <ul className="list-disc ml-6 space-y-1 mb-3">
                 <li>Captures your opportunity through a structured 10-step intake process</li>
@@ -136,7 +136,7 @@ const UserManualContent: React.FC = () => (
             </ul>
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
                 <p className="text-xs font-semibold text-amber-800 mb-1">Important Note</p>
-                <p className="text-xs text-amber-700">BWGA AI is a decision-support tool. All outputs are advisory in nature. Users retain full accountability for decisions made using the platform's analysis and recommendations.</p>
+                <p className="text-xs text-amber-700">BW AI is a decision-support tool. All outputs are advisory in nature. Users retain full accountability for decisions made using the platform's analysis and recommendations.</p>
             </div>
         </div>
 
@@ -144,7 +144,7 @@ const UserManualContent: React.FC = () => (
         <div>
             <h3 className="text-lg font-semibold text-slate-900 mb-3 border-b border-amber-400 pb-2">2. System Requirements & Access</h3>
             <p className="mb-3"><strong>Supported Browsers:</strong> Google Chrome (recommended), Microsoft Edge, Mozilla Firefox, Safari. The platform is web-based - no software installation required.</p>
-            <p className="mb-3"><strong>Device Compatibility:</strong> Desktop and laptop computers are recommended for the full experience. Tablet devices are supported with a responsive layout. Mobile phones can access the Command Page and BW AI Search but the full report builder is optimised for larger screens.</p>
+            <p className="mb-3"><strong>Device Compatibility:</strong> Desktop and laptop computers are recommended for the full experience. Tablet devices are supported with a responsive layout. Mobile phones can access the Command Page and the BW Consultant but the full report builder is optimised for larger screens.</p>
             <p className="mb-3"><strong>Internet Connection:</strong> A stable broadband connection is required. The platform communicates with AI services and live data sources in real time. Slow or intermittent connections may cause search timeouts or report generation delays.</p>
             <p className="mb-3"><strong>Access:</strong> During the R&D phase, access is provided via direct URL. No account registration is currently required. Future commercial releases will include authenticated user accounts with role-based access controls.</p>
         </div>
@@ -159,15 +159,18 @@ const UserManualContent: React.FC = () => (
                 <div><strong className="text-slate-900">BW Consultant</strong> - A unified AI advisor that occupies the right sidebar of the Main Canvas. You can ask it anything - location research, company analysis, strategic advice, score explanations - all in one chat window. It is also proactive, automatically pushing intelligence briefings and live analysis updates into the conversation.</div>
                 <div><strong className="text-slate-900">Document Factory</strong> - The output system that compiles your analysis into 200+ institutional-grade document types.</div>
             </div>
-            <p className="mb-3"><strong>7-Layer Processing Architecture:</strong> Every report passes through seven processing layers:</p>
+            <p className="mb-3"><strong>10-Layer Processing Architecture (NSIL):</strong> Every report passes through ten processing layers in sequence:</p>
             <ol className="list-decimal ml-6 space-y-1">
                 <li><strong>Input Validation & Governance</strong> - Screens inputs for completeness and consistency</li>
                 <li><strong>Multi-Agent Adversarial Debate</strong> - 5 AI personas challenge every claim</li>
                 <li><strong>Quantitative Formula Scoring</strong> - 38 formulas calculate hard metrics</li>
                 <li><strong>Monte Carlo Stress Testing</strong> - 10,000+ scenario simulations</li>
-                <li><strong>Human Cognition Engine</strong> - 7 behavioural models simulate decision-maker responses</li>
-                <li><strong>Output Synthesis & Provenance</strong> - Traceable, auditable conclusions</li>
-                <li><strong>Proactive Intelligence</strong> - Autonomous monitoring, calibration, and self-improvement</li>
+                <li><strong>Neuroscience-Based Cognition Modelling</strong> - 7 behavioural models simulate decision-maker responses</li>
+                <li><strong>Autonomous Agent Intelligence</strong> - Goal-directed agents plan research, spawn specialists, and verify outcomes</li>
+                <li><strong>Proactive Self-Monitoring</strong> - Detects overconfidence, drift, and reasoning errors in its own output</li>
+                <li><strong>Reflexive Analysis</strong> - Analyses the user, not just the market &mdash; detecting what you are not saying</li>
+                <li><strong>Compliance & Ethics Checking</strong> - Scores against IFC standards, Rawlsian ethics, and 195-country regulatory frameworks</li>
+                <li><strong>Audience-Adaptive Output Synthesis</strong> - Reframes for investors, governments, communities, partners, and executives with full provenance</li>
             </ol>
         </div>
 
@@ -181,8 +184,8 @@ const UserManualContent: React.FC = () => (
             </ol>
             <p className="mb-3"><strong>What you'll find on the page:</strong></p>
             <ul className="list-disc ml-6 space-y-1 mb-3">
-                <li>7-Layer Processing Architecture breakdown</li>
-                <li>World-First Technology section - what makes this platform unique</li>
+                <li>10-Layer NSIL Processing Architecture breakdown</li>
+                <li>Original Developments section - what makes this platform unique</li>
                 <li>Proactive Intelligence Layer overview</li>
                 <li>Live case-study walkthrough (Vestas A -  Philippines)</li>
                 <li>Legal documents - User Manual, Terms & Conditions, Privacy Policy, Ethical AI Framework</li>
@@ -204,7 +207,7 @@ const UserManualContent: React.FC = () => (
                 <div><strong>Right Sidebar - BW Consultant:</strong> A single unified AI advisor chat that fills the entire right sidebar. You can ask it anything: location research, company analysis, score explanations, strategic recommendations. It also proactively pushes intelligence briefings and live analysis summaries into the conversation as you work.</div>
                 <div><strong>Top Bar:</strong> Contains the 10-step intake wizard progress indicators, the Report Library, and the Generate Report button.</div>
             </div>
-            <p className="mb-3"><strong>Getting Started:</strong> When you first enter the platform, the BW Consultant will greet you and explain what it can do. You can begin by completing Step 1 of the intake wizard, or type a question directly into the consultant chat - for example, "Research Manila, Philippines" to get a full intelligence brief.</p>
+            <p className="mb-3"><strong>Getting Started:</strong> When you first enter the platform, the BW Consultant will greet you and explain what it can do. You can begin by completing Step 1 of the intake wizard, or type a question directly into the consultant chat - for example, "Research Pagadian City, Philippines" to get a full intelligence brief.</p>
         </div>
 
         {/* Chapter 6 */}
@@ -237,7 +240,7 @@ const UserManualContent: React.FC = () => (
             <p className="mb-2"><strong>Step 4 - Partners & Ecosystem:</strong> Map your stakeholder landscape - who are your potential partners, what are their profiles, and how do they align with your objectives? This feeds the CIS (Counterparty Integrity Score) and SPI partner reliability component.</p>
 
             <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mt-3">
-                <p className="text-xs text-purple-700"><strong>Location Intelligence Integration:</strong> Steps 3a"10 are enhanced by research data. Ask the BW Consultant to research your target location (e.g. "Research Manila, Philippines") and it will provide GDP data, demographics, regulatory frameworks, and risk assessments to inform your inputs.</p>
+                <p className="text-xs text-purple-700"><strong>Location Intelligence Integration:</strong> Steps 3a"10 are enhanced by research data. Ask the BW Consultant to research your target location (e.g. "Research Pagadian City, Philippines") and it will provide GDP data, demographics, regulatory frameworks, and risk assessments to inform your inputs.</p>
             </div>
         </div>
 
@@ -331,7 +334,7 @@ const UserManualContent: React.FC = () => (
             <p className="mb-3">The BW Consultant is the unified AI advisor that occupies the entire right sidebar of the report builder. It is your single point of contact for all intelligence, research, analysis, and strategic guidance within the platform.</p>
             <p className="mb-3"><strong>Capabilities - what you can do in one chat window:</strong></p>
             <ul className="list-disc ml-6 space-y-1 mb-3">
-                <li><strong>Location Research:</strong> "Research Manila, Philippines" - returns a full intelligence brief with demographics, GDP, industries, leadership, infrastructure, regulatory environment, and risk assessment</li>
+                <li><strong>Location Research:</strong> "Research Pagadian City, Philippines" - returns a full intelligence brief with demographics, GDP, industries, leadership, infrastructure, regulatory environment, and risk assessment</li>
                 <li><strong>Company Analysis:</strong> "Tell me about Vestas" - returns corporate intelligence and strategic context</li>
                 <li><strong>Score Explanations:</strong> "Why is my SPI score low?" - analyses your intake data and explains score drivers</li>
                 <li><strong>Strategic Advice:</strong> "What partners should I consider for this project?" - provides contextual recommendations</li>
@@ -481,7 +484,7 @@ const UserManualContent: React.FC = () => (
         {/* End Mark */}
         <div className="text-center border-t border-slate-200 pt-6">
             <p className="text-xs text-slate-400">- End of User Manual a"</p>
-            <p className="text-xs text-slate-400">BWGA Ai * Nexus Intelligence OS v6.0 * NSIL Engine v3.2</p>
+            <p className="text-xs text-slate-400">BW Ai * Nexus Intelligence OS v7.0 * NSIL Engine v4.0</p>
         </div>
     </div>
 );
@@ -497,11 +500,11 @@ const TermsContent: React.FC = () => (
             <p className="text-xs text-slate-400">Effective Date: 1 February 2026 * Last Updated: 9 February 2026</p>
         </div>
 
-        <p>These Terms & Conditions ("Terms") govern your access to and use of the BWGA Ai platform ("Platform"), operated by BW Global Advisory, trading as a registered Australian sole trader under ABN 55 978 113 300 ("BWGA", "we", "us", "our").</p>
+        <p>These Terms & Conditions ("Terms") govern your access to and use of the BW Ai platform ("Platform"), operated by BW Global Advisory, trading as a registered Australian sole trader under ABN 55 978 113 300 ("BWGA", "we", "us", "our").</p>
         <p>By accessing or using the Platform, you agree to be bound by these Terms. If you do not agree, you must not access or use the Platform.</p>
 
         <h4 className="font-bold text-slate-900 mt-6">1. About the Platform</h4>
-        <p>1.1. BWGA Ai is a strategic decision-support platform currently in active Research & Development (R&D). The Platform is developed in Melbourne, Australia, with development operations also conducted in Manila, Philippines.</p>
+        <p>1.1. BW Ai is a strategic decision-support platform currently in active Research & Development (R&D). The Platform is developed in Melbourne, Australia, with development operations also conducted in Pagadian City, Philippines.</p>
         <p>1.2. The Platform is designed for global use and is intended to meet international standards for data protection, AI ethics, and information security across all jurisdictions in which it operates or may operate.</p>
         <p>1.3. The Platform is not a financial advisor, legal advisor, or licensed consulting service. All outputs are advisory and informational in nature.</p>
 
@@ -589,7 +592,7 @@ const PrivacyContent: React.FC = () => (
             <p className="text-xs text-slate-400">Effective Date: 1 February 2026 * Last Updated: 9 February 2026</p>
         </div>
 
-        <p>This Privacy Policy explains how BW Global Advisory (ABN 55 978 113 300) ("BWGA", "we", "us", "our") collects, uses, stores, and protects your personal information when you use the BWGA Ai platform ("Platform").</p>
+        <p>This Privacy Policy explains how BW Global Advisory (ABN 55 978 113 300) ("BWGA", "we", "us", "our") collects, uses, stores, and protects your personal information when you use the BW Ai platform ("Platform").</p>
         <p>This Policy is designed to comply with the Australian Privacy Act 1988, the Australian Privacy Principles (APPs), the EU General Data Protection Regulation (GDPR), the Philippines Data Privacy Act of 2012, and other applicable international data protection laws.</p>
 
         <h4 className="font-bold text-slate-900 mt-6">1. Information We Collect</h4>
@@ -705,10 +708,10 @@ const EthicsContent: React.FC = () => (
             <p className="text-xs text-slate-400">Effective Date: 1 February 2026 * Last Updated: 9 February 2026</p>
         </div>
 
-        <p>This Ethical AI Framework sets out the principles, safeguards, and governance structures that guide the design, development, and deployment of BWGA Ai. It reflects our commitment to responsible AI practices aligned with international standards.</p>
+        <p>This Ethical AI Framework sets out the principles, safeguards, and governance structures that guide the design, development, and deployment of BW Ai. It reflects our commitment to responsible AI practices aligned with international standards.</p>
 
         <h4 className="font-bold text-slate-900 mt-6">1. Our AI Ethics Principles</h4>
-        <p>BWGA Ai is built on six core ethical principles:</p>
+        <p>BW Ai is built on six core ethical principles:</p>
         <div className="grid md:grid-cols-2 gap-3 mt-3">
             <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
                 <p className="font-semibold text-sm text-slate-900 mb-1">Transparency</p>
@@ -737,7 +740,7 @@ const EthicsContent: React.FC = () => (
         </div>
 
         <h4 className="font-bold text-slate-900 mt-6">2. Adversarial Design as an Ethical Safeguard</h4>
-        <p>Unlike most AI systems that optimise for agreeable responses, BWGA AI is designed for adversarial reasoning. The 5-persona system (Advocate, Skeptic, Regulator, Accountant, Operator) ensures that every analysis is stress-tested from multiple perspectives before a recommendation is issued.</p>
+        <p>Unlike most AI systems that optimise for agreeable responses, BW AI is designed for adversarial reasoning. The 5-persona system (Advocate, Skeptic, Regulator, Accountant, Operator) ensures that every analysis is stress-tested from multiple perspectives before a recommendation is issued.</p>
         <p className="mt-2">This design is an ethical safeguard in itself - it prevents the system from producing uncritical, confirmation-biased outputs that could mislead users into overconfident decisions.</p>
 
         <h4 className="font-bold text-slate-900 mt-6">3. Transparency & Auditability</h4>
@@ -746,7 +749,7 @@ const EthicsContent: React.FC = () => (
         <p>3.3. <strong>Reproducibility:</strong> Given identical inputs, the scoring pipeline produces identical outputs. There is no randomness in the formula layer - only in Monte Carlo simulation ranges, which are documented with P10/P50/P90 bands.</p>
 
         <h4 className="font-bold text-slate-900 mt-6">4. AI Risk Classification</h4>
-        <p>Under the EU AI Act risk classification framework, BWGA Ai would be classified as a <strong>limited-risk</strong> system. It does not:</p>
+        <p>Under the EU AI Act risk classification framework, BW Ai would be classified as a <strong>limited-risk</strong> system. It does not:</p>
         <ul className="list-disc ml-6 space-y-1">
             <li>Make autonomous decisions that directly affect individuals' rights or safety</li>
             <li>Perform biometric identification or social scoring</li>
@@ -762,7 +765,7 @@ const EthicsContent: React.FC = () => (
         <p>5.4. <strong>Continuous Calibration:</strong> The Proactive Intelligence Layer includes a backtesting calibration engine that validates scoring accuracy against real-world outcomes and flags drift.</p>
 
         <h4 className="font-bold text-slate-900 mt-6">6. Human-in-the-Loop</h4>
-        <p>BWGA AI is designed with a strict human-in-the-loop philosophy:</p>
+        <p>BW AI is designed with a strict human-in-the-loop philosophy:</p>
         <ul className="list-disc ml-6 space-y-1">
             <li>No output is automatically actioned - all reports, documents, and recommendations require human review</li>
             <li>Users explicitly initiate report generation and document production</li>
