@@ -1568,6 +1568,51 @@ ${agentRegistry.current.toManifest()}`;
     return 'I’m tracking your context in the background. Share the decision you need to make (or the question you need answered), and I’ll respond directly with a concrete next-step recommendation.';
   }, []);
 
+  type DeliverableIntent = 'background' | 'quick_answer' | 'report' | 'letter' | 'full_case' | 'unknown';
+
+  const classifyDeliverableIntent = useCallback((input: string): DeliverableIntent => {
+    const text = input.toLowerCase();
+
+    if (/\b(full report|board report|case study|dossier|submission|business case)\b/.test(text)) return 'report';
+    if (/\b(letter|loi|mou|email draft|submission letter|cover letter)\b/.test(text)) return 'letter';
+    if (/\b(full pack|document pack|report \+ letter|end-to-end|complete package)\b/.test(text)) return 'full_case';
+    if (/\b(background|overview|intel brief|briefing|research only)\b/.test(text)) return 'background';
+    if (/\b(quick answer|simple answer|just tell me|next step|recommendation)\b/.test(text)) return 'quick_answer';
+
+    return 'unknown';
+  }, []);
+
+  const shouldAskOutputClarification = useCallback((draft: CaseStudy, input: string, intent: DeliverableIntent): boolean => {
+    if (intent !== 'unknown') return false;
+
+    const hasIdentity = draft.organizationName.trim().length > 1 || draft.userName.trim().length > 1;
+    const hasLocation = draft.country.trim().length > 1 || draft.jurisdiction.trim().length > 1;
+    const hasDecision = draft.currentMatter.trim().length >= 40 || draft.objectives.trim().length >= 25;
+    const confusionSignal = /\b(no sense|confus|unclear|not clear|what do you need|what is needed|no clarity)\b/i.test(input);
+
+    return confusionSignal || (!hasDecision && (!hasIdentity || !hasLocation));
+  }, []);
+
+  const buildOutputClarificationPrompt = useCallback((draft: CaseStudy) => {
+    const knownIdentity = draft.organizationName || draft.userName || 'Not provided yet';
+    const knownLocation = draft.country || draft.jurisdiction || 'Not provided yet';
+
+    return `You are right to ask for clarity first. To give you the exact output you need, choose one option:\n\nA) Quick background insight (3–5 bullets)\nB) Concrete next-step recommendation\nC) Full report (board-ready)\nD) Letter/document draft\nE) Full case pack (report + letters)\nF) Not sure — recommend best format\n\nThen reply with these 5 items:\n1) Who you are (role + organisation)\n2) Location/jurisdiction\n3) Decision you need to make\n4) Deadline\n5) Audience (board, ministry, investor, partner, community)\n\nKnown so far:\n- Identity: ${knownIdentity}\n- Location: ${knownLocation}`;
+  }, []);
+
+  const isLowSignalInsight = useCallback((title: string, content: string, confidence?: number): boolean => {
+    const combined = `${title} ${content}`.toLowerCase();
+    const placeholderPattern = /(pending verification|not applicable|\bn\/a\b|unknown|\bvarious\b|who can help set|information pending|tbd)/i;
+    const tooShort = title.trim().length < 8 || content.trim().length < 24;
+    const lowConfidence = typeof confidence === 'number' && confidence < 0.6;
+
+    return tooShort || placeholderPattern.test(combined) || lowConfidence;
+  }, []);
+
+  const filterActionableInsights = useCallback((insights: Array<{ title: string; content: string; confidence?: number }>) => {
+    return insights.filter((insight) => !isLowSignalInsight(insight.title, insight.content, insight.confidence));
+  }, [isLowSignalInsight]);
+
   // Process user input through real AI
   const processWithAI = useCallback(async (userInput: string, context: string): Promise<string> => {
     try {
@@ -2200,7 +2245,9 @@ ${agentRegistry.current.toManifest()}`;
 
       const trimmedUserContent = userContent.trim();
       const isGreetingOnly = /^(hi|hello|hey|good\s+(morning|afternoon|evening)|yo|sup)[!.\s]*$/i.test(trimmedUserContent);
-      const shouldRunInsights = liveReadiness >= 25 && !isGreetingOnly;
+      const deliverableIntent = classifyDeliverableIntent(trimmedUserContent);
+      const shouldPromptForOutputClarification = shouldAskOutputClarification(caseDraft, trimmedUserContent, deliverableIntent);
+      const shouldRunInsights = liveReadiness >= 25 && !isGreetingOnly && !shouldPromptForOutputClarification;
       const agenticInsightsPromise = shouldRunInsights
         ? (async () => {
             setExecutionTaskStatus('insight', 'running', 'Running NSIL signal extraction in parallel');
@@ -2216,31 +2263,42 @@ ${agentRegistry.current.toManifest()}`;
           })()
         : (() => {
             setExecutionTaskStatus('insight', 'skipped',
-              liveReadiness < 25
+              shouldPromptForOutputClarification
+                ? 'Insight scan deferred until output type is clarified'
+                : liveReadiness < 25
                 ? `Background analysis deferred until more context is available`
                 : 'Greeting turn — intelligence scan deferred'
             );
             return Promise.resolve([]);
           })();
 
-      setExecutionTaskStatus('response', 'running', 'Streaming consultant response');
-      setIsStreamingResponse(true);
-      let responseContent = await processWithAIStream(
-        userContent,
-        `Autonomous mixed-initiative mode: answer user intent first, then move the case forward with one highest-value follow-up if required. Do not run scripted intake.`,
-        (streamText) => {
-          setMessages(prev => prev.map((msg) => (
-            msg.id === assistantMessageId ? { ...msg, content: streamText } : msg
-          )));
-        }
-      );
-      setExecutionTaskStatus('response', 'completed', 'Primary response delivered');
+      let responseContent = '';
+      if (shouldPromptForOutputClarification) {
+        responseContent = buildOutputClarificationPrompt(caseDraft);
+        setMessages(prev => prev.map((msg) => (
+          msg.id === assistantMessageId ? { ...msg, content: responseContent } : msg
+        )));
+        setExecutionTaskStatus('response', 'completed', 'Clarification menu delivered before deep analysis');
+      } else {
+        setExecutionTaskStatus('response', 'running', 'Streaming consultant response');
+        setIsStreamingResponse(true);
+        responseContent = await processWithAIStream(
+          userContent,
+          `Autonomous mixed-initiative mode: answer user intent first, then move the case forward with one highest-value follow-up if required. Do not run scripted intake.`,
+          (streamText) => {
+            setMessages(prev => prev.map((msg) => (
+              msg.id === assistantMessageId ? { ...msg, content: streamText } : msg
+            )));
+          }
+        );
+        setExecutionTaskStatus('response', 'completed', 'Primary response delivered');
+      }
 
       // ── TOOL CALL EXECUTION LOOP ─────────────────────────────────────────────
       // The AI may have emitted [[TOOL:name]]{...}[[/TOOL]] blocks.
       // Detect them, execute, strip from visible text, then do a follow-up pass.
       const toolCalls = AgentToolRegistry.parseToolCalls(responseContent);
-      if (toolCalls.length > 0) {
+      if (!shouldPromptForOutputClarification && toolCalls.length > 0) {
         responseContent = AgentToolRegistry.stripToolCalls(responseContent);
         const toolResultLines: string[] = [];
         for (const call of toolCalls) {
@@ -2280,7 +2338,7 @@ ${agentRegistry.current.toManifest()}`;
       const nextFollowUp = getHighestValueFollowUp(caseDraft);
       const likelyDirectQuestion = /\?|\b(explain|what|why|how|who|can you|could you|should we)\b/i.test(trimmedUserContent);
 
-      if (isGreetingOnly || liveReadiness < 10) {
+      if (shouldPromptForOutputClarification || isGreetingOnly || liveReadiness < 10) {
         setExecutionTaskStatus('followup', 'skipped', 'No follow-up needed for this turn');
       } else {
         setExecutionTaskStatus('followup', 'running', 'Evaluating next highest-value clarification');
@@ -2298,17 +2356,18 @@ ${agentRegistry.current.toManifest()}`;
       )));
 
       const agenticInsights = await agenticInsightsPromise;
-      if (agenticInsights.length > 0 && liveReadiness >= 40 && !isGreetingOnly) {
-        const insightSummary = agenticInsights
-          .slice(0, 2)
+      const actionableInsights = filterActionableInsights(agenticInsights).slice(0, 2);
+
+      if (actionableInsights.length > 0 && liveReadiness >= 40 && !isGreetingOnly && !shouldPromptForOutputClarification) {
+        const insightSummary = actionableInsights
           .map((insight) => `• ${insight.title}: ${insight.content}`)
           .join('\n');
 
-        responseProvenance = buildMessageProvenance(caseDraft, liveReadiness, [`NSIL insights in this turn: ${agenticInsights.length}`]);
+        responseProvenance = buildMessageProvenance(caseDraft, liveReadiness, [`NSIL insights in this turn: ${actionableInsights.length}`]);
 
         setCaseStudy(prev => ({
           ...prev,
-          aiInsights: [...prev.aiInsights, ...agenticInsights.slice(0, 2).map(i => `${i.title}: ${i.content}`)]
+          aiInsights: [...prev.aiInsights, ...actionableInsights.map(i => `${i.title}: ${i.content}`)]
         }));
 
         setMessages(prev => [...prev, {
@@ -2323,6 +2382,8 @@ ${agentRegistry.current.toManifest()}`;
             sources: ['NSIL Agentic Insight Engine', 'Current case draft signals', `Readiness score: ${liveReadiness}%`]
           }
         }]);
+      } else if (agenticInsights.length > 0 && actionableInsights.length === 0) {
+        setExecutionTaskStatus('insight', 'skipped', 'Low-signal NSIL insights suppressed');
       }
 
       setMessages(prev => prev.map((msg) => (
@@ -2380,6 +2441,10 @@ ${agentRegistry.current.toManifest()}`;
     readinessScore,
     toAgenticParams,
     getHighestValueFollowUp,
+    classifyDeliverableIntent,
+    shouldAskOutputClarification,
+    buildOutputClarificationPrompt,
+    filterActionableInsights,
     extractConsultantSignals,
     fetchLiveIntelForCountry,
     processWithAI,

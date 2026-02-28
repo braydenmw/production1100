@@ -124,6 +124,55 @@ const buildIntentDirective = (intent: ConsultantIntent): string => {
   }
 };
 
+type ConsultantOutputType = 'background' | 'next_step' | 'report' | 'letter' | 'case_pack' | 'unknown';
+
+const detectConsultantOutputType = (message: string): ConsultantOutputType => {
+  const text = message.toLowerCase();
+
+  if (/\b(full report|board report|case study|dossier|submission|business case)\b/.test(text)) return 'report';
+  if (/\b(letter|loi|mou|email draft|submission letter|cover letter)\b/.test(text)) return 'letter';
+  if (/\b(pack|case pack|document pack|report \+ letters|full package)\b/.test(text)) return 'case_pack';
+  if (/\b(background|overview|intel brief|briefing|research only)\b/.test(text)) return 'background';
+  if (/\b(next step|recommendation|what should i do|quick answer|simple answer)\b/.test(text)) return 'next_step';
+
+  return 'unknown';
+};
+
+const shouldRequireOutputClarification = (message: string, intent: ConsultantIntent): boolean => {
+  if (intent === 'report_build' || intent === 'risk_assessment' || intent === 'strategy_advice' || intent === 'information_lookup') {
+    return false;
+  }
+
+  const outputType = detectConsultantOutputType(message);
+  if (outputType !== 'unknown') return false;
+
+  const text = message.toLowerCase();
+  const confusionSignal = /\b(no sense|confus|unclear|not clear|what do you need|what is needed|no clarity)\b/.test(text);
+  const decisionSignal = /\b(decision|approve|reject|go\/?no-go|recommend|next step|deadline)\b/.test(text);
+
+  return confusionSignal || !decisionSignal;
+};
+
+const buildOutputClarificationResponse = (): string => {
+  return [
+    'To give you a precise response, choose the output format first:',
+    '',
+    'A) Quick background insight (3–5 bullets)',
+    'B) Concrete next-step recommendation',
+    'C) Full report (board-ready)',
+    'D) Letter/document draft',
+    'E) Full case pack (report + letters)',
+    'F) Not sure — recommend best format',
+    '',
+    'Then provide 5 items:',
+    '1) Who you are (role + organisation)',
+    '2) Location/jurisdiction',
+    '3) Decision you need to make',
+    '4) Deadline',
+    '5) Audience (board, ministry, investor, partner, community)'
+  ].join('\n');
+};
+
 type ConsultantProvider = 'bedrock' | 'gemini' | 'openai';
 
 interface ConsultantProviderAttempt {
@@ -722,6 +771,39 @@ router.post('/consultant', async (req: Request, res: Response) => {
     const replayHash = buildReplayHash(replayPayload);
 
     const intent = detectConsultantIntent(sanitizedMessage);
+    if (shouldRequireOutputClarification(sanitizedMessage, intent)) {
+      const clarificationText = buildOutputClarificationResponse();
+
+      await logConsultantAuditEvent({
+        event: 'consultant_request',
+        requestId,
+        timestamp: new Date().toISOString(),
+        taskType: normalizedTaskType,
+        intent: 'clarification',
+        provider: 'rule-engine',
+        attempts: [{ provider: 'rule-engine', ok: true }],
+        durationMs: Date.now() - start,
+        inputChars: sanitizedMessage.length,
+        outputChars: clarificationText.length,
+        contextTruncated: sanitizedContextResult.truncated,
+        replayHash,
+        replayStored: false
+      });
+
+      return res.json({
+        requestId,
+        taskType: normalizedTaskType,
+        text: clarificationText,
+        intent: 'clarification',
+        provider: 'rule-engine',
+        attempts: [{ provider: 'rule-engine', ok: true }],
+        confidence: 0.94,
+        model: 'deterministic',
+        replayHash,
+        replayAvailable: false
+      });
+    }
+
     const prompt = buildConsultantPrompt(sanitizedMessage, intent, sanitizedContextResult.context, systemPrompt);
     const brokerResult = await runConsultantBroker(prompt, providerOrder);
     const normalizedText = normalizeConsultantOutput(brokerResult.text);
