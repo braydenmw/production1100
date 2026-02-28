@@ -240,6 +240,38 @@ interface LiveInsightResult {
   bucket: LiveInsightBucket;
 }
 
+interface AugmentedLoopStep {
+  title: 'Understand' | 'Interpret' | 'Reason' | 'Learn' | 'Assure';
+  detail: string;
+}
+
+interface AugmentedAISnapshot {
+  model: string;
+  mode: string;
+  steps: AugmentedLoopStep[];
+  humanControls?: {
+    decisionOwnerRequired?: boolean;
+    approvalOptions?: Array<'accept' | 'modify' | 'reject'>;
+    assuranceChecks?: string[];
+  };
+}
+
+interface AugmentedRecommendedTool {
+  id: string;
+  name: string;
+  category: string;
+  primaryUse: string;
+  bwUseCase: string;
+  deployment: 'cloud' | 'self_hosted' | 'hybrid';
+  integrationPriority: 'high' | 'medium' | 'low';
+}
+
+interface AugmentedGap {
+  key: string;
+  severity: 'critical' | 'high' | 'medium';
+  question: string;
+}
+
 const JURISDICTION_POLICY_PACKS: JurisdictionPolicyPack[] = [
   {
     id: 'australia',
@@ -731,6 +763,13 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, embedd
   const [consultantRetryLoading, setConsultantRetryLoading] = useState(false);
   const [consultantRetrySource, setConsultantRetrySource] = useState<'none' | 'backend-replay' | 'local-fallback'>('none');
   const [consultantRetryReason, setConsultantRetryReason] = useState('');
+  const [augmentedAISnapshot, setAugmentedAISnapshot] = useState<AugmentedAISnapshot | null>(null);
+  const [augmentedRecommendedTools, setAugmentedRecommendedTools] = useState<AugmentedRecommendedTool[]>([]);
+  const [augmentedUnresolvedGaps, setAugmentedUnresolvedGaps] = useState<AugmentedGap[]>([]);
+  const [augmentedCapabilityMode, setAugmentedCapabilityMode] = useState('');
+  const [augmentedCapabilityTags, setAugmentedCapabilityTags] = useState<string[]>([]);
+  const [augmentedReviewState, setAugmentedReviewState] = useState<'idle' | 'accept' | 'modify' | 'reject'>('idle');
+  const [augmentedReviewLoading, setAugmentedReviewLoading] = useState(false);
 
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -779,6 +818,83 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, embedd
       { ...action, status: 'pending' }
     ]);
   }, []);
+
+  const captureAugmentedAIFromPayload = useCallback((payload: Record<string, unknown>) => {
+    const snapshot = payload?.augmentedAI as AugmentedAISnapshot | undefined;
+    const tools = Array.isArray(payload?.recommendedTools)
+      ? payload.recommendedTools as AugmentedRecommendedTool[]
+      : [];
+    const unresolved = Array.isArray(payload?.unresolvedGaps)
+      ? payload.unresolvedGaps as AugmentedGap[]
+      : [];
+    const capabilityMode = typeof payload?.capabilityMode === 'string' ? payload.capabilityMode : '';
+    const capabilityTags = Array.isArray(payload?.capabilityTags)
+      ? payload.capabilityTags.filter((item): item is string => typeof item === 'string')
+      : [];
+
+    if (snapshot) {
+      setAugmentedAISnapshot(snapshot);
+    }
+    setAugmentedRecommendedTools(tools.slice(0, 6));
+    setAugmentedUnresolvedGaps(unresolved.slice(0, 5));
+    setAugmentedCapabilityMode(capabilityMode);
+    setAugmentedCapabilityTags(capabilityTags);
+
+    const topCriticalGap = unresolved.find((gap) => gap.severity === 'critical');
+    if (topCriticalGap) {
+      queueAction({
+        id: 'augmented-ai-critical-gap',
+        label: 'Close critical Augmented AI gap',
+        description: topCriticalGap.question,
+        category: 'escalate'
+      });
+    }
+  }, [queueAction]);
+
+  const submitAugmentedReview = useCallback(async (decision: 'accept' | 'modify' | 'reject') => {
+    setAugmentedReviewLoading(true);
+    setAugmentedReviewState(decision);
+
+    try {
+      await fetch('/api/ai/augmented-ai/review', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          decision,
+          mode: augmentedCapabilityMode || augmentedAISnapshot?.mode || 'general_help',
+          capabilityTags: augmentedCapabilityTags,
+          unresolvedGaps: augmentedUnresolvedGaps,
+          recommendedTools: augmentedRecommendedTools.map((tool) => ({ id: tool.id, name: tool.name, category: tool.category })),
+          timestamp: new Date().toISOString()
+        })
+      });
+
+      setMessages((prev) => ([
+        ...prev,
+        {
+          id: crypto.randomUUID(),
+          role: 'system',
+          content: `Augmented AI review recorded: ${decision.toUpperCase()}${decision === 'modify' ? ' (human override requested)' : ''}.`,
+          timestamp: new Date(),
+          phase: 'analysis'
+        }
+      ]));
+    } catch (error) {
+      console.warn('Failed to submit Augmented AI review:', error);
+      setMessages((prev) => ([
+        ...prev,
+        {
+          id: crypto.randomUUID(),
+          role: 'system',
+          content: 'Augmented AI review could not be recorded right now. Please retry.',
+          timestamp: new Date(),
+          phase: 'analysis'
+        }
+      ]));
+    } finally {
+      setAugmentedReviewLoading(false);
+    }
+  }, [augmentedCapabilityMode, augmentedAISnapshot, augmentedCapabilityTags, augmentedUnresolvedGaps, augmentedRecommendedTools]);
 
   const executeAction = useCallback(async (action: PendingAction) => {
     setPendingActions((prev) => prev.map((a) => a.id === action.id ? { ...a, status: 'executing' } : a));
@@ -2255,8 +2371,9 @@ ${agentRegistry.current.toManifest()}`;
         });
 
         if (endpointResponse.ok) {
-          const payload = await endpointResponse.json();
-          const endpointText = (payload?.text || '').trim();
+          const payload = await endpointResponse.json() as Record<string, unknown>;
+          captureAugmentedAIFromPayload(payload);
+          const endpointText = String(payload?.text || '').trim();
           if (endpointText) {
             return endpointText;
           }
@@ -2279,7 +2396,7 @@ ${agentRegistry.current.toManifest()}`;
       console.error('AI processing error:', error);
       return buildNaturalFallbackReply(userInput);
     }
-  }, [buildConsultantPrompt, caseStudy, consultantCaseBrief, consultantGateReady, consultantGateMissing, buildNaturalFallbackReply]);
+  }, [buildConsultantPrompt, caseStudy, consultantCaseBrief, consultantGateReady, consultantGateMissing, buildNaturalFallbackReply, captureAugmentedAIFromPayload]);
 
   const processWithAIStream = useCallback(async (
     userInput: string,
@@ -2288,6 +2405,43 @@ ${agentRegistry.current.toManifest()}`;
   ): Promise<string> => {
     try {
       const systemPrompt = buildConsultantPrompt(userInput, context);
+
+      try {
+        const endpointResponse = await fetch('/api/ai/consultant', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: userInput,
+            context: {
+              phase: context,
+              caseStudy,
+              consultantCaseBrief,
+              consultantGateReady,
+              consultantGateMissing
+            },
+            systemPrompt
+          })
+        });
+
+        if (endpointResponse.ok) {
+          const payload = await endpointResponse.json() as Record<string, unknown>;
+          captureAugmentedAIFromPayload(payload);
+          const endpointText = String(payload?.text || '').trim();
+          if (endpointText) {
+            const chunks = endpointText.match(/.{1,120}(?:\s|$)/g) || [endpointText];
+            let aggregate = '';
+            for (const chunk of chunks) {
+              aggregate += chunk;
+              onChunk(aggregate.trim());
+              await new Promise<void>((resolve) => setTimeout(resolve, 8));
+            }
+            return endpointText;
+          }
+        }
+      } catch (endpointError) {
+        console.warn('Unified consultant endpoint unavailable for streaming path, using legacy stream:', endpointError);
+      }
+
       const stream = await chatSession.current.sendMessageStream({
         message: `${systemPrompt}\n\nUser says: ${userInput}`
       });
@@ -2314,7 +2468,7 @@ ${agentRegistry.current.toManifest()}`;
       onChunk(fallbackText);
       return fallbackText;
     }
-  }, [buildConsultantPrompt, processWithAI, buildNaturalFallbackReply]);
+  }, [buildConsultantPrompt, processWithAI, buildNaturalFallbackReply, caseStudy, consultantCaseBrief, consultantGateReady, consultantGateMissing, captureAugmentedAIFromPayload]);
 
   const getHighestValueFollowUp = useCallback((draft: CaseStudy) => {
     if (!draft.organizationName.trim()) return 'Which organization is the decision owner for this matter?';
@@ -5261,6 +5415,71 @@ Use concrete facts from the case. No template language. Write the complete repor
                 <div className="max-w-4xl mx-auto mt-2 border border-blue-200 bg-blue-50 px-3 py-2">
                   <p className="text-[11px] font-semibold text-blue-800">{reactiveDraftStatus}</p>
                   <p className="text-[11px] text-blue-700 mt-0.5">{reactiveDraftHint}</p>
+                </div>
+              )}
+              {(augmentedAISnapshot || augmentedRecommendedTools.length > 0 || augmentedUnresolvedGaps.length > 0) && (
+                <div className="max-w-4xl mx-auto mt-2 border border-emerald-300 bg-emerald-50 px-3 py-2">
+                  <p className="text-[11px] font-semibold text-emerald-900 flex items-center gap-1">
+                    <CheckCircle2 size={11} className="text-emerald-700" />
+                    Augmented AI Human-in-the-Loop {augmentedCapabilityMode ? `• Mode: ${augmentedCapabilityMode}` : ''}
+                  </p>
+                  {augmentedCapabilityTags.length > 0 && (
+                    <p className="mt-1 text-[10px] text-emerald-800">
+                      Tags: {augmentedCapabilityTags.join(' • ')}
+                    </p>
+                  )}
+                  {augmentedAISnapshot?.steps?.length ? (
+                    <ul className="mt-1 space-y-0.5">
+                      {augmentedAISnapshot.steps.map((step) => (
+                        <li key={`aug-step-${step.title}`} className="text-[10px] text-emerald-900">• <strong>{step.title}:</strong> {step.detail}</li>
+                      ))}
+                    </ul>
+                  ) : null}
+                  {augmentedUnresolvedGaps.length > 0 && (
+                    <div className="mt-2 border border-amber-200 bg-amber-50 px-2 py-1">
+                      <p className="text-[10px] font-semibold text-amber-900">Top unresolved gaps</p>
+                      <ul className="mt-0.5 space-y-0.5">
+                        {augmentedUnresolvedGaps.slice(0, 3).map((gap, index) => (
+                          <li key={`aug-gap-${gap.key}-${index}`} className="text-[10px] text-amber-800">• [{gap.severity}] {gap.question}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {augmentedRecommendedTools.length > 0 && (
+                    <div className="mt-2 border border-emerald-200 bg-white px-2 py-1">
+                      <p className="text-[10px] font-semibold text-emerald-900">Recommended software tools</p>
+                      <ul className="mt-0.5 space-y-0.5">
+                        {augmentedRecommendedTools.slice(0, 4).map((tool) => (
+                          <li key={tool.id} className="text-[10px] text-slate-700">• {tool.name} ({tool.category}) — {tool.bwUseCase}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                    <span className="text-[10px] text-emerald-800">Human decision:</span>
+                    <button
+                      onClick={() => submitAugmentedReview('accept')}
+                      disabled={augmentedReviewLoading}
+                      className={`px-2 py-0.5 text-[10px] border ${augmentedReviewState === 'accept' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-emerald-700 border-emerald-300 hover:bg-emerald-100'}`}
+                    >
+                      Accept
+                    </button>
+                    <button
+                      onClick={() => submitAugmentedReview('modify')}
+                      disabled={augmentedReviewLoading}
+                      className={`px-2 py-0.5 text-[10px] border ${augmentedReviewState === 'modify' ? 'bg-amber-500 text-white border-amber-500' : 'bg-white text-amber-700 border-amber-300 hover:bg-amber-100'}`}
+                    >
+                      Modify
+                    </button>
+                    <button
+                      onClick={() => submitAugmentedReview('reject')}
+                      disabled={augmentedReviewLoading}
+                      className={`px-2 py-0.5 text-[10px] border ${augmentedReviewState === 'reject' ? 'bg-red-600 text-white border-red-600' : 'bg-white text-red-700 border-red-300 hover:bg-red-100'}`}
+                    >
+                      Reject
+                    </button>
+                    {augmentedReviewLoading && <Loader2 size={11} className="animate-spin text-emerald-700" />}
+                  </div>
                 </div>
               )}
               {/* Action Execution Panel */}

@@ -902,6 +902,31 @@ router.post('/augmented-ai/snapshot', (req: Request, res: Response) => {
   });
 });
 
+router.post('/augmented-ai/review', async (req: Request, res: Response) => {
+  const { decision, mode, capabilityTags, unresolvedGaps, recommendedTools, timestamp } = req.body ?? {};
+  if (!decision || typeof decision !== 'string' || !['accept', 'modify', 'reject'].includes(decision)) {
+    return res.status(400).json({ error: 'decision must be one of: accept, modify, reject' });
+  }
+
+  const reviewId = crypto.randomUUID();
+  await logConsultantAuditEvent({
+    event: 'augmented_ai_review',
+    reviewId,
+    timestamp: typeof timestamp === 'string' ? timestamp : new Date().toISOString(),
+    decision,
+    mode: typeof mode === 'string' ? mode : 'general_help',
+    capabilityTags: Array.isArray(capabilityTags) ? capabilityTags : [],
+    unresolvedGapCount: Array.isArray(unresolvedGaps) ? unresolvedGaps.length : 0,
+    recommendedToolCount: Array.isArray(recommendedTools) ? recommendedTools.length : 0
+  });
+
+  return res.json({
+    success: true,
+    reviewId,
+    decision
+  });
+});
+
 router.get('/consultant/replay/:requestId', async (req: Request, res: Response) => {
   try {
     const requestId = req.params.requestId;
