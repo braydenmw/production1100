@@ -228,6 +228,17 @@ interface GlobalIssuePack {
   requiredOutputs: string[];
 }
 
+type LiveInsightBucket = 'government' | 'finance' | 'news' | 'entities';
+
+interface LiveInsightResult {
+  title: string;
+  link: string;
+  snippet: string;
+  source: string;
+  publishedAt?: string;
+  bucket: LiveInsightBucket;
+}
+
 const JURISDICTION_POLICY_PACKS: JurisdictionPolicyPack[] = [
   {
     id: 'australia',
@@ -651,6 +662,11 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, embedd
   const [quickCustomSector, setQuickCustomSector] = useState('');
   const [quickCustomFocus, setQuickCustomFocus] = useState('');
   const [quickDraftLines, setQuickDraftLines] = useState('');
+  const [liveInsightQuery, setLiveInsightQuery] = useState('');
+  const [liveInsightLoading, setLiveInsightLoading] = useState(false);
+  const [liveInsightError, setLiveInsightError] = useState('');
+  const [liveInsightResults, setLiveInsightResults] = useState<LiveInsightResult[]>([]);
+  const [liveInsightUpdatedAt, setLiveInsightUpdatedAt] = useState('');
   
   // Document generation
   const [recommendedDocs, setRecommendedDocs] = useState<DocumentOption[]>([]);
@@ -1189,6 +1205,24 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, embedd
     [activeGlobalIssuePack]
   );
 
+  const liveInsightBaseQuery = useMemo(() => {
+    const focus = (quickCustomFocus.trim() || pilotFocus.replace(/-/g, ' ')).trim();
+    const sector = (quickCustomSector.trim() || activeIssuePack.label).trim();
+    const parts = [focus, sector];
+
+    if (quickCountryFocus.trim()) parts.push(quickCountryFocus.trim());
+    if (quickBusinessTarget.trim()) parts.push(quickBusinessTarget.trim());
+
+    return parts.filter(Boolean).join(' — ');
+  }, [quickCustomFocus, pilotFocus, quickCustomSector, activeIssuePack.label, quickCountryFocus, quickBusinessTarget]);
+
+  const liveInsightLeads = useMemo(() => ({
+    global: liveInsightResults.find((item) => item.bucket === 'news') || null,
+    funding: liveInsightResults.find((item) => item.bucket === 'finance') || null,
+    regulatory: liveInsightResults.find((item) => item.bucket === 'government') || null,
+    opportunity: liveInsightResults.find((item) => item.bucket === 'entities') || null
+  }), [liveInsightResults]);
+
   const regionalKernel = useMemo(() => {
     return RegionalDevelopmentOrchestrator.run({
       regionProfile: caseStudy.organizationMandate || caseStudy.currentMatter,
@@ -1596,6 +1630,151 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, embedd
 
     setQuickDraftLines('');
   }, [quickDraftLines, quickCountryFocus, quickBusinessTarget, quickCustomSector, quickCustomFocus, syncQuickConsultantToCaseStudy]);
+
+  const fetchLiveWorldInsights = useCallback(async (overrideQuery?: string, silent = false) => {
+    const query = (overrideQuery ?? liveInsightQuery).trim() || liveInsightBaseQuery;
+    if (!query.trim()) return;
+
+    const getSourceFromLink = (link: string) => {
+      try {
+        return new URL(link).hostname.replace(/^www\./i, '');
+      } catch {
+        return 'live-source';
+      }
+    };
+
+    type SerperLikeItem = { title?: string; link?: string; snippet?: string; date?: string; source?: string };
+
+    const toInsightResults = (items: SerperLikeItem[], bucket: LiveInsightBucket, limit: number) => {
+      return items
+        .filter((item) => item.title && item.link)
+        .slice(0, limit)
+        .map((item) => ({
+          title: item.title || '',
+          link: item.link || '',
+          snippet: item.snippet || '',
+          source: item.source || getSourceFromLink(item.link || ''),
+          publishedAt: item.date,
+          bucket
+        } as LiveInsightResult));
+    };
+
+    setLiveInsightLoading(true);
+    setLiveInsightError('');
+
+    if (!silent || !liveInsightQuery.trim()) {
+      setLiveInsightQuery(query);
+    }
+
+    try {
+      const [newsRes, govRes, financeRes, entityRes] = await Promise.all([
+        fetch('/api/search/news', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            query: `${query} energy transition government policy investment partnership`,
+            country: quickCountryFocus || undefined
+          })
+        }),
+        fetch('/api/search/serper', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            query: `${query} government incentives ministry regulator compliance development bank`,
+            num: 6,
+            type: 'search'
+          })
+        }),
+        fetch('/api/search/serper', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            query: `${query} development finance bilateral aid venture private equity project finance`,
+            num: 6,
+            type: 'search'
+          })
+        }),
+        fetch('/api/search/serper', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            query: `${query} partnership company government agency investor announcement`,
+            num: 6,
+            type: 'search'
+          })
+        })
+      ]);
+
+      const newsData = newsRes.ok ? await newsRes.json() : { articles: [] as Array<{ title?: string; description?: string; url?: string; source?: string; publishedAt?: string }> };
+      const govData = govRes.ok ? await govRes.json() : { organic: [] as SerperLikeItem[] };
+      const financeData = financeRes.ok ? await financeRes.json() : { organic: [] as SerperLikeItem[] };
+      const entityData = entityRes.ok ? await entityRes.json() : { organic: [] as SerperLikeItem[] };
+
+      const newsInsights: LiveInsightResult[] = (Array.isArray(newsData.articles) ? newsData.articles : [])
+        .filter((article) => article.title && article.url)
+        .slice(0, 4)
+        .map((article) => ({
+          title: article.title || '',
+          link: article.url || '',
+          snippet: article.description || '',
+          source: article.source || getSourceFromLink(article.url || ''),
+          publishedAt: article.publishedAt,
+          bucket: 'news' as LiveInsightBucket
+        }));
+
+      const merged = [
+        ...newsInsights,
+        ...toInsightResults(Array.isArray(govData.organic) ? govData.organic : [], 'government', 3),
+        ...toInsightResults(Array.isArray(financeData.organic) ? financeData.organic : [], 'finance', 3),
+        ...toInsightResults(Array.isArray(entityData.organic) ? entityData.organic : [], 'entities', 3)
+      ].slice(0, 12);
+
+      setLiveInsightResults(merged);
+      setLiveInsightUpdatedAt(new Date().toISOString());
+
+      if (merged.length === 0) {
+        setLiveInsightError('No live search results were returned yet. Try adding a country, company, or government target.');
+        return;
+      }
+
+      setCaseStudy((prev) => {
+        const newLines = merged.slice(0, 4).map((item) => `Live search finding (${item.bucket}): ${item.title} — ${item.source}`);
+        const additionalContext = [...prev.additionalContext];
+
+        newLines.forEach((line) => {
+          if (!additionalContext.includes(line)) {
+            additionalContext.push(line);
+          }
+        });
+
+        if (additionalContext.length === prev.additionalContext.length) {
+          return prev;
+        }
+
+        return {
+          ...prev,
+          additionalContext
+        };
+      });
+    } catch (error) {
+      console.error('Live world insights search failed:', error);
+      setLiveInsightError('Live search failed. Please try again in a moment.');
+    } finally {
+      setLiveInsightLoading(false);
+    }
+  }, [liveInsightQuery, liveInsightBaseQuery, quickCountryFocus]);
+
+  useEffect(() => {
+    if (!quickCountryFocus.trim() && !quickBusinessTarget.trim() && !quickCustomFocus.trim() && !quickCustomSector.trim()) {
+      return;
+    }
+
+    const timeout = window.setTimeout(() => {
+      void fetchLiveWorldInsights(liveInsightBaseQuery, true);
+    }, 900);
+
+    return () => window.clearTimeout(timeout);
+  }, [quickCountryFocus, quickBusinessTarget, quickCustomFocus, quickCustomSector, activeIssuePack.id, liveInsightBaseQuery, fetchLiveWorldInsights]);
 
   useEffect(() => {
     setReadinessScore(computeReadiness(caseStudy));
@@ -5783,6 +5962,53 @@ Use concrete facts from the case. No template language. Write the complete repor
                   <p className="text-[10px] text-emerald-700 mb-2">
                     News Desk Brief: {quickCustomFocus || pilotFocus.replace(/-/g, ' ')}{quickCountryFocus ? ` in ${quickCountryFocus}` : ''}{quickCustomSector || activeIssuePack ? ` — ${quickCustomSector || activeIssuePack.label}` : ''}.
                   </p>
+                  <div className="bg-white border border-emerald-200 px-2 py-2 mb-1.5">
+                    <p className="text-[10px] font-semibold text-slate-800 mb-1">Live Search Feed</p>
+                    <div className="flex items-center gap-1.5">
+                      <input
+                        type="text"
+                        value={liveInsightQuery}
+                        onChange={(e) => setLiveInsightQuery(e.target.value)}
+                        placeholder="Search person, government agency, company, bank, investment program..."
+                        className="flex-1 border border-stone-300 px-2 py-1 text-[10px] text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => void fetchLiveWorldInsights()}
+                        disabled={liveInsightLoading}
+                        className="px-2 py-1 text-[10px] border border-emerald-600 bg-emerald-600 text-white disabled:opacity-60"
+                      >
+                        {liveInsightLoading ? 'Searching…' : 'Run Live Search'}
+                      </button>
+                    </div>
+                    <p className="mt-1 text-[9px] text-slate-500">
+                      Pulls live Google/Serper news and web signals for government, banking/finance, company, and partnership intelligence.
+                    </p>
+                    {liveInsightUpdatedAt && (
+                      <p className="mt-1 text-[9px] text-emerald-700">Last updated: {new Date(liveInsightUpdatedAt).toLocaleString()}</p>
+                    )}
+                    {liveInsightError && <p className="mt-1 text-[9px] text-red-600">{liveInsightError}</p>}
+                    {liveInsightLoading && (
+                      <p className="mt-1 text-[9px] text-emerald-700 flex items-center gap-1">
+                        <Loader2 className="w-3 h-3 animate-spin" /> Fetching live results...
+                      </p>
+                    )}
+                    {!liveInsightLoading && liveInsightResults.length > 0 && (
+                      <div className="mt-1.5 space-y-1">
+                        {liveInsightResults.slice(0, 4).map((item, idx) => (
+                          <a
+                            key={`${item.link}-${idx}`}
+                            href={item.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="block text-[9px] text-slate-700 hover:text-emerald-700"
+                          >
+                            • {item.title} <span className="text-slate-400">({item.source})</span>
+                          </a>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                   <div className="space-y-1.5">
                     {/* Global trends for focus area */}
                     <div className="bg-white border border-emerald-200 px-2 py-1.5">
@@ -5790,7 +6016,9 @@ Use concrete facts from the case. No template language. Write the complete repor
                         <span className="text-emerald-600">●</span> Global Trends
                       </p>
                       <p className="text-[10px] text-slate-600">
-                        {quickCountryFocus
+                        {liveInsightLeads.global
+                          ? `${liveInsightLeads.global.title} — ${liveInsightLeads.global.snippet || `Source: ${liveInsightLeads.global.source}`}`
+                          : quickCountryFocus
                           ? `Latest desk signals show policy shifts, procurement updates, and regional competition affecting ${quickCustomSector || activeIssuePack.label.toLowerCase()} activity tied to ${quickCountryFocus}.`
                           : `Current global patterns in ${quickCustomFocus || pilotFocus.replace(/-/g, ' ')} — policy shifts, emerging opportunities, and regional competition now shaping market entry timing.`}
                       </p>
@@ -5802,7 +6030,9 @@ Use concrete facts from the case. No template language. Write the complete repor
                         <span className="text-emerald-600">●</span> Funding & Finance Signals
                       </p>
                       <p className="text-[10px] text-slate-600">
-                        {quickCountryFocus
+                        {liveInsightLeads.funding
+                          ? `${liveInsightLeads.funding.title} — ${liveInsightLeads.funding.snippet || `Source: ${liveInsightLeads.funding.source}`}`
+                          : quickCountryFocus
                           ? `Current financing watch includes development bank windows, bilateral programs, and private capital movements now relevant to ${quickCountryFocus} for ${quickCustomSector || activeIssuePack.label.toLowerCase()}.`
                           : `Global development finance windows, bilateral aid programs, and venture/PE activity in ${quickCustomSector || activeIssuePack.label.toLowerCase()} with near-term entry relevance.`}
                       </p>
@@ -5814,7 +6044,9 @@ Use concrete facts from the case. No template language. Write the complete repor
                         <span className="text-emerald-600">●</span> Regulatory & Compliance Watch
                       </p>
                       <p className="text-[10px] text-slate-600">
-                        {quickCountryFocus
+                        {liveInsightLeads.regulatory
+                          ? `${liveInsightLeads.regulatory.title} — ${liveInsightLeads.regulatory.snippet || `Source: ${liveInsightLeads.regulatory.source}`}`
+                          : quickCountryFocus
                           ? `Regulatory watch is tracking licensing, permitting, and compliance updates in ${quickCountryFocus} that may change sequencing, approvals, and risk posture.`
                           : 'Select a country to see regulatory changes and compliance requirements that may affect your plans.'}
                       </p>
@@ -5826,7 +6058,9 @@ Use concrete facts from the case. No template language. Write the complete repor
                         <span className="text-emerald-600">●</span> Opportunity & Competition
                       </p>
                       <p className="text-[10px] text-slate-600">
-                        {quickCountryFocus && quickBusinessTarget
+                        {liveInsightLeads.opportunity
+                          ? `${liveInsightLeads.opportunity.title} — ${liveInsightLeads.opportunity.snippet || `Source: ${liveInsightLeads.opportunity.source}`}`
+                          : quickCountryFocus && quickBusinessTarget
                           ? `Competitive scan tracks active players in ${quickCustomSector || activeIssuePack.label.toLowerCase()} in ${quickCountryFocus}, what ${quickBusinessTarget} currently prioritize, and where opportunity gaps remain.`
                           : quickCountryFocus
                             ? `Market gaps, competitor movement, and partnership openings in ${quickCountryFocus} for ${quickCustomFocus || pilotFocus.replace(/-/g, ' ')} are now being monitored.`
