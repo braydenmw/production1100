@@ -20,6 +20,7 @@ import {
   TextRun,
   HeadingLevel,
   AlignmentType,
+  LevelFormat,
   Table,
   TableRow,
   TableCell,
@@ -270,8 +271,6 @@ function buildCoverPage(meta: DocxDocumentMeta): Paragraph[] {
       alignment: AlignmentType.CENTER,
       spacing: { before: 600, after: 0 },
     }),
-    // Force page break after cover
-    new Paragraph({ text: '', pageBreakBefore: true }),
   ];
 }
 
@@ -369,7 +368,7 @@ export async function exportToDocx(
         reference: 'default-numbering',
         levels: [{
           level: 0,
-          format: 'decimal' as never,
+          format: LevelFormat.DECIMAL,
           text: '%1.',
           alignment: AlignmentType.LEFT,
         }],
@@ -409,7 +408,7 @@ export async function exportToDocx(
     sections: [
       {
         properties: {
-          type: SectionType.NEXT_PAGE,
+          type: SectionType.CONTINUOUS,
           page: {
             margin: {
               top: convertMillimetersToTwip(25),
