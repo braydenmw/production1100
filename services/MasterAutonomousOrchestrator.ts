@@ -320,14 +320,56 @@ export class MasterAutonomousOrchestrator {
   /**
    * Run document enhancement
    */
-  private async runDocumentEnhancement(_payload: ReportPayload, _params: ReportParameters): Promise<Record<string, unknown>> {
-    console.log('ðŸ“„ Running document enhancement...');
-    // IntelligentDocumentGenerator.generateDocument() requires full ReportData
-    // which is assembled separately. Return baseline quality.
+  private async runDocumentEnhancement(payload: ReportPayload, params: ReportParameters): Promise<Record<string, unknown>> {
+    console.log('📄 Running document enhancement...');
+
+    // Score payload completeness across all intelligence dimensions
+    const ci = payload.computedIntelligence;
+    const dimensionScores: Record<string, number> = {};
+    let filledDimensions = 0;
+    const totalDimensions = 7;
+
+    if (ci?.spi?.spi && ci.spi.spi > 0) { dimensionScores.spi = ci.spi.spi; filledDimensions++; }
+    if (ci?.rroi?.overallScore && ci.rroi.overallScore > 0) { dimensionScores.rroi = ci.rroi.overallScore; filledDimensions++; }
+    if (ci?.seam?.score && ci.seam.score > 0) { dimensionScores.seam = ci.seam.score; filledDimensions++; }
+    if (ci?.ivas?.ivasScore && ci.ivas.ivasScore > 0) { dimensionScores.ivas = ci.ivas.ivasScore; filledDimensions++; }
+    if (ci?.scf?.totalEconomicImpactUSD && ci.scf.totalEconomicImpactUSD > 0) { dimensionScores.scf = Math.min(100, ci.scf.totalEconomicImpactUSD / 1e6); filledDimensions++; }
+    if (ci?.gdi && typeof ci.gdi === 'object') { dimensionScores.gdi = 70; filledDimensions++; }
+    if (ci?.cvi && typeof ci.cvi === 'object') { dimensionScores.cvi = 70; filledDimensions++; }
+
+    const completeness = (filledDimensions / totalDimensions) * 100;
+    const avgDimensionScore = Object.values(dimensionScores).length > 0
+      ? Object.values(dimensionScores).reduce((a, b) => a + b, 0) / Object.values(dimensionScores).length
+      : 0;
+
+    // Structural quality from params
+    let structureScore = 40;
+    if (params.problemStatement && params.problemStatement.length > 50) structureScore += 15;
+    if (params.country) structureScore += 10;
+    if (params.industry && params.industry.length > 0) structureScore += 10;
+    if (params.organizationName) structureScore += 10;
+    if (params.calibration?.constraints) structureScore += 5;
+    if (params.strategicIntent && params.strategicIntent.length > 0) structureScore += 10;
+    structureScore = Math.min(100, structureScore);
+
+    const qualityScore = Math.round(completeness * 0.35 + avgDimensionScore * 0.35 + structureScore * 0.30);
+
+    const enhancementTypes: string[] = [];
+    if (completeness < 50) enhancementTypes.push('data-completeness');
+    if (avgDimensionScore < 60) enhancementTypes.push('intelligence-depth');
+    if (structureScore < 70) enhancementTypes.push('structural-coverage');
+    enhancementTypes.push('formatting', 'coherence');
+
     return {
-      qualityScore: 85,
+      qualityScore,
       enhanced: true,
-      enhancementTypes: ['grammar', 'structure', 'content', 'formatting']
+      completeness: Math.round(completeness),
+      avgDimensionScore: Math.round(avgDimensionScore),
+      structureScore,
+      filledDimensions,
+      totalDimensions,
+      dimensionScores,
+      enhancementTypes
     };
   }
 

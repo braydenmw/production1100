@@ -115,13 +115,54 @@ export class PersistentMemorySystem {
   }
 
   private async extractLessons(entry: MemoryEntry): Promise<string[]> {
-    // Deterministic lesson extraction from action/context/outcome metadata.
-    const lessons = [
-      `Avoid ${entry.action} when ${JSON.stringify(entry.context)}`,
-      'Implement additional validation before similar actions',
-      'Consider alternative approaches for better outcomes'
-    ];
-    return lessons;
+    const lessons: string[] = [];
+
+    // 1. Extract action-specific lesson from failure context
+    const contextStr = JSON.stringify(entry.context).toLowerCase();
+    const errorMsg = typeof entry.outcome?.error === 'string' ? entry.outcome.error : '';
+
+    if (errorMsg) {
+      lessons.push(`Action '${entry.action}' failed: ${errorMsg}. Add pre-validation for this scenario.`);
+    } else {
+      lessons.push(`Action '${entry.action}' produced unexpected outcome at confidence ${(entry.confidence * 100).toFixed(0)}%.`);
+    }
+
+    // 2. Derive contextual patterns that contributed to failure
+    const contextKeys = Object.keys(entry.context);
+    if (contextKeys.length > 0) {
+      const riskFactors = contextKeys.filter(k => {
+        const val = entry.context[k];
+        return typeof val === 'string' && (val.toLowerCase().includes('error') || val.toLowerCase().includes('fail') || val.toLowerCase().includes('timeout'));
+      });
+      if (riskFactors.length > 0) {
+        lessons.push(`Risk factors detected in: ${riskFactors.join(', ')}. Implement guards before retry.`);
+      }
+    }
+
+    // 3. Suggest improved approach based on confidence level
+    if (entry.confidence < 0.3) {
+      lessons.push('Very low confidence — consider gathering additional evidence or context before re-attempting.');
+    } else if (entry.confidence < 0.6) {
+      lessons.push('Moderate confidence — partial data available. Cross-reference with similar past actions before re-attempting.');
+    }
+
+    // 4. Learn from timing patterns
+    const recentFailures = this.recall('failures', 10);
+    const similarFailures = recentFailures.filter(prev =>
+      prev.action === entry.action && prev.id !== entry.id
+    );
+    if (similarFailures.length >= 2) {
+      lessons.push(`Repeated failure pattern: '${entry.action}' has failed ${similarFailures.length + 1} times. Escalate to human review.`);
+    }
+
+    // 5. Context-aware recommendation
+    if (contextStr.includes('timeout') || contextStr.includes('network')) {
+      lessons.push('Infrastructure-related failure — check connectivity and retry with exponential backoff.');
+    } else if (contextStr.includes('permission') || contextStr.includes('auth')) {
+      lessons.push('Authorization failure — verify credentials and access scope before retry.');
+    }
+
+    return lessons.length > 0 ? lessons : [`Action '${entry.action}' failed. Review context and retry with adjusted parameters.`];
   }
 
   // Storage

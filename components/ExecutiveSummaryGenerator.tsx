@@ -63,62 +63,79 @@ const ExecutiveSummaryGenerator: React.FC<ExecutiveSummaryGeneratorProps> = ({
     setStep('generating');
     const startTime = Date.now();
 
-    // Simulate AI analysis (2-3 seconds)
-    await new Promise(r => setTimeout(r, 2500));
+    // Build analysis from actual user inputs — no hardcoded filler
+    const entityName = inputs.entityName || 'Your Organization';
+    const entityCountry = inputs.entityCountry || 'Not specified';
+    const entityIndustry = inputs.entityIndustry || 'Not specified';
+    const targetCountry = inputs.targetMarket || 'Not specified';
+    const targetSector = inputs.targetIndustry || 'Not specified';
+    const investmentStr = inputs.investmentAmount || '';
+    const timelineStr = inputs.timeline || '12-18 months';
+
+    // ── Compute real scores from input dimensions ─────────────────
+    // Country governance tier
+    const tier1Countries = ['singapore', 'united states', 'germany', 'united kingdom', 'japan', 'australia', 'new zealand', 'canada', 'switzerland'];
+    const tier2Countries = ['vietnam', 'poland', 'mexico', 'india', 'south korea', 'uae', 'chile', 'malaysia', 'indonesia', 'thailand'];
+    const targetLower = targetCountry.toLowerCase();
+    let govScore = 55; // default tier-3
+    if (tier1Countries.some(c => targetLower.includes(c))) govScore = 85;
+    else if (tier2Countries.some(c => targetLower.includes(c))) govScore = 70;
+
+    // Industry growth premium
+    const highGrowthSectors = ['technology', 'energy', 'renewable', 'digital', 'ai', 'semiconductor', 'health', 'biotech', 'fintech'];
+    const sectorLower = targetSector.toLowerCase();
+    const sectorPremium = highGrowthSectors.some(s => sectorLower.includes(s)) ? 12 : 0;
+
+    // Investment scale bonus
+    const investNum = parseFloat(investmentStr.replace(/[^0-9.]/g, '')) || 0;
+    const scalePremium = investNum >= 100 ? 8 : investNum >= 10 ? 4 : 0;
+
+    const opportunityScore = Math.min(98, Math.max(25, govScore + sectorPremium + scalePremium));
+    const riskLevel = opportunityScore >= 75 ? 'LOW' : opportunityScore >= 55 ? 'MODERATE' : 'HIGH';
+
+    // ── Build threats & opportunities from actual context ──────────
+    const topThreats: string[] = [];
+    const topOpportunities: string[] = [];
+
+    if (govScore < 70) topThreats.push(`Regulatory uncertainty in ${targetCountry}`);
+    if (govScore >= 70) topOpportunities.push(`Stable regulatory environment in ${targetCountry}`);
+    if (sectorPremium > 0) topOpportunities.push(`High-growth sector: ${targetSector}`);
+    else topThreats.push(`Moderate growth trajectory for ${targetSector}`);
+    if (investNum > 0) topOpportunities.push(`Defined investment thesis (${inputs.investmentAmount})`);
+    else topThreats.push('Investment scope undefined — increases planning risk');
+    if (entityCountry !== 'Not specified' && entityCountry.toLowerCase() !== targetLower) {
+      topThreats.push(`Cross-border entry: ${entityCountry} → ${targetCountry}`);
+      topOpportunities.push(`Diversification from ${entityCountry} base`);
+    }
+    if (topThreats.length === 0) topThreats.push('Limited early-stage data to assess');
+    if (topOpportunities.length === 0) topOpportunities.push('Further market sizing recommended');
+
+    // ── Partners derived from sector/country ─────────────────────
+    const partners = [\n      { name: `${targetCountry} Government Investment Authority`, type: 'Strategic Partner', compatibilityScore: Math.min(95, govScore + 8), synergy: `Regulatory facilitation, tax incentives, and market access in ${targetCountry}` },\n      { name: `Regional ${targetSector} Leader`, type: 'JV Partner', compatibilityScore: Math.min(92, govScore + sectorPremium - 2), synergy: `Existing ${targetSector} distribution and customer relationships` },\n      { name: `${targetCountry} Supply Chain Network`, type: 'Supplier/JV', compatibilityScore: Math.min(88, govScore - 5), synergy: `Local expertise, cost optimisation, and operational capacity` }\n    ];
+
+    // ── Recommendation from scored data ─────────────────────────
+    let recommendation: string;
+    if (opportunityScore >= 75) {
+      recommendation = `STRONG GO \u2014 Proceed with phased entry into ${targetCountry} for ${targetSector}. Opportunity score ${opportunityScore}/100 with ${riskLevel} risk. Recommend ${timelineStr} pilot phase.`;
+    } else if (opportunityScore >= 55) {
+      recommendation = `CONDITIONAL GO \u2014 ${targetCountry} shows moderate opportunity (${opportunityScore}/100). Mitigate ${riskLevel} risk factors before committing capital. Recommend extended due-diligence phase (${timelineStr}).`;
+    } else {
+      recommendation = `HOLD \u2014 ${targetCountry} opportunity score is ${opportunityScore}/100 with ${riskLevel} risk. Recommend gathering additional intelligence and revisiting in 6 months.`;
+    }
+
+    const nextSteps = [\n      `Conduct regulatory landscape mapping for ${targetSector} in ${targetCountry} (Week 1-2)`,\n      `Engage ${targetCountry} investment authority for incentive assessment (Week 3-4)`,\n      `Identify and rank top 5 potential JV partners in ${targetSector} (Week 5-8)`,\n      `On-ground market visit and stakeholder meetings (Week 9-12)`,\n      `Negotiate MOU with lead partner and finalise regulatory approvals (Month 4-6)`,\n      `Launch pilot operations in ${targetCountry} (Month 7+)`\n    ];
+
+    const marketSizeLabel = investNum > 0
+      ? `$${investNum >= 1000 ? (investNum / 1000).toFixed(1) + 'B' : investNum + 'M'} investment scope`
+      : 'Market sizing pending';
 
     const generatedSummary: ExecutiveSummary = {
-      entity: {
-        name: inputs.entityName || 'Your Organization',
-        country: inputs.entityCountry,
-        industry: inputs.entityIndustry,
-        size: inputs.entitySize ? `$${inputs.entitySize}M+` : 'Enterprise'
-      },
-      marketAnalysis: {
-        targetCountry: inputs.targetMarket,
-        marketSize: '$450B+ addressable market',
-        opportunityScore: 78,
-        riskLevel: 'MODERATE',
-        topThreats: [
-          'Regulatory uncertainty in region',
-          'Established local competitors',
-          'Currency volatility'
-        ],
-        topOpportunities: [
-          'Growing middle class (8% annual growth)',
-          'Government incentives ($500M+ programs)',
-          'Favorable trade agreements'
-        ]
-      },
-      targetPartners: [
-        {
-          name: 'Government Investment Authority',
-          type: 'Strategic Partner',
-          compatibilityScore: 92,
-          synergy: 'Access to SEZ, tax incentives, regulatory support'
-        },
-        {
-          name: 'Regional Distribution Leader',
-          type: 'JV Partner',
-          compatibilityScore: 85,
-          synergy: 'Market access, existing logistics, customer base'
-        },
-        {
-          name: 'Local Supply Chain Company',
-          type: 'Supplier/JV',
-          compatibilityScore: 78,
-          synergy: 'Cost optimization, local expertise, labor access'
-        }
-      ],
-      recommendation: 'STRONG GO - Proceed with phased entry strategy. Market fundamentals are strong, government support is available, and multiple partnership pathways exist. Recommend 18-month pilot phase with full commitment decision at month 12.',
-      nextSteps: [
-        'Schedule government agency outreach (Week 1-2)',
-        'Conduct on-ground market visit (Week 3-4)',
-        'Engage with potential JV partners (Week 5-8)',
-        'Negotiate MOU with lead partner (Week 9-16)',
-        'Finalize regulatory approvals (Month 5-6)',
-        'Launch pilot operations (Month 7+)'
-      ],
-      timeline: '18-24 months to full market presence'
+      entity: { name: entityName, country: entityCountry, industry: entityIndustry, size: inputs.entitySize ? `$${inputs.entitySize}M+` : 'Enterprise' },
+      marketAnalysis: { targetCountry, marketSize: marketSizeLabel, opportunityScore, riskLevel, topThreats, topOpportunities },
+      targetPartners: partners,
+      recommendation,
+      nextSteps,
+      timeline: timelineStr
     };
 
     setSummary(generatedSummary);

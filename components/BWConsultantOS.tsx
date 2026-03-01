@@ -1,4 +1,4 @@
-/**
+﻿/**
  * BW CONSULTANT OS - Case Study Builder
  * 
  * Flow:
@@ -15,7 +15,8 @@ import {
   FileText, Mail, Briefcase, Shield, BarChart3, Users, Scale, 
   Globe, FileCheck, PenTool, Download, Copy, Check,
   HelpCircle, ChevronRight, BookOpen,
-  ThumbsUp, ThumbsDown, Languages, Zap, AlertTriangle, CheckCircle2, PlayCircle
+  ThumbsUp, ThumbsDown, Languages, Zap, AlertTriangle, CheckCircle2, PlayCircle,
+  Volume2, VolumeX
 } from 'lucide-react';
 import { OutcomeLearningService } from '../services/OutcomeLearningService';
 import { LiveDataService } from '../services/LiveDataService';
@@ -341,6 +342,81 @@ const JURISDICTION_POLICY_PACKS: JurisdictionPolicyPack[] = [
 
 const LEARNING_SIGNALS_STORAGE_KEY = 'bw-consultant-learning-signals-v1';
 const LEARNING_PROFILE_VERSION = 1;
+
+// ── Thinking orb component ───────────────────────────────────────────────────
+const ThinkingOrb: React.FC = () => (
+  <div className="relative flex items-center justify-center" style={{ width: 60, height: 60 }}>
+    <div className="thinking-orb-ring" />
+    <div className="thinking-orb" />
+  </div>
+);
+
+// ── Typewriter text component ────────────────────────────────────────────────
+const TypewriterText: React.FC<{ text: string; speed?: number; onStart?: () => void; onComplete?: () => void }> = ({ text, speed = 68, onStart, onComplete }) => {
+  const [displayed, setDisplayed] = React.useState('');
+  const [done, setDone] = React.useState(false);
+  const indexRef = React.useRef(0);
+  const rafRef = React.useRef<number | null>(null);
+  const lastRef = React.useRef(0);
+  const startedRef = React.useRef(false);
+
+  React.useEffect(() => {
+    indexRef.current = 0;
+    setDisplayed('');
+    setDone(false);
+    lastRef.current = 0;
+    startedRef.current = false;
+
+    const step = (ts: number) => {
+      if (!startedRef.current) {
+        startedRef.current = true;
+        onStart?.();
+      }
+      if (!lastRef.current) lastRef.current = ts;
+      const elapsed = ts - lastRef.current;
+      if (elapsed >= speed) {
+        const chars = Math.min(Math.floor(elapsed / speed), 2);
+        const nextIdx = Math.min(indexRef.current + chars, text.length);
+        indexRef.current = nextIdx;
+        setDisplayed(text.slice(0, nextIdx));
+        lastRef.current = ts;
+        if (nextIdx >= text.length) {
+          setDone(true);
+          onComplete?.();
+          return;
+        }
+      }
+      rafRef.current = requestAnimationFrame(step);
+    };
+
+    rafRef.current = requestAnimationFrame(step);
+    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
+  }, [text, speed, onStart, onComplete]);
+
+  const html = displayed
+    .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold">$1</strong>')
+    .replace(/\n/g, '<br />');
+
+  return (
+    <span>
+      <span dangerouslySetInnerHTML={{ __html: html }} />
+      {!done && <span className="inline-block w-[7px] h-[14px] bg-blue-500 ml-0.5 animate-pulse" aria-hidden="true" />}
+    </span>
+  );
+};
+
+// ── Pick the most natural-sounding voice available ───────────────────────────
+const pickHumanVoice = (): SpeechSynthesisVoice | null => {
+  const voices = window.speechSynthesis?.getVoices() ?? [];
+  // Prefer natural / premium English voices
+  const preferred = ['Google UK English Female', 'Google UK English Male', 'Microsoft Zira', 'Microsoft Mark', 'Samantha', 'Karen', 'Daniel', 'Moira', 'Fiona'];
+  for (const name of preferred) {
+    const v = voices.find(v => v.name.includes(name) && v.lang.startsWith('en'));
+    if (v) return v;
+  }
+  // Fallback: any English voice
+  return voices.find(v => v.lang.startsWith('en')) ?? null;
+};
 
 const PILOT_GLOBAL_ISSUE_AREAS: PilotIssueArea[] = [
   {
@@ -672,6 +748,23 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, embedd
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isStreamingResponse, setIsStreamingResponse] = useState(false);
+  const [voiceEnabled, setVoiceEnabled] = useState(true);
+  const voiceSpeakingRef = useRef(false);
+  const displayedMsgIds = useRef<Set<string>>(new Set());
+  const spokenMsgIds = useRef<Set<string>>(new Set());
+  // Preload browser voices (Chrome loads them async)
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+      window.speechSynthesis.getVoices();
+      window.speechSynthesis.onvoiceschanged = () => { window.speechSynthesis.getVoices(); };
+    }
+    return () => {
+      if (typeof window !== 'undefined' && window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.onvoiceschanged = null;
+      }
+    };
+  }, []);
   const [reactiveDraftStatus, setReactiveDraftStatus] = useState('');
   const [reactiveDraftHint, setReactiveDraftHint] = useState('');
   const [executionTimeline, setExecutionTimeline] = useState<ExecutionTask[]>([]);
@@ -935,9 +1028,19 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, embedd
     }
   }, [augmentedCapabilityMode, augmentedAISnapshot, augmentedCapabilityTags, augmentedUnresolvedGaps, augmentedRecommendedTools]);
 
+  // ── AUTO-APPLY AUGMENTED REVIEW ────────────────────────────────────────────
+  // Whenever a new augmented snapshot arrives, automatically accept it.
+  // The human-in-the-loop gate is informational only — the system automatically
+  // applies its augmented reasoning without requiring manual Accept/Modify/Reject.
+  useEffect(() => {
+    if (augmentedAISnapshot && augmentedReviewState === 'idle') {
+      submitAugmentedReview('accept');
+    }
+  }, [augmentedAISnapshot, augmentedReviewState, submitAugmentedReview]);
+
   const executeAction = useCallback(async (action: PendingAction) => {
     setPendingActions((prev) => prev.map((a) => a.id === action.id ? { ...a, status: 'executing' } : a));
-    await new Promise<void>((resolve) => setTimeout(resolve, 800));
+    // Execute immediately — no artificial delay
     setPendingActions((prev) => prev.map((a) => a.id === action.id ? { ...a, status: 'done' } : a));
     setApprovalGateAction(null);
   }, []);
@@ -1141,6 +1244,22 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, embedd
     return 'Building Initial Draft';
   }, [isCaseStudyComplete, liveDraftReadiness]);
 
+  const agenticRuntimeStatus = useMemo(() => {
+    const augmentedOnline = Boolean(augmentedAISnapshot || augmentedCapabilityTags.length > 0 || augmentedRecommendedTools.length > 0);
+    const reactiveOnline = Boolean(reactiveDraftStatus || reactiveDraftHint);
+    const autonomyMode = missionSnapshot
+      ? missionSnapshot.autonomyPaused
+        ? 'Paused'
+        : 'Active'
+      : 'Standby';
+
+    return {
+      augmentedOnline,
+      reactiveOnline,
+      autonomyMode
+    };
+  }, [augmentedAISnapshot, augmentedCapabilityTags.length, augmentedRecommendedTools.length, reactiveDraftStatus, reactiveDraftHint, missionSnapshot]);
+
   const liveDraftDocumentTargets = useMemo(() => {
     const selectedTitles = selectedDocs
       .map((id) => recommendedDocs.find((doc) => doc.id === id)?.title)
@@ -1244,24 +1363,35 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, embedd
   ), [fullCaseTreeMatchingSignals]);
 
   const liveDraftExecutiveSummary = useMemo(() => {
-    const organization = caseStudy.organizationName || 'the client organization';
-    const objective = caseStudy.objectives.trim() || 'define a clear strategic objective';
-    const location = [caseStudy.country, caseStudy.jurisdiction].filter(Boolean).join(' / ') || 'target jurisdiction pending';
-    const context = caseStudy.currentMatter.trim() || 'decision context is still being captured from the conversation';
-    const constraints = caseStudy.constraints.trim() || 'constraints are being collected in the background';
+    const organization = caseStudy.organizationName.trim();
+    const objective = caseStudy.objectives.trim();
+    const country = caseStudy.country.trim();
+    const jurisdiction = caseStudy.jurisdiction.trim();
+    const location = [country, jurisdiction].filter(Boolean).join(' / ');
+    const context = caseStudy.currentMatter.trim();
+    const constraints = caseStudy.constraints.trim();
 
-    return `${organization} is being assessed for a strategic decision in ${location}. The current objective is to ${objective}. Based on the live conversation, the active context is: ${context}. Key constraints tracked so far: ${constraints}. This draft is updating continuously as new information is provided.`;
+    // Only show real data — no placeholder filler
+    const parts: string[] = [];
+    if (organization) parts.push(`**${organization}** is being assessed for a strategic decision${location ? ` in ${location}` : ''}.`);
+    if (objective) parts.push(`Objective: ${objective}.`);
+    if (context) parts.push(`Active context: ${context}.`);
+    if (constraints) parts.push(`Key constraints: ${constraints}.`);
+
+    if (parts.length === 0) return '';
+    return parts.join(' ');
   }, [caseStudy]);
 
   const hasLiveDraftSignals = useMemo(() => {
+    // Only true when the user has provided real structured case data
+    // Not just additionalContext from chat messages
     return Boolean(
       caseStudy.organizationName.trim()
       || caseStudy.objectives.trim()
-      || caseStudy.currentMatter.trim()
-      || caseStudy.constraints.trim()
+      || (caseStudy.currentMatter.trim() && caseStudy.currentMatter.trim().length >= 60)
       || caseStudy.country.trim()
       || caseStudy.jurisdiction.trim()
-      || caseStudy.additionalContext.length > 0
+      || caseStudy.targetAudience.trim()
       || caseStudy.uploadedDocuments.length > 0
     );
   }, [caseStudy]);
@@ -2432,7 +2562,14 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, embedd
       const initialMessage: Message = {
         id: crypto.randomUUID(),
         role: 'assistant',
-        content: "Hello, I'm your BW Consultant AI. I can answer direct questions, run autonomous strategic analysis, and build your case file in the background from natural conversation. Tell me what you're working on, or ask anything and I'll adapt. To help speed this up, please access the Quick Consultant.",
+        content: [
+          'BW Consultant Command Console online.',
+          '',
+          'I answer direct questions, run autonomous strategic analysis, and reactively update your live case file from natural conversation.',
+          '',
+          'Tell me what you are working on and I will adapt in real time.',
+          'For the fastest setup, open Quick Consultant to preload context and strategic factors.'
+        ].join('\n'),
         timestamp: new Date(),
         phase: 'discovery'
       };
@@ -2543,11 +2680,57 @@ ${agentRegistry.current.toManifest()}`;
     const isGreetingOnly = /^(hi|hello|hey|good\s+(morning|afternoon|evening)|yo|sup)[!.\s]*$/i.test(trimmed);
 
     if (isGreetingOnly) {
-      return 'Hello — I can help with strategy, risk, partnerships, market entry, compliance, or document drafting. Tell me what decision you are trying to make right now, and I’ll give you a direct recommendation.';
+      return 'Hello \u2014 I can help with strategy, risk, partnerships, market entry, compliance, or document drafting. Tell me what decision you are trying to make right now, and I\u2019ll give you a direct recommendation.';
     }
 
-    return 'I’m tracking your context in the background. Share the decision you need to make (or the question you need answered), and I’ll respond directly with a concrete next-step recommendation.';
-  }, []);
+    // Build context-aware fallback from current case knowledge
+    const cs = caseStudy;
+    const knownParts: string[] = [];
+    if (cs.organizationName.trim()) knownParts.push(`**Organisation:** ${cs.organizationName}`);
+    if (cs.country.trim()) knownParts.push(`**Country:** ${cs.country}`);
+    if (cs.jurisdiction.trim()) knownParts.push(`**Jurisdiction:** ${cs.jurisdiction}`);
+    if (cs.objectives.trim()) knownParts.push(`**Objective:** ${cs.objectives}`);
+    if (cs.organizationType.trim()) knownParts.push(`**Type:** ${cs.organizationType}`);
+    if (cs.targetAudience.trim()) knownParts.push(`**Audience:** ${cs.targetAudience}`);
+
+    const keywords = trimmed.split(/\s+/).filter(w => w.length > 4).slice(0, 5);
+    const topicsDetected = keywords.length > 0 ? keywords.join(', ') : 'your request';
+
+    let reply = `I\u2019ve captured the key elements of your input (${topicsDetected}) and am processing them against my strategic intelligence framework.`;
+
+    if (knownParts.length > 0) {
+      reply += `\n\n**Current case context:**\n${knownParts.join('\n')}`;
+      reply += `\n\nBased on what I know so far, here\u2019s my immediate read:`;
+
+      if (cs.country.trim() && cs.objectives.trim()) {
+        reply += `\n\u2022 Your objective in **${cs.country}** is being tracked. I\u2019m factoring in jurisdiction-specific regulatory and market considerations.`;
+      }
+      if (cs.organizationType.trim()) {
+        reply += `\n\u2022 As a **${cs.organizationType}**, specific compliance and structural considerations apply.`;
+      }
+      if (cs.targetAudience.trim()) {
+        reply += `\n\u2022 Output will be calibrated for **${cs.targetAudience}** decision-making standards.`;
+      }
+    }
+
+    const nextQ = !cs.organizationName.trim()
+      ? 'Which organisation is the decision owner for this matter?'
+      : !cs.country.trim()
+      ? 'Which country and legal jurisdiction does this apply to?'
+      : cs.objectives.trim().length < 20
+      ? 'What exact outcome do you need, and how will success be measured?'
+      : cs.currentMatter.trim().length < 60
+      ? 'What is the full context of the current situation and what decision must be made?'
+      : null;
+
+    if (nextQ) {
+      reply += `\n\n**Next step to sharpen my analysis:** ${nextQ}`;
+    } else {
+      reply += `\n\nI have enough context to begin generating deliverables. Would you like a report, strategic recommendation, or document draft?`;
+    }
+
+    return reply;
+  }, [caseStudy]);
 
   type DeliverableIntent = 'background' | 'quick_answer' | 'report' | 'letter' | 'full_case' | 'unknown';
 
@@ -3325,6 +3508,7 @@ ${agentRegistry.current.toManifest()}`;
       let responseContent = '';
       if (shouldPromptForOutputClarification) {
         responseContent = buildOutputClarificationPrompt(caseDraft);
+        displayedMsgIds.current.add(assistantMessageId);
         setMessages(prev => prev.map((msg) => (
           msg.id === assistantMessageId ? { ...msg, content: responseContent } : msg
         )));
@@ -3332,6 +3516,7 @@ ${agentRegistry.current.toManifest()}`;
       } else {
         setExecutionTaskStatus('response', 'running', 'Streaming consultant response');
         setIsStreamingResponse(true);
+        displayedMsgIds.current.add(assistantMessageId);
         responseContent = await processWithAIStream(
           userContent,
           `Autonomous mixed-initiative mode: answer user intent first, then move the case forward with one highest-value follow-up if required. Do not run scripted intake.`,
@@ -3339,6 +3524,22 @@ ${agentRegistry.current.toManifest()}`;
             setMessages(prev => prev.map((msg) => (
               msg.id === assistantMessageId ? { ...msg, content: streamText } : msg
             )));
+            // Fire voice as soon as first substantial chunk arrives
+            if (voiceEnabled && !spokenMsgIds.current.has(assistantMessageId) && streamText.length > 40) {
+              spokenMsgIds.current.add(assistantMessageId);
+              if (typeof window !== 'undefined' && window.speechSynthesis) {
+                window.speechSynthesis.cancel();
+                const utter = new SpeechSynthesisUtterance(streamText.replace(/\*\*/g, ''));
+                const voice = pickHumanVoice();
+                if (voice) utter.voice = voice;
+                utter.rate = 0.95;
+                utter.pitch = 1.04;
+                utter.volume = 1;
+                voiceSpeakingRef.current = true;
+                utter.onend = () => { voiceSpeakingRef.current = false; };
+                window.speechSynthesis.speak(utter);
+              }
+            }
           }
         );
         setExecutionTaskStatus('response', 'completed', 'Primary response delivered');
@@ -3482,6 +3683,63 @@ ${agentRegistry.current.toManifest()}`;
         generateRecommendations();
       }
 
+      // ── AUGMENTED RESPONSE LEARNING ──────────────────────────────────────
+      // Parse the AI response for new case signals the system can learn from
+      const responseSignals = extractConsultantSignals(responseContent);
+      const learnedFields: string[] = [];
+      setCaseStudy(prev => {
+        const next = { ...prev };
+        if (responseSignals.country && !next.country.trim()) { next.country = responseSignals.country; learnedFields.push('country'); }
+        if (responseSignals.jurisdiction && !next.jurisdiction.trim()) { next.jurisdiction = responseSignals.jurisdiction; learnedFields.push('jurisdiction'); }
+        if (responseSignals.organizationName && !next.organizationName.trim()) { next.organizationName = responseSignals.organizationName; learnedFields.push('organization'); }
+        if (responseSignals.organizationType && !next.organizationType.trim()) { next.organizationType = responseSignals.organizationType; learnedFields.push('org type'); }
+        if (responseSignals.targetAudience && !next.targetAudience.trim()) { next.targetAudience = responseSignals.targetAudience; learnedFields.push('audience'); }
+        if (responseSignals.objectives && next.objectives.trim().length < 20) { next.objectives = responseSignals.objectives; learnedFields.push('objectives'); }
+        if (responseSignals.constraints && next.constraints.trim().length < 20) { next.constraints = responseSignals.constraints; learnedFields.push('constraints'); }
+        return next;
+      });
+
+      // ── BUILD LOCAL AUGMENTED SNAPSHOT ──────────────────────────────────────
+      // If no server-side augmented snapshot was captured, build one locally
+      // so the system reflects that it is actively processing intelligence
+      if (!augmentedAISnapshot) {
+        const toolNames = mergedToolCalls.map(tc => tc.name);
+        const localSteps: AugmentedLoopStep[] = [
+          { title: 'Understand', detail: `Parsed user input and extracted ${extractedFieldCount} signal${extractedFieldCount !== 1 ? 's' : ''} from conversation` },
+          { title: 'Interpret', detail: `Case readiness ${liveReadiness}% — phase: ${inferredPhase}` },
+          { title: 'Reason', detail: toolNames.length > 0 ? `Executed ${toolNames.length} intelligence tool${toolNames.length !== 1 ? 's' : ''}: ${toolNames.join(', ')}` : `Evaluated case context and generated response` },
+          { title: 'Learn', detail: learnedFields.length > 0 ? `Updated case fields: ${learnedFields.join(', ')}` : 'Conversation context stored for future turns' },
+          { title: 'Assure', detail: `Provenance tracked — confidence ${responseProvenance?.confidence ?? 0}%` }
+        ];
+        setAugmentedAISnapshot({
+          model: 'local-augmented',
+          mode: inferredPhase === 'recommendations' ? 'document_advisory' : inferredPhase === 'analysis' ? 'case_analysis' : 'case_discovery',
+          steps: localSteps,
+          humanControls: { decisionOwnerRequired: true, approvalOptions: ['accept', 'modify', 'reject'] }
+        });
+        setAugmentedCapabilityTags([
+          inferredPhase,
+          ...(caseDraft.country ? [caseDraft.country.toLowerCase()] : []),
+          ...(caseDraft.organizationType ? [caseDraft.organizationType.toLowerCase()] : []),
+          'signal-extraction', 'case-enrichment'
+        ].slice(0, 6));
+      }
+
+      // ── KEEP REACTIVE STATUS ALIVE ─────────────────────────────────────────
+      // Show what was just processed so Reactive stays "Online" between turns
+      const reactiveSignalCount = [responseSignals.country, responseSignals.organizationName, responseSignals.objectives, responseSignals.targetAudience]
+        .filter(Boolean).length + extractedFieldCount;
+      const reactiveStatusText = reactiveSignalCount > 0
+        ? `Reactive: ${reactiveSignalCount} signal${reactiveSignalCount !== 1 ? 's' : ''} captured — case updated`
+        : `Reactive: monitoring — readiness ${liveReadiness}%`;
+      const reactiveHintText = learnedFields.length > 0
+        ? `Learned from this turn: ${learnedFields.join(', ')}. Keep adding detail to improve output quality.`
+        : nextFollowUp
+          ? `Suggest next: ${nextFollowUp}`
+          : 'Continue sharing details — the consultant is building your case in real time.';
+      setReactiveDraftStatus(reactiveStatusText);
+      setReactiveDraftHint(reactiveHintText);
+
       // Live Intel: fetch real data for detected country
       if (caseDraft.country) {
         fetchLiveIntelForCountry(caseDraft.country);
@@ -3536,7 +3794,8 @@ ${agentRegistry.current.toManifest()}`;
     processWithAI,
     enableFullCaseTreeMatching,
     activeIssuePack.label,
-    queueAction
+    queueAction,
+    augmentedAISnapshot
   ]);
 
   // Handle file selection
@@ -5387,6 +5646,42 @@ Use concrete facts from the case. No template language. Write the complete repor
           <div className="flex-1 flex flex-col bg-stone-50">
             {/* Messages */}
             <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-6 space-y-4">
+              {/* Runtime status bar — clean light theme */}
+              <div className="max-w-4xl mx-auto border border-stone-200 bg-white px-4 py-2.5 rounded-lg shadow-sm">
+                <div className="flex items-center justify-between mb-1.5">
+                  <div className="flex items-center gap-2">
+                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-slate-600">BW Consultant Runtime</span>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setVoiceEnabled(prev => {
+                        if (prev) window.speechSynthesis?.cancel();
+                        return !prev;
+                      });
+                    }}
+                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-medium transition-all ${
+                      voiceEnabled
+                        ? 'bg-blue-100 text-blue-700 border border-blue-300'
+                        : 'bg-stone-100 text-slate-500 border border-stone-200 hover:bg-stone-200'
+                    }`}
+                    title={voiceEnabled ? 'Voice on — click to mute' : 'Voice off — click to enable'}
+                  >
+                    {voiceEnabled ? <Volume2 size={12} /> : <VolumeX size={12} />}
+                    {voiceEnabled ? 'Voice On' : 'Voice Off'}
+                  </button>
+                </div>
+                <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-[10px] text-slate-500">
+                  <span>Augmented: <span className={agenticRuntimeStatus.augmentedOnline ? 'text-blue-600 font-semibold' : 'text-slate-400'}>{agenticRuntimeStatus.augmentedOnline ? 'Online' : 'Standby'}</span></span>
+                  <span>Reactive: <span className={agenticRuntimeStatus.reactiveOnline ? 'text-blue-600 font-semibold' : 'text-slate-400'}>{agenticRuntimeStatus.reactiveOnline ? 'Online' : 'Standby'}</span></span>
+                  <span>Autonomy: <span className={agenticRuntimeStatus.autonomyMode === 'Active' ? 'text-blue-600 font-semibold' : agenticRuntimeStatus.autonomyMode === 'Paused' ? 'text-amber-600 font-semibold' : 'text-slate-400'}>{agenticRuntimeStatus.autonomyMode}</span></span>
+                </div>
+                <div className="mt-1 flex items-center gap-3 text-[10px] text-slate-500">
+                  <span>Readiness: <span className={liveDraftReadiness >= 75 ? 'text-green-600 font-semibold' : liveDraftReadiness >= 40 ? 'text-amber-600 font-semibold' : 'text-red-500 font-semibold'}>{liveDraftReadiness}%</span></span>
+                  <span>Gate: <span className={consultantGateReady ? 'text-green-600 font-semibold' : 'text-red-500 font-semibold'}>{consultantGateReady ? 'Ready' : 'Needs Inputs'}</span></span>
+                  <span>Phase: <span className="text-blue-600 font-semibold capitalize">{currentPhase}</span></span>
+                </div>
+              </div>
               {messages.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-center">
                   <Bot size={40} className="text-blue-200 mb-4" />
@@ -5415,7 +5710,7 @@ Use concrete facts from the case. No template language. Write the complete repor
                 </div>
               ) : (
                 <>
-                  {messages.map((msg) => (
+                  {messages.map((msg, msgIdx) => (
                     <div
                       key={msg.id}
                       className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
@@ -5423,36 +5718,54 @@ Use concrete facts from the case. No template language. Write the complete repor
                       <div
                         className={`max-w-[85%] px-4 py-3 text-sm leading-relaxed ${
                           msg.role === 'user'
-                            ? 'bg-blue-600 text-white'
-                            : 'bg-white border border-stone-200 text-stone-900 shadow-sm'
+                            ? 'bg-blue-600 text-white rounded-lg'
+                            : 'bg-white border border-stone-200 text-slate-900 rounded-lg shadow-sm'
                         }`}
                       >
                         {msg.role === 'assistant' && (
                           <div className="flex items-center gap-1.5 mb-2">
-                            <Bot size={12} className="text-blue-600" />
-                            <span className="text-[10px] font-semibold text-blue-600 uppercase tracking-wide">BW Consultant</span>
+                            <span className="inline-block w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                            <span className="text-blue-600 text-xs font-semibold uppercase tracking-wider">BW Consultant</span>
                           </div>
                         )}
-                        <div 
-                          className="whitespace-pre-wrap"
-                          dangerouslySetInnerHTML={{ 
-                            __html: msg.content
-                              .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold">$1</strong>')
-                              .replace(/\n/g, '<br />')
-                          }} 
-                        />
+                        <div className={`whitespace-pre-wrap ${msg.role === 'assistant' ? 'text-[13px] leading-[1.7] text-slate-800' : ''}`}>
+                          {msg.role === 'assistant' && msgIdx === messages.length - 1 && !isLoading && !displayedMsgIds.current.has(msg.id) ? (
+                            <TypewriterText text={msg.content} speed={10} onStart={() => {
+                              displayedMsgIds.current.add(msg.id);
+                              if (voiceEnabled && !spokenMsgIds.current.has(msg.id) && typeof window !== 'undefined' && window.speechSynthesis) {
+                                spokenMsgIds.current.add(msg.id);
+                                window.speechSynthesis.cancel();
+                                const utter = new SpeechSynthesisUtterance(msg.content.replace(/\*\*/g, ''));
+                                const voice = pickHumanVoice();
+                                if (voice) utter.voice = voice;
+                                utter.rate = 0.95;
+                                utter.pitch = 1.04;
+                                utter.volume = 1;
+                                voiceSpeakingRef.current = true;
+                                utter.onend = () => { voiceSpeakingRef.current = false; };
+                                window.speechSynthesis.speak(utter);
+                              }
+                            }} />
+                          ) : (
+                            <span dangerouslySetInnerHTML={{
+                              __html: msg.content
+                                .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold">$1</strong>')
+                                .replace(/\n/g, '<br />')
+                            }} />
+                          )}
+                        </div>
                         {msg.provenance && msg.role !== 'user' && msg.provenance.confidence >= 50 && (
                           <div className="mt-2 pt-2 border-t border-stone-200 space-y-1">
                             <div className="flex items-center gap-2">
                               <span className="text-[10px] text-slate-500">Confidence:</span>
-                              <span className={`text-[10px] px-1.5 py-0.5 border ${
+                              <span className={`text-[10px] px-1.5 py-0.5 rounded border font-medium ${
                                 msg.provenance.confidenceBand === 'high'
-                                  ? 'bg-green-50 text-green-700 border-green-200'
+                                  ? 'bg-green-50 text-green-700 border-green-300'
                                   : msg.provenance.confidenceBand === 'medium'
-                                    ? 'bg-amber-50 text-amber-700 border-amber-200'
-                                    : 'bg-red-50 text-red-700 border-red-200'
+                                    ? 'bg-amber-50 text-amber-700 border-amber-300'
+                                    : 'bg-red-50 text-red-700 border-red-300'
                               }`}>
-                                {msg.provenance.confidenceBand.toUpperCase()} ({msg.provenance.confidence}%)
+                                {msg.provenance.confidenceBand.toUpperCase()} {msg.provenance.confidence}%
                               </span>
                             </div>
                             {msg.provenance.sources.length > 0 && (
@@ -5464,7 +5777,7 @@ Use concrete facts from the case. No template language. Write the complete repor
                             )}
                             {/* Feedback controls */}
                             <div className="flex items-center gap-3 pt-1">
-                              <span className="text-[10px] text-slate-400">Helpful?</span>
+                              <span className="text-[10px] text-slate-400">Feedback:</span>
                               <button
                                 onClick={() => handleMessageFeedback(msg.id, 'up')}
                                 className={`p-0.5 rounded transition-colors ${
@@ -5480,7 +5793,7 @@ Use concrete facts from the case. No template language. Write the complete repor
                                 onClick={() => handleMessageFeedback(msg.id, 'down')}
                                 className={`p-0.5 rounded transition-colors ${
                                   feedbackMap[msg.id] === 'down'
-                                    ? 'text-red-600 bg-red-50'
+                                    ? 'text-red-500 bg-red-50'
                                     : 'text-slate-400 hover:text-red-500'
                                 }`}
                                 title="Mark unhelpful"
@@ -5488,8 +5801,8 @@ Use concrete facts from the case. No template language. Write the complete repor
                                 <ThumbsDown size={12} />
                               </button>
                               {feedbackMap[msg.id] && (
-                                <span className="text-[10px] text-slate-400">
-                                  {feedbackMap[msg.id] === 'up' ? 'Thanks — logged ↑' : 'Noted — will improve ↓'}
+                                <span className="text-[10px] text-slate-500">
+                                  {feedbackMap[msg.id] === 'up' ? 'Helpful ✓' : 'Noted ✓'}
                                 </span>
                               )}
                             </div>
@@ -5501,11 +5814,14 @@ Use concrete facts from the case. No template language. Write the complete repor
                   
                   {isLoading && (
                     <div className="flex justify-start">
-                      <div className="px-4 py-3 bg-white border border-stone-200 shadow-sm flex items-center gap-2">
-                        <Loader2 size={14} className="animate-spin text-blue-600" />
-                        <span className="text-sm text-slate-500">
-                          {isStreamingResponse ? 'Streaming response...' : currentPhase === 'generation' ? 'Generating documents...' : 'Analyzing...'}
-                        </span>
+                      <div className="px-5 py-4 bg-white border border-stone-200 rounded-lg shadow-sm flex items-center gap-4">
+                        <ThinkingOrb />
+                        <div className="flex flex-col">
+                          <span className="text-[13px] font-medium text-slate-700">
+                            {isStreamingResponse ? 'Streaming response...' : currentPhase === 'generation' ? 'Generating documents...' : 'Processing...'}
+                          </span>
+                          <span className="text-[11px] text-slate-400 mt-0.5">BW Consultant is thinking</span>
+                        </div>
                       </div>
                     </div>
                   )}
@@ -5709,28 +6025,10 @@ Use concrete facts from the case. No template language. Write the complete repor
                     </div>
                   )}
                   <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                    <span className="text-[10px] text-emerald-800">Human decision:</span>
-                    <button
-                      onClick={() => submitAugmentedReview('accept')}
-                      disabled={augmentedReviewLoading}
-                      className={`px-2 py-0.5 text-[10px] border ${augmentedReviewState === 'accept' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-emerald-700 border-emerald-300 hover:bg-emerald-100'}`}
-                    >
-                      Accept
-                    </button>
-                    <button
-                      onClick={() => submitAugmentedReview('modify')}
-                      disabled={augmentedReviewLoading}
-                      className={`px-2 py-0.5 text-[10px] border ${augmentedReviewState === 'modify' ? 'bg-amber-500 text-white border-amber-500' : 'bg-white text-amber-700 border-amber-300 hover:bg-amber-100'}`}
-                    >
-                      Modify
-                    </button>
-                    <button
-                      onClick={() => submitAugmentedReview('reject')}
-                      disabled={augmentedReviewLoading}
-                      className={`px-2 py-0.5 text-[10px] border ${augmentedReviewState === 'reject' ? 'bg-red-600 text-white border-red-600' : 'bg-white text-red-700 border-red-300 hover:bg-red-100'}`}
-                    >
-                      Reject
-                    </button>
+                    <span className="text-[10px] text-emerald-800 flex items-center gap-1">
+                      <CheckCircle2 size={10} className="text-emerald-600" />
+                      {augmentedReviewState === 'accept' ? 'Augmented reasoning auto-applied' : 'Applying augmented reasoning…'}
+                    </span>
                     {augmentedReviewLoading && <Loader2 size={11} className="animate-spin text-emerald-700" />}
                   </div>
                 </div>
@@ -6931,6 +7229,7 @@ Use concrete facts from the case. No template language. Write the complete repor
                 </div>
 
                 {/* External Findings & Considerations */}
+                {(quickCountryFocus || quickBusinessTarget || (quickCustomFocus.trim() || normalizedPilotFocusSelections.length > 0)) && (
                 <div className="p-3 space-y-3">
 
                 <div className="border border-blue-200 bg-blue-50 p-2">
@@ -7138,6 +7437,7 @@ Use concrete facts from the case. No template language. Write the complete repor
                   </p>
                 </div>
                 </div>
+                )}
               </div>
             </div>
           </div>

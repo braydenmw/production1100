@@ -382,3 +382,39 @@ body {
     padding: 1rem;
   }
 }
+
+/* ── AI Thinking Orb ─────────────────────────────────────────────────────── */
+@keyframes orb-morph {
+  0%, 100% { border-radius: 42% 58% 55% 45% / 50% 45% 55% 50%; }
+  25%      { border-radius: 55% 45% 42% 58% / 45% 55% 50% 50%; }
+  50%      { border-radius: 48% 52% 58% 42% / 55% 50% 45% 55%; }
+  75%      { border-radius: 52% 48% 45% 55% / 50% 42% 58% 50%; }
+}
+@keyframes orb-glow {
+  0%, 100% { box-shadow: 0 0 20px 4px rgba(59,130,246,.35), 0 0 60px 10px rgba(59,130,246,.12); }
+  50%      { box-shadow: 0 0 30px 8px rgba(59,130,246,.50), 0 0 80px 16px rgba(59,130,246,.18); }
+}
+@keyframes orb-spin {
+  0%   { transform: rotate(0deg)   scale(1); }
+  50%  { transform: rotate(180deg) scale(1.08); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+.thinking-orb {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, #3b82f6 0%, #6366f1 40%, #8b5cf6 70%, #3b82f6 100%);
+  background-size: 200% 200%;
+  animation:
+    orb-morph 4s ease-in-out infinite,
+    orb-glow  2s ease-in-out infinite,
+    orb-spin  6s linear infinite;
+  flex-shrink: 0;
+}
+.thinking-orb-ring {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(99,102,241,.25);
+  animation: orb-glow 2s ease-in-out infinite 0.5s;
+}
