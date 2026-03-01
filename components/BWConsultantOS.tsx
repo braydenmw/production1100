@@ -272,6 +272,34 @@ interface AugmentedGap {
   question: string;
 }
 
+interface OverlookedOpportunity {
+  place: string;
+  score: number;
+  reason?: string[];
+}
+
+interface OverlookedIntelligence {
+  evidenceCredibility: number;
+  perceptionRealityGap: number;
+  topRegionalOpportunities: OverlookedOpportunity[];
+}
+
+interface StrategicPipeline {
+  model: string;
+  objective: string;
+  readinessScore: number;
+  recommendedPath?: {
+    targetRegion: string;
+    strategy: string;
+    rationale: string[];
+  };
+  engagementDraftHints?: {
+    governmentLetterFocus?: string[];
+    partnerLetterFocus?: string[];
+    investorBriefFocus?: string[];
+  };
+}
+
 const JURISDICTION_POLICY_PACKS: JurisdictionPolicyPack[] = [
   {
     id: 'australia',
@@ -770,6 +798,8 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, embedd
   const [augmentedCapabilityTags, setAugmentedCapabilityTags] = useState<string[]>([]);
   const [augmentedReviewState, setAugmentedReviewState] = useState<'idle' | 'accept' | 'modify' | 'reject'>('idle');
   const [augmentedReviewLoading, setAugmentedReviewLoading] = useState(false);
+  const [overlookedIntelligence, setOverlookedIntelligence] = useState<OverlookedIntelligence | null>(null);
+  const [strategicPipeline, setStrategicPipeline] = useState<StrategicPipeline | null>(null);
 
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -831,6 +861,8 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, embedd
     const capabilityTags = Array.isArray(payload?.capabilityTags)
       ? payload.capabilityTags.filter((item): item is string => typeof item === 'string')
       : [];
+    const overlooked = payload?.overlookedIntelligence as OverlookedIntelligence | undefined;
+    const strategic = payload?.strategicPipeline as StrategicPipeline | undefined;
 
     if (snapshot) {
       setAugmentedAISnapshot(snapshot);
@@ -839,6 +871,8 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, embedd
     setAugmentedUnresolvedGaps(unresolved.slice(0, 5));
     setAugmentedCapabilityMode(capabilityMode);
     setAugmentedCapabilityTags(capabilityTags);
+    if (overlooked) setOverlookedIntelligence(overlooked);
+    if (strategic) setStrategicPipeline(strategic);
 
     const topCriticalGap = unresolved.find((gap) => gap.severity === 'critical');
     if (topCriticalGap) {
@@ -3691,9 +3725,14 @@ ${agentRegistry.current.toManifest()}`;
       reportId: `BWGA-${new Date().getFullYear()}-${(caseStudy.country || 'GL').slice(0, 2).toUpperCase()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`,
       classification: 'CONFIDENTIAL',
       jurisdiction: caseStudy.jurisdiction || caseStudy.country,
+      strategicReadiness: strategicPipeline?.readinessScore,
+      evidenceCredibility: overlookedIntelligence?.evidenceCredibility,
+      perceptionRealityGap: overlookedIntelligence?.perceptionRealityGap,
+      topRegionalOpportunities: overlookedIntelligence?.topRegionalOpportunities,
+      engagementDraftHints: strategicPipeline?.engagementDraftHints
     };
     await downloadAsDocx(doc.content, meta);
-  }, [caseStudy]);
+  }, [caseStudy, strategicPipeline, overlookedIntelligence]);
 
   // Generate selected documents
   const handleGenerateDocuments = useCallback(async () => {
@@ -5423,6 +5462,12 @@ Use concrete facts from the case. No template language. Write the complete repor
                     <CheckCircle2 size={11} className="text-emerald-700" />
                     Augmented AI Human-in-the-Loop {augmentedCapabilityMode ? `• Mode: ${augmentedCapabilityMode}` : ''}
                   </p>
+                  {(strategicPipeline || overlookedIntelligence) && (
+                    <p className="mt-1 text-[10px] text-emerald-800">
+                      Strategic readiness: {typeof strategicPipeline?.readinessScore === 'number' ? `${strategicPipeline.readinessScore}%` : 'n/a'}
+                      {overlookedIntelligence?.topRegionalOpportunities?.[0]?.place ? ` • Top regional target: ${overlookedIntelligence.topRegionalOpportunities[0].place}` : ''}
+                    </p>
+                  )}
                   {augmentedCapabilityTags.length > 0 && (
                     <p className="mt-1 text-[10px] text-emerald-800">
                       Tags: {augmentedCapabilityTags.join(' • ')}

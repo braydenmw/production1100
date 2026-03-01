@@ -43,6 +43,15 @@ export interface DocxDocumentMeta {
   reportId: string;
   classification: string;
   jurisdiction?: string;
+  strategicReadiness?: number;
+  evidenceCredibility?: number;
+  perceptionRealityGap?: number;
+  topRegionalOpportunities?: Array<{ place: string; score: number; reason?: string[] }>;
+  engagementDraftHints?: {
+    governmentLetterFocus?: string[];
+    partnerLetterFocus?: string[];
+    investorBriefFocus?: string[];
+  };
 }
 
 // ── Inline formatting parser ──────────────────────────────────────────────────
@@ -209,8 +218,8 @@ function parsePipeTable(lines: string[]): Table | null {
       bottom: { style: BorderStyle.SINGLE, size: 1, color: 'AAAAAA' },
       left:   { style: BorderStyle.SINGLE, size: 1, color: 'AAAAAA' },
       right:  { style: BorderStyle.SINGLE, size: 1, color: 'AAAAAA' },
-      insideH:{ style: BorderStyle.SINGLE, size: 1, color: 'CCCCCC' },
-      insideV:{ style: BorderStyle.SINGLE, size: 1, color: 'CCCCCC' },
+      insideHorizontal: { style: BorderStyle.SINGLE, size: 1, color: 'CCCCCC' },
+      insideVertical: { style: BorderStyle.SINGLE, size: 1, color: 'CCCCCC' },
     },
   });
 }
@@ -266,6 +275,67 @@ function buildCoverPage(meta: DocxDocumentMeta): Paragraph[] {
   ];
 }
 
+function buildStrategicIntelligenceAppendix(meta: DocxDocumentMeta): Paragraph[] {
+  const hasStrategicSignals =
+    typeof meta.strategicReadiness === 'number'
+    || typeof meta.evidenceCredibility === 'number'
+    || typeof meta.perceptionRealityGap === 'number'
+    || (meta.topRegionalOpportunities?.length ?? 0) > 0
+    || (meta.engagementDraftHints?.governmentLetterFocus?.length ?? 0) > 0
+    || (meta.engagementDraftHints?.partnerLetterFocus?.length ?? 0) > 0
+    || (meta.engagementDraftHints?.investorBriefFocus?.length ?? 0) > 0;
+
+  if (!hasStrategicSignals) return [];
+
+  const lines: Paragraph[] = [
+    new Paragraph({ text: 'Strategic Intelligence Appendix', heading: HeadingLevel.HEADING_1, spacing: { before: 220, after: 120 } }),
+  ];
+
+  if (typeof meta.strategicReadiness === 'number' || typeof meta.evidenceCredibility === 'number' || typeof meta.perceptionRealityGap === 'number') {
+    lines.push(new Paragraph({ text: 'Core Strategic Scores', heading: HeadingLevel.HEADING_2, spacing: { before: 140, after: 80 } }));
+    if (typeof meta.strategicReadiness === 'number') {
+      lines.push(new Paragraph({ children: parseInline(`- Strategic readiness: **${meta.strategicReadiness}%**`), bullet: { level: 0 } }));
+    }
+    if (typeof meta.evidenceCredibility === 'number') {
+      lines.push(new Paragraph({ children: parseInline(`- Evidence credibility: **${meta.evidenceCredibility}%**`), bullet: { level: 0 } }));
+    }
+    if (typeof meta.perceptionRealityGap === 'number') {
+      lines.push(new Paragraph({ children: parseInline(`- Perception vs reality gap: **${meta.perceptionRealityGap}**`), bullet: { level: 0 } }));
+    }
+  }
+
+  if ((meta.topRegionalOpportunities?.length ?? 0) > 0) {
+    lines.push(new Paragraph({ text: 'Top Overlooked Regional Opportunities', heading: HeadingLevel.HEADING_2, spacing: { before: 140, after: 80 } }));
+    meta.topRegionalOpportunities!.slice(0, 5).forEach((opportunity, index) => {
+      lines.push(new Paragraph({
+        children: parseInline(`${index + 1}. **${opportunity.place}** — Opportunity score: **${opportunity.score}**`),
+        spacing: { before: 60, after: 40 }
+      }));
+      (opportunity.reason || []).slice(0, 3).forEach((reason) => {
+        lines.push(new Paragraph({ children: parseInline(`- ${reason}`), bullet: { level: 0 } }));
+      });
+    });
+  }
+
+  const addFocusGroup = (title: string, items?: string[]) => {
+    if (!items || items.length === 0) return;
+    lines.push(new Paragraph({ text: title, heading: HeadingLevel.HEADING_3, spacing: { before: 120, after: 50 } }));
+    items.slice(0, 5).forEach((item) => {
+      lines.push(new Paragraph({ children: parseInline(`- ${item}`), bullet: { level: 0 } }));
+    });
+  };
+
+  if (meta.engagementDraftHints) {
+    lines.push(new Paragraph({ text: 'Engagement Conversion Focus', heading: HeadingLevel.HEADING_2, spacing: { before: 140, after: 80 } }));
+    addFocusGroup('Government Letter Focus', meta.engagementDraftHints.governmentLetterFocus);
+    addFocusGroup('Partner Letter Focus', meta.engagementDraftHints.partnerLetterFocus);
+    addFocusGroup('Investor Brief Focus', meta.engagementDraftHints.investorBriefFocus);
+  }
+
+  lines.push(new Paragraph({ text: '', spacing: { before: 80, after: 80 } }));
+  return lines;
+}
+
 // ── Public API ────────────────────────────────────────────────────────────────
 
 /**
@@ -277,6 +347,7 @@ export async function exportToDocx(
   meta: DocxDocumentMeta
 ): Promise<Blob> {
   const contentBlocks = parseMarkdownToBlocks(markdown);
+  const strategicAppendix = buildStrategicIntelligenceAppendix(meta);
 
   const headerPara = new Paragraph({
     children: [
@@ -317,7 +388,7 @@ export async function exportToDocx(
           name: 'Heading 1',
           basedOn: 'Normal',
           run: { bold: true, size: 36, color: '1a365d', font: 'Calibri' },
-          paragraph: { spacing: { before: 240, after: 120 }, border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: '1a365d' } } },
+          paragraph: { spacing: { before: 240, after: 120 } },
         },
         {
           id: 'Heading2',
@@ -353,6 +424,7 @@ export async function exportToDocx(
         footers: { default: new Footer({ children: [footerPara] }) },
         children: [
           ...buildCoverPage(meta),
+          ...strategicAppendix,
           ...contentBlocks,
         ],
       },
