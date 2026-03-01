@@ -3470,22 +3470,8 @@ ${agentRegistry.current.toManifest()}`;
             setMessages(prev => prev.map((msg) => (
               msg.id === assistantMessageId ? { ...msg, content: streamText } : msg
             )));
-            // Fire voice as soon as first substantial chunk arrives
-            if (voiceEnabled && !spokenMsgIds.current.has(assistantMessageId) && streamText.length > 40) {
-              spokenMsgIds.current.add(assistantMessageId);
-              if (typeof window !== 'undefined' && window.speechSynthesis) {
-                window.speechSynthesis.cancel();
-                const utter = new SpeechSynthesisUtterance(streamText.replace(/\*\*/g, ''));
-                const voice = pickHumanVoice();
-                if (voice) utter.voice = voice;
-                utter.rate = 0.95;
-                utter.pitch = 1.04;
-                utter.volume = 1;
-                voiceSpeakingRef.current = true;
-                utter.onend = () => { voiceSpeakingRef.current = false; };
-                window.speechSynthesis.speak(utter);
-              }
-            }
+            // Voice playback is triggered on final rendered message to ensure
+            // spoken output matches visible text exactly.
           }
         );
         setExecutionTaskStatus('response', 'completed', 'Primary response delivered');
@@ -5619,7 +5605,8 @@ Use concrete facts from the case. No template language. Write the complete repor
                               if (voiceEnabled && !spokenMsgIds.current.has(msg.id) && typeof window !== 'undefined' && window.speechSynthesis) {
                                 spokenMsgIds.current.add(msg.id);
                                 window.speechSynthesis.cancel();
-                                const utter = new SpeechSynthesisUtterance(msg.content.replace(/\*\*/g, ''));
+                                const visibleText = msg.content.replace(/\*\*(.*?)\*\*/g, '$1');
+                                const utter = new SpeechSynthesisUtterance(visibleText);
                                 const voice = pickHumanVoice();
                                 if (voice) utter.voice = voice;
                                 utter.rate = 0.95;
