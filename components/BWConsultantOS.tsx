@@ -936,6 +936,7 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, embedd
   const [showPilotWindow, setShowPilotWindow] = useState(false);
   const [showPilotHowTo, setShowPilotHowTo] = useState(false);
   const [showAboutBWGA, setShowAboutBWGA] = useState(false);
+  const [showFinalReport, setShowFinalReport] = useState(false);
   const [showFullCatalog, setShowFullCatalog] = useState(false);
   const [pilotFocus, setPilotFocus] = useState<PilotModeFocus>('new-markets');
   const [pilotFocusSelections, setPilotFocusSelections] = useState<PilotModeFocus[]>(['new-markets']);
@@ -1516,21 +1517,10 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, embedd
     };
   }, []);
 
-  const buildLowSignalReply = useCallback((detectedName: string | null) => {
-    const knownName = (detectedName || caseStudy.userName || '').trim();
-    const greeting = knownName
-      ? `Hello ${knownName}, I am your BW Consultant.`
-      : 'Hello, I am your BW Consultant.';
-
-    return [
-      greeting,
-      'I can help immediately once I have a little context.',
-      'Please share in one message:',
-      '1) Your name and role',
-      '2) Country or jurisdiction',
-      '3) The decision or outcome you need help with'
-    ].join('\n');
-  }, [caseStudy.userName]);
+  // buildLowSignalReply kept as safety fallback — pipeline bypass removed; AI handles all inputs directly
+  const buildLowSignalReply = useCallback((_detectedName: string | null) => {
+    return "What are you working on? I'm ready to help.";
+  }, []);
 
   const extractConsultantSignals = useCallback((input: string) => {
     const normalized = input.trim();
@@ -3633,21 +3623,6 @@ ${agentRegistry.current.toManifest()}`;
     setMessages(prev => [...prev, userMessage]);
     setInputValue('');
     setUploadedFiles([]);
-
-    const shouldBypassStrategicPipeline = inputSignal.isLowSignal && uploadedFiles.length === 0;
-    if (shouldBypassStrategicPipeline) {
-      const assistantReply: Message = {
-        id: crypto.randomUUID(),
-        role: 'assistant',
-        content: buildLowSignalReply(extractedSignals.userName),
-        timestamp: new Date(),
-        phase: 'discovery'
-      };
-      setMessages(prev => [...prev, assistantReply]);
-      setReactiveDraftStatus('Reactive: onboarding mode — low-signal input detected');
-      setReactiveDraftHint('Provide name, jurisdiction, and objective to activate full case analysis.');
-      return;
-    }
 
     setIsLoading(true);
     initializeExecutionTimeline();
@@ -5940,14 +5915,14 @@ Use concrete facts from the case. No template language. Write the complete repor
             ))}
           </div>
 
-          {/* About Button */}
+          {/* Final Report Button */}
           <button
-            onClick={() => setShowAboutBWGA(true)}
-            className="relative z-10 px-3 py-2 bg-white/10 hover:bg-white/20 text-white text-sm font-medium flex items-center gap-1.5 border border-white/20 transition-all"
-            title="About BW Global Advisory"
+            onClick={() => setShowFinalReport(true)}
+            className="relative z-10 px-3 py-2 bg-amber-600/80 hover:bg-amber-500 text-white text-sm font-medium flex items-center gap-1.5 border border-amber-400/40 transition-all"
+            title="Generate or view Final Report"
           >
-            <BookOpen size={14} />
-            About
+            <FileText size={14} />
+            Final Report
           </button>
 
           {/* Language Selector */}
@@ -7445,7 +7420,145 @@ Use concrete facts from the case. No template language. Write the complete repor
         />
       )}
 
-      {/* About BWGA Modal */}
+      {/* Final Report Modal */}
+      {showFinalReport && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="w-full max-w-3xl max-h-[90vh] bg-white border border-stone-200 shadow-2xl flex flex-col overflow-hidden">
+            {/* Modal Header */}
+            <div
+              className="px-6 py-5 relative overflow-hidden"
+              style={{
+                backgroundImage: 'url(https://images.unsplash.com/photo-1677442136019-21780ecad995?w=1400&h=300&fit=crop&q=80)',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+              }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-amber-900/90 via-amber-800/85 to-amber-900/80" />
+              <div className="relative z-10 flex items-center justify-between">
+                <div>
+                  <p className="text-amber-200 uppercase tracking-wider text-[10px] font-semibold mb-1">BW Global Advisory</p>
+                  <h2 className="text-xl font-bold text-white">Final Report</h2>
+                  <p className="text-amber-200 text-xs mt-1">Export, print, or continue your advisory documents</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="px-2 py-0.5 bg-red-600 text-white text-[9px] font-bold tracking-widest uppercase">CONFIDENTIAL</span>
+                  <button
+                    onClick={() => setShowFinalReport(false)}
+                    className="p-2 hover:bg-white/10 text-white border border-white/20 transition-all"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Scrollable Content */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-4">
+              {generatedDocuments.length > 0 ? (
+                <>
+                  <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold">
+                    Ready to Export — {generatedDocuments.length} document{generatedDocuments.length !== 1 ? 's' : ''}
+                  </p>
+                  {generatedDocuments.map((doc) => (
+                    <div key={doc.id} className="border border-stone-200 bg-stone-50 p-4 space-y-3">
+                      <div className="flex items-start justify-between gap-4">
+                        <div>
+                          <p className="text-sm font-bold text-slate-900">{doc.title}</p>
+                          <span className={`inline-block mt-1 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${doc.category === 'report' ? 'bg-blue-100 text-blue-800' : 'bg-emerald-100 text-emerald-800'}`}>
+                            {doc.category}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          onClick={() => {
+                            const win = window.open('', '_blank');
+                            if (win) {
+                              win.document.write(`<html><head><title>${doc.title}</title><style>body{font-family:Georgia,serif;padding:60px;max-width:800px;margin:auto;line-height:1.7}h1{font-size:1.5rem;margin-bottom:1rem}</style></head><body><h1>${doc.title}</h1>${doc.htmlContent || doc.content.replace(/\n/g, '<br/>')}</body></html>`);
+                              win.document.close();
+                              win.print();
+                            }
+                          }}
+                          className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white text-xs font-medium flex items-center gap-1.5 transition-all"
+                        >
+                          <Download size={12} />
+                          Print
+                        </button>
+                        <button
+                          onClick={() => downloadSingleDocAsDocx(doc)}
+                          className="px-3 py-1.5 bg-blue-700 hover:bg-blue-600 text-white text-xs font-medium flex items-center gap-1.5 transition-all"
+                        >
+                          <FileText size={12} />
+                          Download DOCX
+                        </button>
+                        <button
+                          onClick={() => {
+                            PDFAnnotationService.generate({
+                              title: doc.title,
+                              subtitle: 'BW Global Advisory — Confidential Advisory',
+                              bodyText: doc.content,
+                              annotations: PDFAnnotationService.buildAnnotationsFromAnalysis(doc.content),
+                              confidential: true,
+                            });
+                          }}
+                          className="px-3 py-1.5 bg-amber-700 hover:bg-amber-600 text-white text-xs font-medium flex items-center gap-1.5 transition-all"
+                        >
+                          <Download size={12} />
+                          Download PDF
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </>
+              ) : (
+                <div className="space-y-4">
+                  <div className="border border-amber-200 bg-amber-50 p-4">
+                    <p className="text-sm font-semibold text-amber-900 mb-1">No report generated yet</p>
+                    <p className="text-xs text-amber-700 leading-relaxed">
+                      Have a consultation session with the OS and request a report, strategy document, or advisory brief. Once generated, your documents will appear here for export.
+                    </p>
+                  </div>
+                  {messages.filter(m => m.role !== 'system').length > 2 && (
+                    <div className="border border-stone-200 bg-stone-50 p-4">
+                      <p className="text-sm font-semibold text-slate-900 mb-2">Generate from current session</p>
+                      <p className="text-xs text-slate-600 mb-3 leading-relaxed">
+                        The OS will synthesise your current consultation into a structured advisory report.
+                      </p>
+                      <button
+                        onClick={() => {
+                          setShowFinalReport(false);
+                          setInputValue('Generate a final advisory report summarising our full conversation, key findings, recommendations, and next steps.');
+                        }}
+                        className="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white text-sm font-medium transition-all"
+                      >
+                        Generate Final Report
+                      </button>
+                    </div>
+                  )}
+                  {messages.filter(m => m.role !== 'system').length <= 2 && (
+                    <p className="text-xs text-slate-400 text-center py-6">
+                      Begin a consultation, then return here to generate and export your final report.
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 py-3 border-t border-stone-200 bg-stone-50 flex items-center justify-between">
+              <p className="text-[10px] text-slate-400 uppercase tracking-wider">BW Global Advisory — Confidential</p>
+              <button
+                onClick={() => setShowFinalReport(false)}
+                className="px-4 py-1.5 bg-stone-200 hover:bg-stone-300 text-stone-700 text-xs font-medium transition-all"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* About BWGA Modal (retained for reference — button replaced with Final Report) */}
       {showAboutBWGA && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="w-full max-w-3xl max-h-[90vh] bg-white border border-stone-200 shadow-2xl flex flex-col overflow-hidden">
