@@ -234,28 +234,9 @@ export class ExportService {
       case 'ppt':
       case 'dashboard':
       case 'interactive': {
-        // For formats without a dedicated renderer, export structured HTML
-        const htmlContent = `<!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"><title>${meta.title}</title>
-<style>
-body{font-family:Calibri,sans-serif;max-width:960px;margin:40px auto;padding:0 20px;color:#1a365d}
-h1{color:#1a365d;border-bottom:2px solid #b49b67;padding-bottom:8px}
-h2{color:#2c5282;margin-top:32px}
-h3{color:#4a5568}
-table{border-collapse:collapse;width:100%;margin:16px 0}
-th,td{border:1px solid #ccc;padding:8px 12px;text-align:left}
-th{background:#f7fafc;font-weight:600}
-.meta{color:#666;font-size:0.9em;margin-bottom:24px}
-.classification{color:#cc0000;font-weight:bold;text-align:center;margin-bottom:16px}
-</style></head><body>
-<div class="classification">${meta.classification}</div>
-<h1>${meta.title}</h1>
-<div class="meta">Prepared for: ${meta.preparedFor} | By: ${meta.preparedBy} | ${meta.date} | Ref: ${meta.reportId}</div>
-${markdownToHtml(markdown)}
-</body></html>`;
-        const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
-  const ext = 'html';
-        const fname = `${reportId}-${format}-${timestamp}.${ext}`;
+        // For formats without a dedicated renderer, export structured markdown
+        const blob = new Blob([markdown], { type: 'text/markdown;charset=utf-8' });
+        const fname = `${reportId}-${format}-${timestamp}.md`;
         downloadedFilename = downloadBlob(blob, fname);
         break;
       }
@@ -334,111 +315,5 @@ ${markdownToHtml(markdown)}
     });
     return { link };
   }
-}
-
-// ── Minimal markdown → HTML (for HTML export fallback) ──────────────────────
-
-function markdownToHtml(md: string): string {
-  const lines = md.split('\n');
-  const html: string[] = [];
-  let inList = false;
-  let inTable = false;
-
-  const closeList = () => {
-    if (inList) {
-      html.push('</ul>');
-      inList = false;
-    }
-  };
-
-  const closeTable = () => {
-    if (inTable) {
-      html.push('</tbody></table>');
-      inTable = false;
-    }
-  };
-
-  for (let index = 0; index < lines.length; index++) {
-    const trimmed = lines[index].trim();
-
-    if (!trimmed) {
-      closeList();
-      closeTable();
-      continue;
-    }
-
-    if (/^### /.test(trimmed)) {
-      closeList();
-      closeTable();
-      html.push(`<h3>${applyInlineFormatting(trimmed.slice(4))}</h3>`);
-      continue;
-    }
-
-    if (/^## /.test(trimmed)) {
-      closeList();
-      closeTable();
-      html.push(`<h2>${applyInlineFormatting(trimmed.slice(3))}</h2>`);
-      continue;
-    }
-
-    if (/^# /.test(trimmed)) {
-      closeList();
-      closeTable();
-      html.push(`<h1>${applyInlineFormatting(trimmed.slice(2))}</h1>`);
-      continue;
-    }
-
-    if (/^[-*•]\s/.test(trimmed)) {
-      closeTable();
-      if (!inList) {
-        html.push('<ul>');
-        inList = true;
-      }
-      html.push(`<li>${applyInlineFormatting(trimmed.replace(/^[-*•]\s+/, ''))}</li>`);
-      continue;
-    }
-
-    if (/^\|/.test(trimmed)) {
-      closeList();
-      if (/^\|[-:| ]+\|$/.test(trimmed)) {
-        continue;
-      }
-
-      const cells = trimmed.replace(/^\||\|$/g, '').split('|').map(c => c.trim());
-      if (!inTable) {
-        html.push('<table><tbody>');
-        inTable = true;
-      }
-
-      html.push(`<tr>${cells.map(cell => `<td>${applyInlineFormatting(cell)}</td>`).join('')}</tr>`);
-      continue;
-    }
-
-    closeList();
-    closeTable();
-    html.push(`<p>${applyInlineFormatting(trimmed)}</p>`);
-  }
-
-  closeList();
-  closeTable();
-
-  return html.join('\n');
-}
-
-function applyInlineFormatting(input: string): string {
-  const safe = escapeHtml(input);
-  return safe
-    .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.+?)\*/g, '<em>$1</em>');
-}
-
-function escapeHtml(input: string): string {
-  return input
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
 }
 
