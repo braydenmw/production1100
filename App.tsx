@@ -17,6 +17,9 @@ import AdminDashboard from './components/AdminDashboard';
 import { Gateway } from './components/Gateway';
 import MatchmakingEngine from './components/MatchmakingEngine';
 import DocumentGenerationSuite from './components/DocumentGenerationSuite';
+import AdvancedReportGenerator from './components/AdvancedReportGenerator';
+import ExecutiveSummaryGenerator from './components/ExecutiveSummaryGenerator';
+import LettersCatalogModal from './components/LettersCatalogModal';
 import useEscapeKey from './hooks/useEscapeKey';
 import { generateCopilotInsights, generateReportSectionStream } from './services/geminiService';
 import { config } from './services/config';
@@ -51,7 +54,7 @@ const initialReportData: ReportData = {
   risks: { ...initialSection, id: 'risk', title: 'Risk Mitigation Strategy' },
 };
 
-type ViewMode = 'main' | 'user-manual' | 'command-center' | 'consultant-os' | 'report-generator' | 'global-location-intel' | 'admin' | 'intake' | 'matchmaking' | 'documents';
+type ViewMode = 'main' | 'user-manual' | 'command-center' | 'consultant-os' | 'report-generator' | 'global-location-intel' | 'admin' | 'intake' | 'matchmaking' | 'documents' | 'advanced-report' | 'exec-summary' | 'letters';
 
 const App: React.FC = () => {
     // --- STATE ---
@@ -713,6 +716,41 @@ const App: React.FC = () => {
                         targetMarket={params.country || undefined}
                         reportParams={params}
                         reportData={reportData}
+                    />
+                </div>
+            );
+        }
+
+        if (viewMode === 'advanced-report') {
+            return (
+                <div className="w-full h-full overflow-y-auto">
+                    <AdvancedReportGenerator
+                        params={params}
+                        onReportGenerated={() => setViewMode('main')}
+                        onClose={() => setViewMode('command-center')}
+                    />
+                </div>
+            );
+        }
+
+        if (viewMode === 'exec-summary') {
+            return (
+                <div className="w-full h-full overflow-y-auto">
+                    <ExecutiveSummaryGenerator
+                        entity={params}
+                        targetMarket={params.country || undefined}
+                        targetIndustry={(params.industry?.[0]) || undefined}
+                    />
+                </div>
+            );
+        }
+
+        if (viewMode === 'letters') {
+            return (
+                <div className="w-full h-full overflow-y-auto">
+                    <LettersCatalogModal
+                        isOpen={true}
+                        onClose={() => setViewMode('command-center')}
                     />
                 </div>
             );
