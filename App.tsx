@@ -111,6 +111,10 @@ const App: React.FC = () => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [isConsultantActive, setIsConsultantActive] = useState(true);
     const [pendingConsultantQuery, setPendingConsultantQuery] = useState<string | null>(null);
+    const [pendingConsultantContext, setPendingConsultantContext] = useState<{
+        city: string; country: string; summary: string;
+        profile: Record<string, unknown>; research: object | null;
+    } | null>(null);
     // ECOSYSTEM STATE (from EventBus "meadow" signals)
     const [, setEcosystemPulse] = useState<EcosystemPulse | null>(null);
 
@@ -666,6 +670,8 @@ const App: React.FC = () => {
                         isAutonomousThinking={isAutonomousThinking}
                         initialConsultantQuery={pendingConsultantQuery || undefined}
                         onInitialConsultantQueryHandled={() => setPendingConsultantQuery(null)}
+                        initialContext={pendingConsultantContext}
+                        onInitialContextHandled={() => setPendingConsultantContext(null)}
                     />
                 </div>
             );
@@ -679,6 +685,10 @@ const App: React.FC = () => {
                         onOpenCommandCenter={() => setViewMode('command-center')}
                         pendingLocation={pendingLocationData}
                         onLocationLoaded={() => setPendingLocationData(null)}
+                        onPushToConsultant={(data) => {
+                            setPendingConsultantContext(data as { city: string; country: string; summary: string; profile: Record<string, unknown>; research: object | null });
+                            setViewMode('consultant-os');
+                        }}
                     />
                 </div>
             );
@@ -785,6 +795,8 @@ const App: React.FC = () => {
                     isAutonomousThinking={isAutonomousThinking}
                     initialConsultantQuery={pendingConsultantQuery || undefined}
                     onInitialConsultantQueryHandled={() => setPendingConsultantQuery(null)}
+                    initialContext={pendingConsultantContext}
+                    onInitialContextHandled={() => setPendingConsultantContext(null)}
                 />
             </div>
         );

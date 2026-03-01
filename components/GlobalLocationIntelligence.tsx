@@ -45,6 +45,14 @@ const buildFallbackMapUrl = (lat: number, lon: number) =>
 interface GlobalLocationIntelligenceProps {
   onBack?: () => void;
   onOpenCommandCenter?: () => void;
+  /** Called when user pushes a researched location into BW Consultant OS */
+  onPushToConsultant?: (data: {
+    city: string;
+    country: string;
+    summary: string;
+    profile: CityProfile;
+    research: object | null;
+  }) => void;
   pendingLocation?: {
     profile: CityProfile;
     research: LocationResult | null;
@@ -54,7 +62,7 @@ interface GlobalLocationIntelligenceProps {
   onLocationLoaded?: () => void;
 }
 
-const GlobalLocationIntelligence: React.FC<GlobalLocationIntelligenceProps> = ({ onOpenCommandCenter, pendingLocation, onLocationLoaded }) => {
+const GlobalLocationIntelligence: React.FC<GlobalLocationIntelligenceProps> = ({ onOpenCommandCenter, pendingLocation, onLocationLoaded, onPushToConsultant }) => {
   // Core state - starts EMPTY, no pre-selection
   const [profiles, setProfiles] = useState<CityProfile[]>(CITY_PROFILES);
   const [activeProfileId, setActiveProfileId] = useState<string | null>(null);
@@ -1088,6 +1096,29 @@ th { background: #f1f5f9; }
                   >
                     <Download className="w-4 h-4" /> Export Report
                   </button>
+                  {onPushToConsultant && (
+                    <button
+                      onClick={() => {
+                        const summary = [
+                          `Location: ${activeProfile.city}, ${activeProfile.country}`,
+                          activeProfile.economics?.gdpLocal ? `GDP: ${activeProfile.economics.gdpLocal}` : '',
+                          activeProfile.demographics?.population ? `Population: ${activeProfile.demographics.population.toLocaleString()}` : '',
+                          activeProfile.investmentPrograms?.length ? `Investment programs: ${activeProfile.investmentPrograms.slice(0, 2).map((p: any) => p.title || p).join(', ')}` : '',
+                          researchResult?.summary ? `Research summary: ${String(researchResult.summary).substring(0, 300)}` : '',
+                        ].filter(Boolean).join(' | ');
+                        onPushToConsultant({
+                          city: activeProfile.city,
+                          country: activeProfile.country,
+                          summary,
+                          profile: activeProfile,
+                          research: researchResult as object | null,
+                        });
+                      }}
+                      className="px-4 py-2 text-sm bg-amber-600 border border-amber-500 text-white rounded hover:bg-amber-700 flex items-center gap-2 font-semibold"
+                    >
+                      <Rocket className="w-4 h-4" /> Send to BW Consultant
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

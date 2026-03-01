@@ -45,6 +45,8 @@ import { DerivedIndexService } from './DerivedIndexService';
 import MotivationDetector from './MotivationDetector';
 import CounterfactualEngine from './CounterfactualEngine';
 import { narrativeSynthesisEngine } from './narrativeSynthesisEngine';
+import { HistoricalParallelMatcher, type ParallelMatchResult } from './HistoricalParallelMatcher';
+import { PartnerIntelligenceEngine, type RankedPartner, type PartnerCandidate } from './PartnerIntelligenceEngine';
 import { ReportParameters } from '../types';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -113,6 +115,10 @@ export interface BrainContext {
   counterfactualAnalysis: any | null;
   /** Domain agent synthesis (Gov, Banking, Corporate, Market, Risk, Historical) */
   domainAnalysis: SynthesizedAnalysis | null;
+  /** Historical parallel matches — 60 years of documented practice from the case library */
+  historicalParallels: ParallelMatchResult | null;
+  /** Ranked partner candidates — best matched institutional, government, corporate partners */
+  rankedPartners: RankedPartner[] | null;
   /** Derived indices — PRI/TCO/CRI extended scores */
   derivedIndices: { pri?: any; cri?: any } | null;
 }
@@ -368,6 +374,49 @@ export class BrainIntegrationService {
     const maturityScores = (() => { try { return readiness >= 25 ? { scores: calculateMaturityScores(params), insights: generateAIInsights(params) } : null; } catch { return null; } })();
     const problemGraph = (() => { try { return ((params as any).currentMatter || strategicQuestion) ? ProblemToSolutionGraphService.buildGraph({ currentMatter: (params as any).currentMatter || strategicQuestion, objectives: (params as any).objectives || strategicQuestion, constraints: (params as any).constraints || '', evidenceNotes: (params as any).uploadedDocuments || [] }) : null; } catch { return null; } })();
     const dataFabric = (() => { try { return country ? GlobalDataFabricService.buildSnapshot(country, (params as any).jurisdiction || country, [(params as any).organizationType || '', (params as any).sector || ''].filter(Boolean)) : null; } catch { return null; } })();
+
+    // ── Historical Parallel Matcher — 60 years of global case evidence ────────
+    const historicalParallels: ParallelMatchResult | null = (() => {
+      try {
+        if (readiness >= 15 && (country || strategicQuestion || (params as any).currentMatter)) {
+          return HistoricalParallelMatcher.match({
+            ...params as Partial<ReportParameters>,
+            country: country || '',
+          });
+        }
+        return null;
+      } catch { return null; }
+    })();
+
+    // ── Partner Intelligence Engine — ranked institutional/corporate matches ──
+    const GLOBAL_PARTNER_CANDIDATES: PartnerCandidate[] = [
+      { id: 'ifc', name: 'IFC (Intl Finance Corporation)', type: 'multilateral', countries: ['global'], sectors: ['infrastructure', 'finance', 'agribusiness', 'manufacturing', 'technology', 'healthcare'] },
+      { id: 'adb', name: 'Asian Development Bank', type: 'multilateral', countries: ['philippines', 'vietnam', 'indonesia', 'thailand', 'india', 'bangladesh', 'cambodia', 'china', 'myanmar'], sectors: ['infrastructure', 'energy', 'urban', 'agriculture', 'finance', 'climate'] },
+      { id: 'worldbank', name: 'World Bank Group', type: 'multilateral', countries: ['global'], sectors: ['infrastructure', 'education', 'health', 'finance', 'agriculture', 'environment', 'governance'] },
+      { id: 'aiib', name: 'AIIB', type: 'multilateral', countries: ['china', 'india', 'indonesia', 'vietnam', 'philippines', 'malaysia', 'singapore', 'kazakhstan'], sectors: ['infrastructure', 'energy', 'transport', 'technology', 'urban', 'logistics'] },
+      { id: 'dfc', name: 'DFC (US Development Finance)', type: 'multilateral', countries: ['global'], sectors: ['infrastructure', 'energy', 'technology', 'agriculture', 'finance', 'healthcare'] },
+      { id: 'jica', name: 'JICA (Japan)', type: 'government', countries: ['philippines', 'vietnam', 'indonesia', 'india', 'kenya', 'ghana', 'myanmar', 'cambodia', 'laos', 'thailand'], sectors: ['infrastructure', 'agriculture', 'health', 'education', 'environment', 'urban', 'water'] },
+      { id: 'dfat-aus', name: 'DFAT Australia', type: 'government', countries: ['pacific', 'indonesia', 'vietnam', 'philippines', 'papua new guinea', 'fiji', 'timor-leste', 'cambodia'], sectors: ['governance', 'education', 'infrastructure', 'health', 'agriculture', 'climate'] },
+      { id: 'temasek', name: 'Temasek Holdings', type: 'corporate', countries: ['singapore', 'indonesia', 'vietnam', 'india', 'china', 'australia', 'usa', 'global'], sectors: ['technology', 'finance', 'energy', 'infrastructure', 'real estate', 'logistics', 'healthcare'] },
+      { id: 'aecom', name: 'AECOM', type: 'corporate', countries: ['global'], sectors: ['infrastructure', 'transport', 'environment', 'urban', 'energy', 'water', 'government'] },
+      { id: 'cdpq', name: 'CDPQ (Canada)', type: 'bank', countries: ['canada', 'global'], sectors: ['infrastructure', 'real estate', 'technology', 'finance', 'energy', 'agriculture'] },
+      { id: 'gic-sg', name: 'GIC Private Limited', type: 'bank', countries: ['singapore', 'global'], sectors: ['real estate', 'infrastructure', 'technology', 'finance', 'logistics', 'healthcare'] },
+      { id: 'proparco', name: 'Proparco (DFI France)', type: 'multilateral', countries: ['africa', 'asia', 'latin america', 'caribbean', 'global'], sectors: ['energy', 'agriculture', 'health', 'finance', 'urban', 'environment'] },
+    ];
+    const rankedPartners: RankedPartner[] | null = (() => {
+      try {
+        if (readiness >= 25 && country) {
+          return PartnerIntelligenceEngine.rankPartners({
+            country,
+            sector: (params as any).sector || (params as any).organizationType || '',
+            objective: (params as any).objectives || strategicQuestion || '',
+            constraints: (params as any).constraints || '',
+            candidates: GLOBAL_PARTNER_CANDIDATES,
+          }).slice(0, 6);
+        }
+        return null;
+      } catch { return null; }
+    })();
     // IFC assessment (sync path — assessProject is synchronous)
     const ifcAssessment = (() => { try { return (country && ((params as any).sector || (params as any).organizationType)) ? IFCGlobalStandardsEngine.assessProject({ country, sector: (params as any).sector || (params as any).organizationType || 'investment', projectType: (params as any).organizationType || 'investment', investmentSizeM: 10, hasESMS: readiness >= 60, hasLaborPolicies: true, prohibitsChildLabor: true, prohibitsForcedLabor: true, hasOHSProgram: readiness >= 50 }) : null; } catch { return null; } })();
 
@@ -608,6 +657,69 @@ export class BrainIntegrationService {
       }
     }
 
+    // ── Motivation Analysis ───────────────────────────────────────────────────
+    if (motivationAnalysis) {
+      const ma = motivationAnalysis as any;
+      if (ma.redFlags?.length) {
+        promptParts.push(`\n### ── MOTIVATION DETECTOR ──`);
+        promptParts.push(`**Implied Motivation:** ${ma.impliedMotivation || 'unclassified'}`);
+        (ma.redFlags as any[]).slice(0, 2).forEach((rf: any) =>
+          promptParts.push(`⚠️ ${rf.flag || rf.category}: ${rf.recommendation || rf.message || ''}`)
+        );
+      }
+    }
+
+    // ── Domain Agent Synthesis ────────────────────────────────────────────────
+    if (domainAnalysis?.synthesis) {
+      const da = domainAnalysis;
+      promptParts.push(`\n### ── DOMAIN AGENT SYNTHESIS (${da.agentResponses.length} agents, confidence ${da.synthesis.confidenceLevel}%) ──`);
+      promptParts.push(`**Primary Insight:** ${da.synthesis.primaryInsight.substring(0, 400)}`);
+      if (da.synthesis.alternativeViewpoints?.length) {
+        promptParts.push(`**Alternative Viewpoints:** ${da.synthesis.alternativeViewpoints.slice(0, 2).join(' | ')}`);
+      }
+    }
+
+    // ── Historical Parallel Matches (60 years of documented global cases) ─────
+    if (historicalParallels && historicalParallels.matches.length > 0) {
+      promptParts.push(`\n### ── HISTORICAL PARALLEL MATCHER (${historicalParallels.successRate}% success rate across ${historicalParallels.matches.length} similar cases) ──`);
+      promptParts.push(`**Synthesis:** ${historicalParallels.synthesisInsight}`);
+      if (historicalParallels.matches[0]) {
+        const top = historicalParallels.matches[0];
+        promptParts.push(`**Closest Precedent:** ${top.title} (${top.country}, ${top.year}) — ${top.outcome} — "${top.description.substring(0, 150)}"`);
+        if (top.lessonsLearned?.length) promptParts.push(`**Key Lessons:** ${top.lessonsLearned.slice(0, 2).join(' | ')}`);
+      }
+      if (historicalParallels.commonSuccessFactors.length) {
+        promptParts.push(`**What Works:** ${historicalParallels.commonSuccessFactors.slice(0, 3).join(' | ')}`);
+      }
+      if (historicalParallels.commonFailureFactors.length) {
+        promptParts.push(`**⚠ Common Failure Points:** ${historicalParallels.commonFailureFactors.slice(0, 3).join(' | ')}`);
+      }
+      if (historicalParallels.recommendedActions.length) {
+        promptParts.push(`**Actions to Take Now:** ${historicalParallels.recommendedActions.slice(0, 3).join(' | ')}`);
+      }
+    }
+
+    // ── Ranked Partner Candidates ─────────────────────────────────────────────
+    if (rankedPartners && rankedPartners.length > 0) {
+      promptParts.push(`\n### ── PARTNER INTELLIGENCE ENGINE — Top ${Math.min(4, rankedPartners.length)} Ranked Partners for ${country} ──`);
+      rankedPartners.slice(0, 4).forEach((rp, i) => {
+        const reasons = rp.reasons.slice(0, 2).join(', ') || 'general strategic alignment';
+        promptParts.push(`${i + 1}. **${rp.partner.name}** (${rp.partner.type}) — Score: ${rp.score.total}/100 | Fit: ${rp.score.partnerFit} | Policy Alignment: ${rp.score.policyAlignment} | Delivery: ${rp.score.deliveryReliability} — ${reasons}`);
+      });
+      promptParts.push(`When advising on partners, introductions, letters of intent, or engagement strategies — reference these ranked matches with their scores and alignment rationale.`);
+    }
+
+    // ── Counterfactual Analysis ───────────────────────────────────────────────
+    if (counterfactualAnalysis) {
+      const ca = counterfactualAnalysis as any;
+      if (ca.scenarios?.length) {
+        promptParts.push(`\n### ── COUNTERFACTUAL ENGINE (What-If Scenarios) ──`);
+        (ca.scenarios as any[]).slice(0, 2).forEach((s: any) => {
+          promptParts.push(`- **If ${s.condition || s.scenario}:** ${s.outcome || s.result || ''}`);
+        });
+      }
+    }
+
     // ── Document Catalog Recommendations (247 docs + 156 letters) ────────────
     const catalogKeywords = [
       params.country || '',
@@ -672,6 +784,8 @@ export class BrainIntegrationService {
       motivationAnalysis,
       counterfactualAnalysis,
       domainAnalysis,
+      historicalParallels,
+      rankedPartners,
       derivedIndices: null, // async path handled by Promise.allSettled above — populated on next enrich() call
     };
 

@@ -746,9 +746,19 @@ const REGIONAL_PARTNER_CANDIDATES: PartnerCandidate[] = [
 interface BWConsultantOSProps {
   onOpenWorkspace?: (payload?: { query?: string; results?: Record<string, unknown>[] }) => void;
   embedded?: boolean;
+  initialConsultantQuery?: string;
+  onInitialConsultantQueryHandled?: () => void;
+  initialContext?: {
+    city?: string;
+    country?: string;
+    summary?: string;
+    profile?: Record<string, unknown>;
+    research?: object | null;
+  } | null;
+  onInitialContextHandled?: () => void;
 }
 
-const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, embedded = false }) => {
+const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, embedded = false, initialConsultantQuery, onInitialConsultantQueryHandled, initialContext, onInitialContextHandled }) => {
   // Core state
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
@@ -777,6 +787,46 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, embedd
       }
     };
   }, []);
+
+  // ── Auto-inject initial consultant query (from command-centre / other modules) ──
+  useEffect(() => {
+    if (!initialConsultantQuery) return;
+    setInputValue(initialConsultantQuery);
+    onInitialConsultantQueryHandled?.();
+  }, [initialConsultantQuery]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Auto-inject location context pushed from Live Research ──────────────────
+  useEffect(() => {
+    if (!initialContext) return;
+    const locationLabel = [initialContext.city, initialContext.country].filter(Boolean).join(', ');
+    const locationNote = [
+      locationLabel ? `📍 **${locationLabel}**` : '',
+      initialContext.summary || '',
+    ].filter(Boolean).join('\n\n');
+    setMessages(prev => [
+      ...prev,
+      {
+        id: crypto.randomUUID(),
+        role: 'system' as const,
+        content: `Location intelligence pushed from Live Research:\n\n${locationNote}\n\nI've loaded this location profile. Tell me what you're trying to achieve here and I'll immediately begin building your advisory case.`,
+        timestamp: new Date(),
+        phase: 'discovery' as const,
+      },
+    ]);
+    if (initialContext.country || initialContext.city) {
+      setCaseStudy(prev => ({
+        ...prev,
+        country: prev.country || initialContext.country || '',
+        jurisdiction: prev.jurisdiction || initialContext.country || '',
+        currentMatter: prev.currentMatter.length < 40 ? (initialContext.summary?.substring(0, 200) || prev.currentMatter) : prev.currentMatter,
+        additionalContext: [
+          ...prev.additionalContext,
+          `Location intelligence: ${locationLabel}`,
+        ],
+      }));
+    }
+    onInitialContextHandled?.();
+  }, [initialContext]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Voice Input (Speech-to-Text) ──────────────────────────────────────────
   const toggleVoiceInput = useCallback(() => {
@@ -3701,9 +3751,18 @@ Instead:
 - Be direct, confident, and concise. Sound like a senior consultant, not a form wizard.`
           : `Autonomous mixed-initiative mode: answer user intent first, then move the case forward with one highest-value follow-up if required. Do not run scripted intake.`;
 
+        const docUploadBlock = uploadedFiles.length > 0
+          ? '\n\nDOCUMENT ANALYSIS PROTOCOL: The user has uploaded ' + uploadedFiles.length + ' document(s). Your FIRST job is to:\n' +
+            '1. Identify the document TYPE (feasibility study, business plan, government submission, due diligence, contract, investment memorandum, policy brief, etc.).\n' +
+            '2. Extract and explicitly state: WHO this is for/about, WHERE (country/region/city), WHAT decision or outcome is in scope.\n' +
+            '3. Open with ONE sentence in this format: "I can see this is a [type] relating to [topic] in [location]. Based on this, you likely need [specific next step]."\n' +
+            '4. Ask exactly ONE targeted follow-up question that moves the case forward based on what the document reveals — not for information already present in the document.\n' +
+            'Do NOT ask generic questions. Read what is there and act on it intelligently.'
+          : '';
+
         responseContent = await processWithAIStream(
           userContent,
-          `${openingInstruction}${memoryBlock}${brainBlock}`,
+          `${openingInstruction}${memoryBlock}${brainBlock}${docUploadBlock}`,
           (streamText) => {
             setMessages(prev => prev.map((msg) => (
               msg.id === assistantMessageId ? { ...msg, content: streamText } : msg
