@@ -387,7 +387,37 @@ export const extractFileTextViaAI = async (file: File): Promise<string> => {
     }
   }
 
-  // 2. Plain text fallback (txt, md, csv, xml — anything readable as text)
+  // 2. Client-side PDF text extraction (browser-native, no credentials needed)
+  if (lowerName.endsWith('.pdf')) {
+    try {
+      const pdfjsLib = await import('pdfjs-dist');
+      // Point the worker at the bundled file in pdfjs-dist — Vite resolves this at build time
+      pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+        'pdfjs-dist/build/pdf.worker.min.mjs',
+        import.meta.url
+      ).toString();
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      const pages: string[] = [];
+      const maxPages = Math.min(pdf.numPages, 120);
+      for (let i = 1; i <= maxPages; i++) {
+        const page = await pdf.getPage(i);
+        const content = await page.getTextContent();
+        const pageText = content.items
+          .map((item: Record<string, unknown>) => (typeof item['str'] === 'string' ? item['str'] : ''))
+          .join(' ');
+        if (pageText.trim()) pages.push(pageText);
+      }
+      const fullText = pages.join('\n\n').trim();
+      if (fullText.length > 50) {
+        return `[${file.name}] (${pdf.numPages} pages — client extracted)\n${fullText.slice(0, 60000)}`;
+      }
+    } catch (pdfErr) {
+      console.warn('Client-side PDF extraction failed, falling back:', pdfErr);
+    }
+  }
+
+  // 3. Plain text fallback (txt, md, csv, xml — anything readable as text)
   const isTextLike = ['.txt', '.md', '.csv', '.xml', '.json', '.html', '.htm', '.log'].some(e => lowerName.endsWith(e));
   const ext = Object.keys(SUPPORTED_MIME_TYPES).find(e => lowerName.endsWith(e));
   if (isTextLike || (ext && SUPPORTED_MIME_TYPES[ext]?.startsWith('text/'))) {
@@ -399,6 +429,6 @@ export const extractFileTextViaAI = async (file: File): Promise<string> => {
     } catch { /* ignore */ }
   }
 
-  return `[${file.name}] — PDF content could not be extracted in this environment. For AI-powered document analysis, ensure AWS Bedrock credentials are configured. The file name and upload have been noted for the consultation context.`;
+  return `[${file.name}] — File content could not be extracted. Please convert to plain text (.txt) and re-upload, or paste the content directly into the chat.`;
 };
 
