@@ -5001,10 +5001,10 @@ Use concrete facts from the case. No template language. Write the complete repor
       const result = await AgentOrchestrator.run({
         organizationName: caseStudy.organizationName || 'Unknown Organisation',
         country:           caseStudy.country          || 'Unknown Country',
-        sector:            caseStudy.sector           || caseStudy.organizationType || 'General',
+        sector:            caseStudy.organizationType || 'General',
         organizationType:  caseStudy.organizationType || 'Private Sector',
-        objectives:        caseStudy.strategicObjective || '',
-        strategicIntent:   caseStudy.strategicIntent   || [],
+        objectives:        caseStudy.objectives       || '',
+        strategicIntent:   [],
         userName:          caseStudy.userName          || '',
         currentMatter:     caseStudy.currentMatter     || '',
         brainContext:      brainCtxRef.current         || undefined,
@@ -5015,31 +5015,31 @@ Use concrete facts from the case. No template language. Write the complete repor
 
       if (result.success && result.documents.length > 0) {
         setGeneratedDocuments(prev => [...prev, ...result.documents]);
-        addMessage({
+        setMessages(prev => [...prev, {
           id: `agent-done-${Date.now()}`,
-          role: 'assistant',
+          role: 'assistant' as const,
           content: `**Autonomous Run Complete**\n\n` +
             `Generated **${result.documents.length} outputs** (${result.totalWordCount.toLocaleString()} words) ` +
             `in ${(result.durationMs / 1000).toFixed(1)}s using Llama 3.1 70B via Together.ai.\n\n` +
             result.documents.map(d => `• ${d.typeName}`).join('\n'),
           timestamp: new Date(),
-          phase: 'generation',
-        });
+          phase: 'generation' as const,
+        }]);
       } else {
-        addMessage({
+        setMessages(prev => [...prev, {
           id: `agent-err-${Date.now()}`,
-          role: 'assistant',
+          role: 'assistant' as const,
           content: `Autonomous Run encountered an issue: ${result.error || 'Unknown error'}. Check that VITE_TOGETHER_API_KEY is set in .env.`,
           timestamp: new Date(),
-          phase: 'generation',
-        });
+          phase: 'generation' as const,
+        }]);
       }
     } catch (err) {
       console.error('[AutonomousRun] Error:', err);
     } finally {
       setIsAutonomousRunning(false);
     }
-  }, [isAutonomousRunning, caseStudy, brainCtxRef, addMessage]);
+  }, [isAutonomousRunning, caseStudy, brainCtxRef]);
   const phaseLabels: Record<CasePhase, { label: string; description: string }> = {
     intake: { label: 'Intake', description: 'Understanding who you are' },
     discovery: { label: 'Discovery', description: 'Learning about your situation' },
