@@ -3796,7 +3796,7 @@ ${agentRegistry.current.toManifest()}`;
         // Build the system instruction. For greeting/low-readiness turns inject a
         // capability-led opening so the AI demonstrates value instead of running a
         // scripted intake questionnaire like a basic chatbot.
-        const isOpeningTurn = liveReadiness < 20 || isGreetingOnly;
+        const isOpeningTurn = !hadFileUpload && (liveReadiness < 20 || isGreetingOnly);
 
         // Build a case context block from what was just extracted this turn
         const thisTurnContext = [
@@ -3836,18 +3836,144 @@ ${thisTurnContext || 'Continuing from prior turns — see case study JSON above.
 
 Respond to the user's intent first, then advance the case with one follow-up if needed.`;
 
-        const docUploadBlock = uploadedFiles.length > 0
-          ? '\n\nDOCUMENT ANALYSIS PROTOCOL: The user has uploaded ' + uploadedFiles.length + ' document(s). Your FIRST job is to:\n' +
-            '1. Identify the document TYPE (feasibility study, business plan, government submission, due diligence, contract, investment memorandum, policy brief, etc.).\n' +
-            '2. Extract and explicitly state: WHO this is for/about, WHERE (country/region/city), WHAT decision or outcome is in scope.\n' +
-            '3. Open with ONE sentence in this format: "I can see this is a [type] relating to [topic] in [location]. Based on this, you likely need [specific next step]."\n' +
-            '4. Ask exactly ONE targeted follow-up question that moves the case forward based on what the document reveals — not for information already present in the document.\n' +
-            'Do NOT ask generic questions. Read what is there and act on it intelligently.'
+        const docUploadBlock = hadFileUpload
+          ? `
+
+NEXUS AI — DOCUMENT INTELLIGENCE BRIEF PROTOCOL
+================================================
+The user has uploaded ${uploadedFiles.length > 0 ? uploadedFiles.length : 'one or more'} document(s). You must now produce a COMPLETE NEXUS AI INTELLIGENCE BRIEF — not a short reply, not a summary paragraph. This is the primary deliverable for document uploads.
+
+OUTPUT FORMAT — FOLLOW EXACTLY:
+
+Produce a formatted intelligence brief using the structure below. Use ━━━ separators and ALL-CAPS section headings. Each section must include a bracketed engine label showing which analytical layer produced that content.
+
+┌─────────────────────────────────────────────────────────────────┐
+│               BW GLOBAL ADVISORY — NEXUS AI                     │
+│    [DERIVE ACCURATE TITLE FROM DOCUMENT CONTENT]                 │
+│                                                                  │
+│  Prepared for: [Extract from case context or document]           │
+│  Classification: CONFIDENTIAL          Date: ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}   │
+│  Prepared by: BW Global Advisory — NSIL Agentic Runtime         │
+└─────────────────────────────────────────────────────────────────┘
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION A — EXECUTIVE SUMMARY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[NSIL Agentic Runtime — synthesised from full document text]
+
+Write 2–3 paragraphs that give a senior decision-maker everything they need to understand the situation, the stakes, and the strategic context. Reference specific facts, figures, and place names from the document.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION B — PROBLEM DIAGNOSIS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[Brain-generated from NSIL + Historical Matcher + document text]
+
+Identify and number 3–5 root-cause structural failures, systemic gaps, or key challenge drivers extracted directly from the document. Be specific — name the mechanisms, data points, and actors responsible.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION C — HISTORICAL PARALLEL ANALYSIS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[HistoricalMatcher — 60-year global case library]
+
+Identify 2–3 historical international cases most analogous to the situation described in the document. For each case: name the country and year, the parallel, the outcome, and the lesson that applies directly to this case.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION D — STAKEHOLDER ADVERSARIAL MAP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[AdversarialReasoningService — 5 stakeholder personas]
+
+Map the stakeholder landscape across five categories. Name specific institutions, agencies, or actors from the document where possible:
+
+SUPPORTER:  [Institutions/actors that benefit and will actively assist]
+NEUTRAL:    [Actors watching, uncommitted — what would shift them]
+RESISTOR:   [Institutional interests that slow but do not block]
+BLOCKER:    [Actors with direct incentive to prevent or derail]
+WILDCARD:   [External actors whose position could change the trajectory]
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION E — COMPOSITE INTELLIGENCE SCORES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[ComprehensiveIndicesEngine — BWGA quantitative assessment]
+
+Score the situation on the following indices (0–100). Derive scores from evidence in the document and your knowledge. Format each as:
+[Metric Name]:   [XX]/100  [████░░░░░░ visual bar]
+[Brief rationale for the score]
+
+Include at minimum: Strategic Positioning Index, Investment Viability Score, Political Stability, Implementation Feasibility, Stakeholder Alignment.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION F — STRATEGIC PILLARS / KEY RECOMMENDATIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[RegionalDevelopmentOrchestrator + DecisionPipeline]
+
+Derive 3 strategic pillars or reform interventions directly from the document's own recommendations or gaps. For each pillar:
+PILLAR [N]: [NAME IN CAPS]
+  → Core intervention and rationale
+  → Suggested implementation partner (from BWGA network or document-named actors)
+  → Timeline estimate
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION G — PARTNER MATRIX
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[PartnerIntelligenceEngine — BWGA ranked fit analysis]
+
+List 4–6 institutional partners best positioned to support implementation. Format as:
+
+Rank  Partner           Role                    Fit Score
+  1   [Name]            [Specific role]          [XX]/100
+  ...
+
+Draw from: ADB, World Bank, IFC, JICA, USAID, UNDP, AIIB, DFAT, EU, bilateral donors — or cite specific organisations named in the document.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION H — RISK REGISTER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[CounterfactualEngine + MotivationDetector]
+
+List 5 material risks with severity rating. Format:
+
+[SEVERITY]:  [Risk description — specific to document context]
+
+Include political, implementation, financing, and external risks. Base ratings on document evidence.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION I — RECOMMENDED IMMEDIATE ACTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[DecisionPipeline — structured 90-day action sequence]
+
+Provide a phased action roadmap:
+
+WEEK 1–2:   [Priority action for the client to take NOW]
+WEEK 3–4:   [Second action building on week 1]
+MONTH 2:    [Medium-term institutional or political action]
+MONTH 3:    [Implementation-phase trigger action]
+MONTH 4+:   [Structural or legislative / funding action]
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                    BW GLOBAL ADVISORY
+         Powered by NSIL Agentic Runtime • NEXUS AI
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CRITICAL EXECUTION RULES:
+- DO NOT produce a short chat reply. Produce the FULL brief above — all 9 sections.
+- DO NOT use placeholder text like "[Insert analysis here]" — write real analytical content drawn from the uploaded document.
+- DO use specific names, figures, regions, and organisations from the document.
+- After completing the brief, DO NOT ask any follow-up questions — the ReportOptionsPanel will appear automatically for the user to choose next steps.
+- The brief IS the first deliverable. Treat it as a real consultant output, not a system message.`
           : '';
 
         responseContent = await processWithAIStream(
           userContent,
-          `${openingInstruction}${memoryBlock}${brainBlock}${docUploadBlock}`,
+          `${docUploadBlock}${openingInstruction}${memoryBlock}${brainBlock}`,
           (streamText) => {
             setMessages(prev => prev.map((msg) => (
               msg.id === assistantMessageId ? { ...msg, content: streamText } : msg
