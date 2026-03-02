@@ -46,6 +46,10 @@ import CounterfactualEngine from './CounterfactualEngine';
 import { narrativeSynthesisEngine } from './narrativeSynthesisEngine';
 import { HistoricalParallelMatcher, type ParallelMatchResult } from './HistoricalParallelMatcher';
 import { PartnerIntelligenceEngine, type RankedPartner, type PartnerCandidate } from './PartnerIntelligenceEngine';
+import SituationAnalysisEngine from './SituationAnalysisEngine';
+import OutcomeTracker from './OutcomeTracker';
+import { selfLearningEngine } from './selfLearningEngine';
+import { UnbiasedAnalysisEngine } from './UnbiasedAnalysisEngine';
 import { ReportParameters } from '../types';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -120,6 +124,12 @@ export interface BrainContext {
   rankedPartners: RankedPartner[] | null;
   /** Derived indices — PRI/TCO/CRI extended scores */
   derivedIndices: { pri?: any; cri?: any } | null;
+  /** Situation analysis — perspectives, blind spots, contrarian view */
+  situationAnalysis: { unconsideredNeeds: string[]; blindSpots: string[]; recommendedQuestions: string[]; contrarianView: string } | null;
+  /** Self-learning insights — performance-based recommendations */
+  selfLearningInsights: string[] | null;
+  /** Unbiased analysis — pro/con, debate positions, alternative options */
+  unbiasedAnalysis: { proPoints: string[]; conPoints: string[]; alternatives: string[] } | null;
 }
 
 // ─── Simple in-process cache (keyed by country + objectives + org) ────────────
@@ -373,6 +383,53 @@ export class BrainIntegrationService {
     const maturityScores = (() => { try { return readiness >= 25 ? { scores: calculateMaturityScores(params), insights: generateAIInsights(params) } : null; } catch { return null; } })();
     const problemGraph = (() => { try { return ((params as any).currentMatter || strategicQuestion) ? ProblemToSolutionGraphService.buildGraph({ currentMatter: (params as any).currentMatter || strategicQuestion, objectives: (params as any).objectives || strategicQuestion, constraints: (params as any).constraints || '', evidenceNotes: (params as any).uploadedDocuments || [] }) : null; } catch { return null; } })();
     const dataFabric = (() => { try { return country ? GlobalDataFabricService.buildSnapshot(country, (params as any).jurisdiction || country, [(params as any).organizationType || '', (params as any).sector || ''].filter(Boolean)) : null; } catch { return null; } })();
+
+    // ── Situation Analysis Engine — perspectives, blind spots, contrarian view ─
+    const situationAnalysis = (() => {
+      try {
+        const summary = SituationAnalysisEngine.quickSummary(params);
+        return {
+          unconsideredNeeds: summary.unconsideredNeeds ?? [],
+          blindSpots: summary.blindSpots ?? [],
+          recommendedQuestions: summary.recommendedQuestions ?? [],
+          contrarianView: summary.contrarianView ?? '',
+        };
+      } catch { return null; }
+    })();
+
+    // ── Self-Learning Engine — performance-based recommendations ──────────────
+    const selfLearningInsights = (() => {
+      try {
+        const recs = (selfLearningEngine as any).getRecommendations?.();
+        return Array.isArray(recs) ? recs.slice(0, 5) : null;
+      } catch { return null; }
+    })();
+
+    // ── Unbiased Analysis Engine — pro/con, debate, alternatives ─────────────
+    const unbiasedAnalysis = (() => {
+      try {
+        const eng = new UnbiasedAnalysisEngine();
+        const full = (eng as any).generateFullAnalysis?.(params) ?? (eng as any).analyze?.(params);
+        if (full) {
+          return {
+            proPoints: full.proPoints ?? full.pros ?? [],
+            conPoints: full.conPoints ?? full.cons ?? [],
+            alternatives: full.alternatives ?? full.alternativeOptions ?? [],
+          };
+        }
+        return null;
+      } catch { return null; }
+    })();
+
+    // ── OutcomeTracker — track enrichment run for learning ────────────────────
+    (() => {
+      try {
+        const tracker = new OutcomeTracker();
+        if (typeof (tracker as any).recordEnrichment === 'function') {
+          (tracker as any).recordEnrichment({ country, readiness, computedAt: new Date().toISOString() });
+        }
+      } catch { /* non-critical */ }
+    })();
 
     // ── Historical Parallel Matcher — 60 years of global case evidence ────────
     const historicalParallels: ParallelMatchResult | null = (() => {
@@ -755,6 +812,29 @@ export class BrainIntegrationService {
     if (bestDoc) promptParts.push(`**Best Case Match:** ${bestDoc.name} (${bestDoc.category})`);
     if (bestLetter) promptParts.push(`**Best Letter Match:** ${bestLetter.name} (${bestLetter.category})`);
 
+    // ── Situation Analysis ────────────────────────────────────────────────────
+    if (situationAnalysis) {
+      promptParts.push(`\n### ── SITUATION ANALYSIS ──`);
+      if (situationAnalysis.contrarianView) promptParts.push(`**Contrarian View:** ${situationAnalysis.contrarianView}`);
+      if (situationAnalysis.blindSpots.length) promptParts.push(`**Blind Spots:** ${situationAnalysis.blindSpots.slice(0, 3).join('; ')}`);
+      if (situationAnalysis.unconsideredNeeds.length) promptParts.push(`**Unconsidered Needs:** ${situationAnalysis.unconsideredNeeds.slice(0, 3).join('; ')}`);
+      if (situationAnalysis.recommendedQuestions.length) promptParts.push(`**Recommended Questions:** ${situationAnalysis.recommendedQuestions.slice(0, 2).join(' / ')}`);
+    }
+
+    // ── Self-Learning Insights ────────────────────────────────────────────────
+    if (selfLearningInsights && selfLearningInsights.length) {
+      promptParts.push(`\n### ── SELF-LEARNING INSIGHTS ──`);
+      selfLearningInsights.forEach(insight => promptParts.push(`- ${insight}`));
+    }
+
+    // ── Unbiased Analysis ─────────────────────────────────────────────────────
+    if (unbiasedAnalysis) {
+      promptParts.push(`\n### ── UNBIASED PRO/CON ANALYSIS ──`);
+      if (unbiasedAnalysis.proPoints.length) promptParts.push(`**Pros:** ${unbiasedAnalysis.proPoints.slice(0, 3).join('; ')}`);
+      if (unbiasedAnalysis.conPoints.length) promptParts.push(`**Cons:** ${unbiasedAnalysis.conPoints.slice(0, 3).join('; ')}`);
+      if (unbiasedAnalysis.alternatives.length) promptParts.push(`**Alternatives:** ${unbiasedAnalysis.alternatives.slice(0, 2).join('; ')}`);
+    }
+
     promptParts.push(`${'═'.repeat(70)}\n`);
 
     const result: BrainContext = {
@@ -786,6 +866,9 @@ export class BrainIntegrationService {
       historicalParallels,
       rankedPartners,
       derivedIndices: null, // async path handled by Promise.allSettled above — populated on next enrich() call
+      situationAnalysis,
+      selfLearningInsights,
+      unbiasedAnalysis,
     };
 
     cache.set(key, { result, expiresAt: Date.now() + CACHE_TTL_MS });

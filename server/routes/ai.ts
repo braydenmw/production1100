@@ -37,6 +37,62 @@ const getGenAI = () => {
   return genAI;
 };
 
+// ─── Unified AI helper: Bedrock first → Gemini fallback ───────────────────────
+const isAIAvailable = (): boolean => {
+  if (process.env.AWS_REGION && (process.env.AWS_ACCESS_KEY_ID || process.env.AWS_BEDROCK_API_KEY)) return true;
+  if (getGenAI()) return true;
+  return false;
+};
+
+const generateWithAI = async (prompt: string, systemInstruction?: string): Promise<string> => {
+  // 1. AWS Bedrock (primary — no Gemini key needed)
+  const AWS_REGION = process.env.AWS_REGION;
+  if (AWS_REGION && (process.env.AWS_ACCESS_KEY_ID || process.env.AWS_BEDROCK_API_KEY)) {
+    try {
+      const { BedrockRuntimeClient, InvokeModelCommand } = await import('@aws-sdk/client-bedrock-runtime');
+      let accessKeyId = process.env.AWS_ACCESS_KEY_ID;
+      let secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
+      if ((!accessKeyId || !secretAccessKey) && process.env.AWS_BEDROCK_API_KEY) {
+        try {
+          const decoded = Buffer.from(process.env.AWS_BEDROCK_API_KEY, 'base64').toString('utf-8').replace(/^[^\x20-\x7E]+/, '');
+          const sep = decoded.indexOf(':');
+          if (sep > 0) { accessKeyId = decoded.slice(0, sep); secretAccessKey = decoded.slice(sep + 1); }
+        } catch { /* fall through */ }
+      }
+      const client = new BedrockRuntimeClient({
+        region: AWS_REGION,
+        ...(accessKeyId && secretAccessKey ? { credentials: { accessKeyId, secretAccessKey } } : {}),
+      });
+      const command = new InvokeModelCommand({
+        modelId: process.env.BEDROCK_CONSULTANT_MODEL_ID || 'anthropic.claude-3-5-sonnet-20241022-v2:0',
+        contentType: 'application/json',
+        accept: 'application/json',
+        body: JSON.stringify({
+          anthropic_version: 'bedrock-2023-05-31',
+          max_tokens: 2048,
+          temperature: 0.4,
+          ...(systemInstruction ? { system: systemInstruction } : {}),
+          messages: [{ role: 'user', content: prompt }],
+        }),
+      });
+      const response = await client.send(command);
+      const payload = JSON.parse(new TextDecoder().decode(response.body));
+      const text = payload?.content?.[0]?.text?.trim() || '';
+      if (text) return text;
+    } catch (bedrockErr) {
+      console.warn('[AI Routes] Bedrock failed, trying Gemini:', bedrockErr instanceof Error ? bedrockErr.message : bedrockErr);
+    }
+  }
+  // 2. Gemini fallback
+  const ai = getGenAI();
+  if (ai) {
+    const model = ai.getGenerativeModel({ model: 'gemini-2.0-flash', ...(systemInstruction ? { systemInstruction } : {}) });
+    const result = await model.generateContent(prompt);
+    return result.response.text();
+  }
+  throw new Error('No AI provider configured. Set AWS_REGION + AWS_BEDROCK_API_KEY or GEMINI_API_KEY.');
+};
+
 // System instruction for the AI
 const SYSTEM_INSTRUCTION = `
 You are "BWGA Intelligence AI" (NEXUS_OS_v4.1), the world's premier Economic Intelligence Operating System.
@@ -583,7 +639,7 @@ const invokeConsultantWithBedrock = async (prompt: string): Promise<string> => {
   });
 
   const command = new InvokeModelCommand({
-    modelId: process.env.BEDROCK_CONSULTANT_MODEL_ID || 'anthropic.claude-3-sonnet-20240229-v1:0',
+    modelId: process.env.BEDROCK_CONSULTANT_MODEL_ID || 'anthropic.claude-3-5-sonnet-20241022-v2:0',
     contentType: 'application/json',
     accept: 'application/json',
     body: JSON.stringify({
@@ -635,13 +691,12 @@ const runConsultantBroker = async (
   throw new Error(`No consultant providers succeeded. ${details}`);
 };
 
-// Middleware to check API key
+// Middleware to check API availability (Bedrock OR Gemini)
 const requireApiKey = (_req: Request, res: Response, next: () => void) => {
-  const ai = getGenAI();
-  if (!ai) {
+  if (!isAIAvailable()) {
     return res.status(503).json({ 
       error: 'AI service unavailable', 
-      message: 'GEMINI_API_KEY not configured on server' 
+      message: 'Configure AWS_REGION + AWS_BEDROCK_API_KEY (recommended) or GEMINI_API_KEY'
     });
   }
   next();
@@ -652,8 +707,6 @@ router.post('/insights', requireApiKey, async (req: Request, res: Response) => {
   try {
     const { organizationName, country, strategicIntent, specificOpportunity } = req.body;
     
-    const model = getGenAI()!.getGenerativeModel({ model: 'gemini-2.0-flash' });
-    
     const prompt = `Analyze this partnership strategy and provide 3 key insights:
     Organization: ${organizationName}
     Country: ${country}
@@ -663,8 +716,7 @@ router.post('/insights', requireApiKey, async (req: Request, res: Response) => {
     Return JSON array with objects containing: id, type (strategy/risk/opportunity), title, description.
     Only return valid JSON, no markdown.`;
     
-    const result = await model.generateContent(prompt);
-    const text = result.response.text();
+    const text = await generateWithAI(prompt, SYSTEM_INSTRUCTION);
     
     // Parse JSON from response
     const jsonMatch = text.match(/\[[\s\S]*\]/);
@@ -690,17 +742,11 @@ router.post('/chat', requireApiKey, async (req: Request, res: Response) => {
   try {
     const { message, context } = req.body;
     
-    const model = getGenAI()!.getGenerativeModel({ 
-      model: 'gemini-2.0-flash',
-      systemInstruction: SYSTEM_INSTRUCTION
-    });
-    
     const prompt = context 
       ? `CONTEXT: ${JSON.stringify(context)}\n\nUSER QUERY: ${message}`
       : message;
     
-    const result = await model.generateContent(prompt);
-    const text = result.response.text();
+    const text = await generateWithAI(prompt, SYSTEM_INSTRUCTION);
     
     res.json({
       id: Date.now().toString(),
@@ -1245,11 +1291,6 @@ router.post('/generate-section', requireApiKey, async (req: Request, res: Respon
   try {
     const { section, params } = req.body;
     
-    const model = getGenAI()!.getGenerativeModel({ 
-      model: 'gemini-2.0-flash',
-      systemInstruction: SYSTEM_INSTRUCTION
-    });
-    
     const opportunityContext = params.specificOpportunity ? `Focused on: ${params.specificOpportunity}` : '';
     const prompt = `Generate the '${section}' section for a strategic report on ${params.organizationName}. 
     Target Market: ${params.country}. 
@@ -1257,8 +1298,7 @@ router.post('/generate-section', requireApiKey, async (req: Request, res: Respon
     ${opportunityContext}
     Format: Professional markdown, concise executive style.`;
     
-    const result = await model.generateContent(prompt);
-    const text = result.response.text();
+    const text = await generateWithAI(prompt, SYSTEM_INSTRUCTION);
     
     res.json({ content: text });
   } catch (error) {
@@ -1272,11 +1312,6 @@ router.post('/generate-stream', requireApiKey, async (req: Request, res: Respons
   try {
     const { section, params, prompt } = req.body;
     
-    const model = getGenAI()!.getGenerativeModel({ 
-      model: 'gemini-2.0-flash',
-      systemInstruction: SYSTEM_INSTRUCTION
-    });
-    
     const opportunityContext = params?.specificOpportunity ? `Focused on: ${params.specificOpportunity}` : '';
     const streamPrompt = prompt || `Generate the '${section || 'analysis'}' section for a strategic report on ${params?.organizationName || 'the organization'}. 
     Target Market: ${params?.country || 'unspecified'}. 
@@ -1289,12 +1324,9 @@ router.post('/generate-stream', requireApiKey, async (req: Request, res: Respons
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
     
-    const result = await model.generateContentStream(streamPrompt);
-    
-    for await (const chunk of result.stream) {
-      const text = chunk.text();
-      res.write(`data: ${JSON.stringify({ text })}\n\n`);
-    }
+    // generateWithAI (Bedrock or Gemini) — send as single SSE chunk
+    const streamText = await generateWithAI(streamPrompt, SYSTEM_INSTRUCTION);
+    res.write(`data: ${JSON.stringify({ text: streamText })}\n\n`);
     
     res.write('data: [DONE]\n\n');
     res.end();
@@ -1310,8 +1342,6 @@ router.post('/deep-reasoning', requireApiKey, async (req: Request, res: Response
   try {
     const { userOrg, targetEntity, context } = req.body;
     
-    const model = getGenAI()!.getGenerativeModel({ model: 'gemini-2.0-flash' });
-    
     const prompt = `
     Perform a deep reasoning analysis on a potential partnership/deal between ${userOrg} and ${targetEntity}.
     Context: ${context}
@@ -1325,8 +1355,7 @@ router.post('/deep-reasoning', requireApiKey, async (req: Request, res: Response
     
     Only return valid JSON.`;
     
-    const result = await model.generateContent(prompt);
-    const text = result.response.text();
+    const text = await generateWithAI(prompt, SYSTEM_INSTRUCTION);
     
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
@@ -1346,8 +1375,6 @@ router.post('/geopolitical', requireApiKey, async (req: Request, res: Response) 
   try {
     const { country, region, intent } = req.body;
     
-    const model = getGenAI()!.getGenerativeModel({ model: 'gemini-2.0-flash' });
-    
     const prompt = `Assess geopolitical risks for market entry:
     Country: ${country}
     Region: ${region}
@@ -1363,8 +1390,7 @@ router.post('/geopolitical', requireApiKey, async (req: Request, res: Response) 
     
     Only return valid JSON.`;
     
-    const result = await model.generateContent(prompt);
-    const text = result.response.text();
+    const text = await generateWithAI(prompt, SYSTEM_INSTRUCTION);
     
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
@@ -1391,8 +1417,6 @@ router.post('/governance', requireApiKey, async (req: Request, res: Response) =>
   try {
     const { country, organizationType } = req.body;
     
-    const model = getGenAI()!.getGenerativeModel({ model: 'gemini-2.0-flash' });
-    
     const prompt = `Perform governance audit for:
     Country: ${country}
     Organization Type: ${organizationType}
@@ -1407,8 +1431,7 @@ router.post('/governance', requireApiKey, async (req: Request, res: Response) =>
     
     Only return valid JSON.`;
     
-    const result = await model.generateContent(prompt);
-    const text = result.response.text();
+    const text = await generateWithAI(prompt, SYSTEM_INSTRUCTION);
     
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
@@ -1434,8 +1457,6 @@ router.post('/agent', requireApiKey, async (req: Request, res: Response) => {
   try {
     const { agentName, roleDefinition, context } = req.body;
     
-    const model = getGenAI()!.getGenerativeModel({ model: 'gemini-2.0-flash' });
-    
     const prompt = `
     ROLE: You are the ${agentName}.
     MISSION: ${roleDefinition}
@@ -1452,8 +1473,7 @@ router.post('/agent', requireApiKey, async (req: Request, res: Response) => {
     
     Only return valid JSON.`;
     
-    const result = await model.generateContent(prompt);
-    const text = result.response.text();
+    const text = await generateWithAI(prompt, SYSTEM_INSTRUCTION);
     
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
@@ -1477,10 +1497,7 @@ router.post('/search-grounded', requireApiKey, async (req: Request, res: Respons
   try {
     const { query } = req.body;
     
-    const model = getGenAI()!.getGenerativeModel({ model: 'gemini-2.0-flash' });
-    
-    const result = await model.generateContent(query);
-    const text = result.response.text();
+    const text = await generateWithAI(query, SYSTEM_INSTRUCTION);
     
     res.json({
       text,
@@ -1497,11 +1514,6 @@ router.post('/copilot-analysis', requireApiKey, async (req: Request, res: Respon
   try {
     const { query, context } = req.body;
     
-    const model = getGenAI()!.getGenerativeModel({ 
-      model: 'gemini-2.0-flash',
-      systemInstruction: SYSTEM_INSTRUCTION
-    });
-    
     const prompt = `Analyze: ${query}
     Context: ${context}
     
@@ -1512,8 +1524,7 @@ router.post('/copilot-analysis', requireApiKey, async (req: Request, res: Respon
     
     Only return valid JSON.`;
     
-    const result = await model.generateContent(prompt);
-    const text = result.response.text();
+    const text = await generateWithAI(prompt, SYSTEM_INSTRUCTION);
     
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
@@ -1722,11 +1733,6 @@ router.post('/regional-cities', requireApiKey, async (req: Request, res: Respons
   try {
     const { region, industries } = req.body;
     
-    const model = getGenAI()!.getGenerativeModel({ 
-      model: 'gemini-2.0-flash',
-      systemInstruction: MULTI_AGENT_SYSTEM_INSTRUCTION
-    });
-    
     const prompt = `Identify the top 5 emerging regional cities for ${industries?.join(', ') || 'business expansion'} in ${region || 'global markets'}.
 
 For each city provide:
@@ -1739,8 +1745,7 @@ For each city provide:
 
 Return as JSON array.`;
     
-    const result = await model.generateContent(prompt);
-    const text = result.response.text();
+    const text = await generateWithAI(prompt, SYSTEM_INSTRUCTION);
     
     try {
       const jsonMatch = text.match(/\[[\s\S]*\]/);
@@ -1981,9 +1986,7 @@ router.post('/reactive', requireApiKey, async (req: Request, res: Response) => {
   try {
     const { situation, params, options } = req.body;
     
-    const model = getGenAI()!.getGenerativeModel({ 
-      model: 'gemini-2.0-flash',
-      systemInstruction: `You are a reactive intelligence engine that thinks on its feet.
+    const reactiveSystemPrompt = `You are a reactive intelligence engine that thinks on its feet.
       
 Analyze the situation and provide:
 1. Rapid assessment (2-3 sentences)
@@ -1992,8 +1995,7 @@ Analyze the situation and provide:
 4. Recommended immediate actions
 5. Confidence level (0-1)
 
-Be decisive and actionable. No hedging.`
-    });
+Be decisive and actionable. No hedging.`;
     
     const prompt = `SITUATION: ${situation}
 
@@ -2003,8 +2005,7 @@ OPTIONS: ${JSON.stringify(options)}
 
 Provide reactive intelligence analysis with specific, actionable recommendations.`;
     
-    const result = await model.generateContent(prompt);
-    const text = result.response.text();
+    const text = await generateWithAI(prompt, reactiveSystemPrompt);
     
     res.json({
       analysis: text,
@@ -2025,9 +2026,7 @@ router.post('/solve', requireApiKey, async (req: Request, res: Response) => {
   try {
     const { problem, context } = req.body;
     
-    const model = getGenAI()!.getGenerativeModel({ 
-      model: 'gemini-2.0-flash',
-      systemInstruction: `You are a self-solving AI system. Given a problem, you:
+    const solveSystemPrompt = `You are a self-solving AI system. Given a problem, you:
 1. Analyze the root cause
 2. Search your knowledge for similar solved problems
 3. Generate 3-5 specific, actionable solutions
@@ -2045,8 +2044,7 @@ Return JSON with:
     }
   ],
   "recommendedSolution": 0
-}`
-    });
+}`;
     
     const prompt = `PROBLEM: ${problem}
 
@@ -2054,8 +2052,7 @@ CONTEXT: ${JSON.stringify(context)}
 
 Solve this problem. Be specific and actionable.`;
     
-    const result = await model.generateContent(prompt);
-    const text = result.response.text();
+    const text = await generateWithAI(prompt, solveSystemPrompt);
     
     try {
       const jsonMatch = text.match(/\{[\s\S]*\}/);
