@@ -66,7 +66,15 @@ export const getChatSession = (): { sendMessage: (msg: { message: string }) => P
                 const result = await model.generateContent(msg.message);
                 return { text: result.response.text() };
             }
-            return { text: 'Chat service unavailable. Please check your API key.' };
+            // Direct Bedrock fallback
+            try {
+              const { invokeBedrockDirect } = await import('./awsBedrockService');
+              const text = await invokeBedrockDirect(msg.message, SYSTEM_INSTRUCTION);
+              if (text) return { text };
+            } catch (bedrockErr) {
+              console.warn('Bedrock direct fallback failed:', bedrockErr);
+            }
+            return { text: 'Chat service unavailable. Please check your API key or AWS credentials.' };
         },
         sendMessageStream: async (msg: { message: string }) => {
             // Try backend SSE first
@@ -131,6 +139,26 @@ export const getChatSession = (): { sendMessage: (msg: { message: string }) => P
                         }
                     })
                 };
+            }
+
+            // Direct Bedrock stream fallback
+            try {
+              const { invokeBedrockDirect } = await import('./awsBedrockService');
+              const bedrockText = await invokeBedrockDirect(msg.message, SYSTEM_INSTRUCTION);
+              if (bedrockText) {
+                let _yielded = false;
+                return {
+                  [Symbol.asyncIterator]: () => ({
+                    async next() {
+                      if (_yielded) return { done: true as const, value: undefined };
+                      _yielded = true;
+                      return { done: false as const, value: { text: bedrockText } };
+                    }
+                  })
+                };
+              }
+            } catch (bedrockErr) {
+              console.warn('Bedrock stream fallback failed:', bedrockErr);
             }
 
             // Final fallback — empty iterable
@@ -1027,7 +1055,15 @@ export const extractFileTextViaAI = async (file: File): Promise<string> => {
 
   const apiKey = getGeminiApiKey();
   if (!apiKey) {
-    return `[${file.name}] — Gemini API key not configured; document content could not be extracted.`;
+    // Try AWS Bedrock direct extraction
+    try {
+      const { extractFileViaBedrock } = await import('./awsBedrockService');
+      const extracted = await extractFileViaBedrock(file);
+      if (extracted) return `[${file.name}]\n${extracted}`;
+    } catch (bedrockErr) {
+      console.warn('Bedrock file extraction failed:', bedrockErr);
+    }
+    return `[${file.name}] — AI key not configured (Gemini or AWS). Add VITE_AWS_ACCESS_KEY_ID / VITE_AWS_SECRET_ACCESS_KEY to .env`;
   }
 
   try {

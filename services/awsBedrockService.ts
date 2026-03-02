@@ -640,3 +640,195 @@ export default {
   isAWSEnvironment
 };
 
+// ==================== DIRECT BROWSER → BEDROCK (SigV4) ====================
+// Used as fallback when no backend and no Gemini key.
+// Reads VITE_AWS_ACCESS_KEY_ID + VITE_AWS_SECRET_ACCESS_KEY from .env
+
+const _AWS_REGION = (import.meta as any).env?.VITE_AWS_REGION || 'us-east-1';
+const _AWS_KEY    = (import.meta as any).env?.VITE_AWS_ACCESS_KEY_ID || '';
+const _AWS_SECRET = (import.meta as any).env?.VITE_AWS_SECRET_ACCESS_KEY || '';
+const _BEDROCK_MODEL = 'anthropic.claude-3-5-sonnet-20241022-v2:0';
+
+export const isDirectBedrockConfigured = (): boolean => Boolean(_AWS_KEY && _AWS_SECRET);
+
+async function _sha256Hex(data: string): Promise<string> {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(data));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function _hmac(key: ArrayBuffer, data: string): Promise<ArrayBuffer> {
+  const k = await crypto.subtle.importKey(
+    'raw', key, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
+  );
+  return crypto.subtle.sign('HMAC', k, new TextEncoder().encode(data));
+}
+
+async function _signBedrockRequest(body: string, path: string): Promise<Record<string, string>> {
+  const now = new Date();
+  const amzDate = now.toISOString().replace(/[:\-]|\..*/g, '').slice(0, 15) + 'Z';
+  const dateStamp = amzDate.slice(0, 8);
+  const service = 'bedrock';
+  const host = `bedrock-runtime.${_AWS_REGION}.amazonaws.com`;
+
+  const payloadHash = await _sha256Hex(body);
+  const canonicalRequest = [
+    'POST', path, '',
+    `content-type:application/json\nhost:${host}\nx-amz-date:${amzDate}\n`,
+    'content-type;host;x-amz-date',
+    payloadHash,
+  ].join('\n');
+
+  const scope = `${dateStamp}/${_AWS_REGION}/${service}/aws4_request`;
+  const stringToSign = ['AWS4-HMAC-SHA256', amzDate, scope, await _sha256Hex(canonicalRequest)].join('\n');
+
+  let k: ArrayBuffer = new TextEncoder().encode(`AWS4${_AWS_SECRET}`).buffer as ArrayBuffer;
+  k = await _hmac(k, dateStamp);
+  k = await _hmac(k, _AWS_REGION);
+  k = await _hmac(k, service);
+  k = await _hmac(k, 'aws4_request');
+  const sigBuf = await _hmac(k, stringToSign);
+  const signature = Array.from(new Uint8Array(sigBuf)).map(b => b.toString(16).padStart(2, '0')).join('');
+
+  return {
+    'Content-Type': 'application/json',
+    'X-Amz-Date': amzDate,
+    Authorization: `AWS4-HMAC-SHA256 Credential=${_AWS_KEY}/${scope}, SignedHeaders=content-type;host;x-amz-date, Signature=${signature}`,
+  };
+}
+
+/**
+ * Direct browser→Bedrock invoke (no backend needed).
+ * Falls back gracefully when credentials are absent.
+ */
+export async function invokeBedrockDirect(
+  userPrompt: string,
+  systemPrompt = 'You are BWGA AI — a senior strategic advisor powered by the BW NEXUS AI agentic runtime.'
+): Promise<string> {
+  if (!isDirectBedrockConfigured()) throw new Error('AWS credentials not configured in .env');
+
+  const path = `/model/${_BEDROCK_MODEL}/invoke`;
+  const body = JSON.stringify({
+    anthropic_version: 'bedrock-2023-05-31',
+    max_tokens: 4096,
+    system: systemPrompt,
+    messages: [{ role: 'user', content: userPrompt }],
+  });
+
+  const headers = await _signBedrockRequest(body, path);
+  const url = `https://bedrock-runtime.${_AWS_REGION}.amazonaws.com${path}`;
+
+  const res = await fetch(url, { method: 'POST', headers, body });
+  if (!res.ok) throw new Error(`Bedrock ${res.status}: ${await res.text()}`);
+  const data = await res.json();
+  return data.content?.[0]?.text || '';
+}
+
+/**
+ * Streaming version — calls onToken for each text delta.
+ */
+export async function invokeBedrockDirectStream(
+  userPrompt: string,
+  systemPrompt: string,
+  onToken: (t: string) => void
+): Promise<string> {
+  if (!isDirectBedrockConfigured()) throw new Error('AWS credentials not configured in .env');
+
+  const path = `/model/${_BEDROCK_MODEL}/invoke-with-response-stream`;
+  const body = JSON.stringify({
+    anthropic_version: 'bedrock-2023-05-31',
+    max_tokens: 4096,
+    system: systemPrompt,
+    messages: [{ role: 'user', content: userPrompt }],
+  });
+
+  const headers = await _signBedrockRequest(body, path);
+  const url = `https://bedrock-runtime.${_AWS_REGION}.amazonaws.com${path}`;
+
+  const res = await fetch(url, { method: 'POST', headers, body });
+  if (!res.ok) throw new Error(`Bedrock stream ${res.status}: ${await res.text()}`);
+
+  const reader = res.body?.getReader();
+  if (!reader) throw new Error('No response body');
+
+  const dec = new TextDecoder();
+  let full = '';
+  let buf = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buf += dec.decode(value, { stream: true });
+    const lines = buf.split('\n');
+    buf = lines.pop() || '';
+    for (const line of lines) {
+      try {
+        const p = JSON.parse(line.trim());
+        const tok = p?.delta?.text || p?.completion || '';
+        if (tok) { full += tok; onToken(tok); }
+      } catch { /* partial */ }
+    }
+  }
+  return full;
+}
+
+/**
+ * Extract file content via Bedrock vision/document API.
+ * Supports PDF, JPG, PNG, GIF, WebP.
+ */
+export async function extractFileViaBedrock(file: File): Promise<string> {
+  if (!isDirectBedrockConfigured()) return '';
+
+  const VISION_MIME: Record<string, string> = {
+    '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg',
+    '.png': 'image/png', '.gif': 'image/gif',
+    '.webp': 'image/webp', '.pdf': 'application/pdf',
+  };
+
+  const lowerName = file.name.toLowerCase();
+  const ext = Object.keys(VISION_MIME).find(e => lowerName.endsWith(e));
+
+  let contentBlock: object;
+
+  if (ext) {
+    const mimeType = VISION_MIME[ext];
+    const arr = await file.arrayBuffer();
+    const bytes = new Uint8Array(arr);
+    let bin = '';
+    for (let i = 0; i < bytes.byteLength; i++) bin += String.fromCharCode(bytes[i]);
+    const base64 = btoa(bin);
+    contentBlock = mimeType === 'application/pdf'
+      ? { type: 'document', source: { type: 'base64', media_type: mimeType, data: base64 } }
+      : { type: 'image',    source: { type: 'base64', media_type: mimeType, data: base64 } };
+  } else {
+    // Attempt plain text read
+    try {
+      const text = await file.text();
+      if (!text.trim()) return '';
+      contentBlock = { type: 'text', text: `File: ${file.name}\n\n${text.slice(0, 50000)}` };
+    } catch { return ''; }
+  }
+
+  const path = `/model/${_BEDROCK_MODEL}/invoke`;
+  const body = JSON.stringify({
+    anthropic_version: 'bedrock-2023-05-31',
+    max_tokens: 4096,
+    system: 'Extract all meaningful information from the provided document or image. Be thorough and structured.',
+    messages: [{
+      role: 'user',
+      content: [
+        contentBlock,
+        { type: 'text', text: 'Extract ALL key information: organizations, countries, objectives, decisions, financials, timelines, stakeholders, findings, and risks. Be thorough — do not summarise.' },
+      ],
+    }],
+  });
+
+  try {
+    const headers = await _signBedrockRequest(body, path);
+    const url = `https://bedrock-runtime.${_AWS_REGION}.amazonaws.com${path}`;
+    const res = await fetch(url, { method: 'POST', headers, body });
+    if (!res.ok) return '';
+    const data = await res.json();
+    return data.content?.[0]?.text || '';
+  } catch { return ''; }
+}
+
