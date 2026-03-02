@@ -46,6 +46,7 @@ import { ReportLengthRouter, type ReportOptionsMenu, type ReportTierKey } from '
 import { PDFAnnotationService } from '../services/PDFAnnotationService';
 import { automaticSearchService } from '../services/AutomaticSearchService';
 import { ReportOrchestrator } from '../services/ReportOrchestrator';
+import AgentOrchestrator, { type OrchestratorProgress } from '../services/AgentOrchestrator';
 
 // ============================================================================
 // TYPES
@@ -998,6 +999,9 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, embedd
   const [generatedContent, setGeneratedContent] = useState<string | null>(null);
   const [generatedDocuments, setGeneratedDocuments] = useState<Array<{id: string; title: string; content: string; category: 'report'|'letter'; htmlContent: string}>>([]);
   const [generatingProgress, setGeneratingProgress] = useState<{current: number; total: number} | null>(null);
+  // ── Autonomous Agent state ──────────────────────────────────────────────────────
+  const [isAutonomousRunning, setIsAutonomousRunning] = useState(false);
+  const [autonomousProgress, setAutonomousProgress] = useState<OrchestratorProgress | null>(null);
   const [copied, setCopied] = useState(false);
   const [allowAllDocumentAccess, setAllowAllDocumentAccess] = useState(true);
   const [outputDepth, setOutputDepth] = useState<'brief-1' | 'memo-5' | 'report-20'>('memo-5');
@@ -4985,7 +4989,55 @@ Use concrete facts from the case. No template language. Write the complete repor
     }
   }, [selectedDocs, generationScope, readinessScore, allowAllDocumentAccess, recommendedDocs, processWithAI, caseStudy, getCriticalCaseGaps, consultantCaseBrief, consultantGateReady, consultantGateMissing, realLifeMatterPack, outputDepthSpec, regionalKernel, customResearchTopics]);
 
-  // Phase indicator
+  // ─── Autonomous Run — AgentOrchestrator (Together.ai + Llama 3.1 70B) ────────────────
+  const handleAutonomousRun = useCallback(async () => {
+    if (isAutonomousRunning) return;
+    setIsAutonomousRunning(true);
+    setAutonomousProgress(null);
+
+    try {
+      const result = await AgentOrchestrator.run({
+        organizationName: caseStudy.organizationName || 'Unknown Organisation',
+        country:           caseStudy.country          || 'Unknown Country',
+        sector:            caseStudy.sector           || caseStudy.organizationType || 'General',
+        organizationType:  caseStudy.organizationType || 'Private Sector',
+        objectives:        caseStudy.strategicObjective || '',
+        strategicIntent:   caseStudy.strategicIntent   || [],
+        userName:          caseStudy.userName          || '',
+        currentMatter:     caseStudy.currentMatter     || '',
+        brainContext:      brainCtxRef.current         || undefined,
+        maxDocuments: 5,
+        maxLetters:   3,
+        onProgress: (p) => setAutonomousProgress({ ...p }),
+      });
+
+      if (result.success && result.documents.length > 0) {
+        setGeneratedDocuments(prev => [...prev, ...result.documents]);
+        addMessage({
+          id: `agent-done-${Date.now()}`,
+          role: 'assistant',
+          content: `**Autonomous Run Complete**\n\n` +
+            `Generated **${result.documents.length} outputs** (${result.totalWordCount.toLocaleString()} words) ` +
+            `in ${(result.durationMs / 1000).toFixed(1)}s using Llama 3.1 70B via Together.ai.\n\n` +
+            result.documents.map(d => `• ${d.typeName}`).join('\n'),
+          timestamp: new Date(),
+          phase: 'generation',
+        });
+      } else {
+        addMessage({
+          id: `agent-err-${Date.now()}`,
+          role: 'assistant',
+          content: `Autonomous Run encountered an issue: ${result.error || 'Unknown error'}. Check that VITE_TOGETHER_API_KEY is set in .env.`,
+          timestamp: new Date(),
+          phase: 'generation',
+        });
+      }
+    } catch (err) {
+      console.error('[AutonomousRun] Error:', err);
+    } finally {
+      setIsAutonomousRunning(false);
+    }
+  }, [isAutonomousRunning, caseStudy, brainCtxRef, addMessage]);
   const phaseLabels: Record<CasePhase, { label: string; description: string }> = {
     intake: { label: 'Intake', description: 'Understanding who you are' },
     discovery: { label: 'Discovery', description: 'Learning about your situation' },
@@ -7276,6 +7328,33 @@ Use concrete facts from the case. No template language. Write the complete repor
                     >
                       📖 Browse Full Catalog — {IntelligentDocumentGenerator.getCatalogSummary().totalDocumentTypes} Documents &middot; {IntelligentDocumentGenerator.getCatalogSummary().totalLetterTypes} Letters
                     </button>
+                    {/* Autonomous Run — Together.ai Agent */}
+                    <button
+                      onClick={handleAutonomousRun}
+                      disabled={isAutonomousRunning || isLoading}
+                      title="Autonomous AI agent mode: researches, selects, and writes all documents without manual steps"
+                      className={`mt-2 w-full py-2.5 text-xs font-semibold flex items-center justify-center gap-2 transition-all border ${
+                        isAutonomousRunning
+                          ? 'bg-violet-100 text-violet-700 border-violet-300 cursor-wait'
+                          : 'bg-violet-600 text-white border-violet-700 hover:bg-violet-700'
+                      }`}
+                    >
+                      {isAutonomousRunning ? (
+                        <>
+                          <Loader2 size={14} className="animate-spin" />
+                          {autonomousProgress ? `${autonomousProgress.phaseName} — ${autonomousProgress.overallPercent}%` : 'Agent running...'}
+                        </>
+                      ) : (
+                        <>
+                          ⚡ Autonomous Run — Llama 3.1 70B
+                        </>
+                      )}
+                    </button>
+                    {isAutonomousRunning && autonomousProgress && (
+                      <div className="mt-1 p-2 bg-violet-50 border border-violet-200 rounded text-[10px] text-violet-800 font-mono">
+                        {autonomousProgress.currentTask}
+                      </div>
+                    )}
                   </>
                 )}
               </div>

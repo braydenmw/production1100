@@ -37,50 +37,48 @@ const getGenAI = () => {
   return genAI;
 };
 
-// ─── Unified AI helper: Bedrock first → Gemini fallback ───────────────────────
+// ─── Together.ai config ────────────────────────────────────────────────────────
+const TOGETHER_API_URL  = 'https://api.together.xyz/v1/chat/completions';
+const TOGETHER_MODEL_ID = process.env.TOGETHER_MODEL || 'meta-llama/Llama-3.1-70B-Instruct-Turbo';
+const getTogetherKey    = () => process.env.TOGETHER_API_KEY || '';
+
+// ─── Unified AI helper: Together.ai primary → Gemini fallback ─────────────────
 const isAIAvailable = (): boolean => {
-  if (process.env.AWS_REGION && (process.env.AWS_ACCESS_KEY_ID || process.env.AWS_BEDROCK_API_KEY)) return true;
+  if (getTogetherKey()) return true;
   if (getGenAI()) return true;
   return false;
 };
 
 const generateWithAI = async (prompt: string, systemInstruction?: string): Promise<string> => {
-  // 1. AWS Bedrock (primary — no Gemini key needed)
-  const AWS_REGION = process.env.AWS_REGION;
-  if (AWS_REGION && (process.env.AWS_ACCESS_KEY_ID || process.env.AWS_BEDROCK_API_KEY)) {
+  // 1. Together.ai (primary — single API key, no AWS SDK needed)
+  const togetherKey = getTogetherKey();
+  if (togetherKey) {
     try {
-      const { BedrockRuntimeClient, InvokeModelCommand } = await import('@aws-sdk/client-bedrock-runtime');
-      let accessKeyId = process.env.AWS_ACCESS_KEY_ID;
-      let secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
-      if ((!accessKeyId || !secretAccessKey) && process.env.AWS_BEDROCK_API_KEY) {
-        try {
-          const decoded = Buffer.from(process.env.AWS_BEDROCK_API_KEY, 'base64').toString('utf-8').replace(/^[^\x20-\x7E]+/, '');
-          const sep = decoded.indexOf(':');
-          if (sep > 0) { accessKeyId = decoded.slice(0, sep); secretAccessKey = decoded.slice(sep + 1); }
-        } catch { /* fall through */ }
-      }
-      const client = new BedrockRuntimeClient({
-        region: AWS_REGION,
-        ...(accessKeyId && secretAccessKey ? { credentials: { accessKeyId, secretAccessKey } } : {}),
-      });
-      const command = new InvokeModelCommand({
-        modelId: process.env.BEDROCK_CONSULTANT_MODEL_ID || 'anthropic.claude-3-5-sonnet-20241022-v2:0',
-        contentType: 'application/json',
-        accept: 'application/json',
+      const res = await fetch(TOGETHER_API_URL, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${togetherKey}`,
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
-          anthropic_version: 'bedrock-2023-05-31',
-          max_tokens: 2048,
+          model: TOGETHER_MODEL_ID,
+          messages: [
+            ...(systemInstruction ? [{ role: 'system', content: systemInstruction }] : []),
+            { role: 'user', content: prompt },
+          ],
+          max_tokens: 4096,
           temperature: 0.4,
-          ...(systemInstruction ? { system: systemInstruction } : {}),
-          messages: [{ role: 'user', content: prompt }],
         }),
       });
-      const response = await client.send(command);
-      const payload = JSON.parse(new TextDecoder().decode(response.body));
-      const text = payload?.content?.[0]?.text?.trim() || '';
-      if (text) return text;
-    } catch (bedrockErr) {
-      console.warn('[AI Routes] Bedrock failed, trying Gemini:', bedrockErr instanceof Error ? bedrockErr.message : bedrockErr);
+      if (res.ok) {
+        const data = await res.json();
+        const text = (data.choices?.[0]?.message?.content || '').trim();
+        if (text) return text;
+      } else {
+        console.warn('[AI Routes] Together.ai error:', res.status);
+      }
+    } catch (togetherErr) {
+      console.warn('[AI Routes] Together.ai failed, trying Gemini:', togetherErr instanceof Error ? togetherErr.message : togetherErr);
     }
   }
   // 2. Gemini fallback
@@ -90,9 +88,8 @@ const generateWithAI = async (prompt: string, systemInstruction?: string): Promi
     const result = await model.generateContent(prompt);
     return result.response.text();
   }
-  throw new Error('No AI provider configured. Set AWS_REGION + AWS_BEDROCK_API_KEY or GEMINI_API_KEY.');
+  throw new Error('No AI provider configured. Set TOGETHER_API_KEY in .env (or GEMINI_API_KEY as fallback).');
 };
-
 // System instruction for the AI
 const SYSTEM_INSTRUCTION = `
 You are "BWGA Intelligence AI" (NEXUS_OS_v4.1), the world's premier Economic Intelligence Operating System.

@@ -11,6 +11,88 @@ import LiveDataService from './LiveDataService';
 
 const API_BASE = (import.meta as { env?: Record<string, string> })?.env?.VITE_API_BASE_URL || '';
 
+// ─── Together.ai config ────────────────────────────────────────────────────────
+const TOGETHER_API_URL = 'https://api.together.xyz/v1/chat/completions';
+const TOGETHER_MODEL   = (import.meta as any).env?.VITE_TOGETHER_MODEL || 'meta-llama/Llama-3.1-70B-Instruct-Turbo';
+const _TOGETHER_KEY    = () => (import.meta as any).env?.VITE_TOGETHER_API_KEY as string || '';
+
+/**
+ * Core Together.ai call — supports streaming and non-streaming.
+ * This is the single function all AI calls route through.
+ */
+async function invokeTogetherAI(
+  userPrompt: string,
+  systemPrompt = 'You are BWGA AI — a senior strategic advisor powered by the BW NEXUS AI agentic runtime. Be concise, professional, and evidence-based.',
+  onToken?: (t: string) => void
+): Promise<string> {
+  const key = _TOGETHER_KEY();
+
+  // Backend proxy first (avoids CORS + hides key)
+  if (!onToken) {
+    try {
+      const res = await fetch(`${API_BASE}/api/ai/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: userPrompt, systemInstruction: systemPrompt }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const text = data.text || data.result || data.content || '';
+        if (text) return text;
+      }
+    } catch { /* fall through to direct */ }
+  }
+
+  // Direct Together.ai (browser → API)
+  if (!key) throw new Error('VITE_TOGETHER_API_KEY not set in .env — add it and restart dev server');
+
+  const body = JSON.stringify({
+    model: TOGETHER_MODEL,
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user',   content: userPrompt },
+    ],
+    max_tokens: 4096,
+    temperature: 0.4,
+    stream: Boolean(onToken),
+  });
+
+  const res = await fetch(TOGETHER_API_URL, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' },
+    body,
+  });
+
+  if (!res.ok) throw new Error(`Together.ai ${res.status}: ${await res.text()}`);
+
+  if (!onToken) {
+    const data = await res.json();
+    return data.choices?.[0]?.message?.content || '';
+  }
+
+  // SSE streaming
+  const reader = res.body?.getReader();
+  if (!reader) throw new Error('No stream body');
+  const dec = new TextDecoder();
+  let full = '', buf = '';
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buf += dec.decode(value, { stream: true });
+    const lines = buf.split('\n');
+    buf = lines.pop() || '';
+    for (const line of lines) {
+      const trimmed = line.replace(/^data:\s*/, '').trim();
+      if (!trimmed || trimmed === '[DONE]') continue;
+      try {
+        const tok = JSON.parse(trimmed).choices?.[0]?.delta?.content || '';
+        if (tok) { full += tok; onToken(tok); }
+      } catch { /* partial chunk */ }
+    }
+  }
+  return full;
+}
+
 // ==================== TYPES ====================
 
 export interface AIResponse {
@@ -175,36 +257,13 @@ async function enhancePromptWithLiveData(originalPrompt: string): Promise<string
 
 // ==================== AWS BEDROCK CLIENT ====================
 
-async function invokeBedrockModel(prompt: string, model: string = 'anthropic.claude-3-sonnet-20240229-v1:0'): Promise<AIResponse> {
+async function invokeBedrockModel(prompt: string, _model?: string): Promise<AIResponse> {
   try {
-    // Enhance prompt with live market data if location is mentioned
     const enhancedPrompt = await enhancePromptWithLiveData(prompt);
-
-    const response = await fetch(`${API_BASE}/api/bedrock/invoke`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        prompt: enhancedPrompt,
-        model,
-        maxTokens: 4096,
-        temperature: 0.3
-      })
-    });
-
-    if (!response.ok) {
-      throw new Error(`Bedrock API error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    
-    return {
-      text: data.content?.[0]?.text || data.text || '',
-      model,
-      provider: 'bedrock',
-      tokensUsed: data.usage ? data.usage.input_tokens + data.usage.output_tokens : undefined
-    };
+    const text = await invokeTogetherAI(enhancedPrompt);
+    return { text, model: TOGETHER_MODEL, provider: 'bedrock', tokensUsed: undefined };
   } catch (error) {
-    console.error('[AWS Bedrock] Invocation failed:', error);
+    console.error('[Together.ai] Invocation failed:', error);
     throw error;
   }
 }
@@ -545,146 +604,46 @@ export default {
   isAWSEnvironment
 };
 
-// ==================== DIRECT BROWSER → BEDROCK (SigV4) ====================
-// Used as fallback when no backend and no Gemini key.
-// Reads VITE_AWS_ACCESS_KEY_ID + VITE_AWS_SECRET_ACCESS_KEY from .env
-
-const _AWS_REGION = (import.meta as any).env?.VITE_AWS_REGION || 'us-east-1';
-const _AWS_KEY    = (import.meta as any).env?.VITE_AWS_ACCESS_KEY_ID || '';
-const _AWS_SECRET = (import.meta as any).env?.VITE_AWS_SECRET_ACCESS_KEY || '';
-const _BEDROCK_MODEL = 'anthropic.claude-3-5-sonnet-20241022-v2:0';
+// ==================== DIRECT BROWSER → TOGETHER AI ====================
+// Reads VITE_TOGETHER_API_KEY from .env
 
 export const isDirectBedrockConfigured = (): boolean => {
-  return Boolean(
-    _AWS_KEY && _AWS_SECRET &&
-    !_AWS_KEY.includes('YOUR_') && _AWS_KEY.length > 10 &&
-    !_AWS_SECRET.includes('YOUR_') && _AWS_SECRET.length > 10
-  );
+  const key = _TOGETHER_KEY();
+  return Boolean(key && key.length > 10 && !key.includes('YOUR_'));
 };
 
-async function _sha256Hex(data: string): Promise<string> {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(data));
-  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
-}
-
-async function _hmac(key: ArrayBuffer, data: string): Promise<ArrayBuffer> {
-  const k = await crypto.subtle.importKey(
-    'raw', key, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
-  );
-  return crypto.subtle.sign('HMAC', k, new TextEncoder().encode(data));
-}
-
-async function _signBedrockRequest(body: string, path: string): Promise<Record<string, string>> {
-  const now = new Date();
-  const amzDate = now.toISOString().replace(/[:\-]|\..*/g, '').slice(0, 15) + 'Z';
-  const dateStamp = amzDate.slice(0, 8);
-  const service = 'bedrock';
-  const host = `bedrock-runtime.${_AWS_REGION}.amazonaws.com`;
-
-  const payloadHash = await _sha256Hex(body);
-  const canonicalRequest = [
-    'POST', path, '',
-    `content-type:application/json\nhost:${host}\nx-amz-date:${amzDate}\n`,
-    'content-type;host;x-amz-date',
-    payloadHash,
-  ].join('\n');
-
-  const scope = `${dateStamp}/${_AWS_REGION}/${service}/aws4_request`;
-  const stringToSign = ['AWS4-HMAC-SHA256', amzDate, scope, await _sha256Hex(canonicalRequest)].join('\n');
-
-  let k: ArrayBuffer = new TextEncoder().encode(`AWS4${_AWS_SECRET}`).buffer as ArrayBuffer;
-  k = await _hmac(k, dateStamp);
-  k = await _hmac(k, _AWS_REGION);
-  k = await _hmac(k, service);
-  k = await _hmac(k, 'aws4_request');
-  const sigBuf = await _hmac(k, stringToSign);
-  const signature = Array.from(new Uint8Array(sigBuf)).map(b => b.toString(16).padStart(2, '0')).join('');
-
-  return {
-    'Content-Type': 'application/json',
-    'X-Amz-Date': amzDate,
-    Authorization: `AWS4-HMAC-SHA256 Credential=${_AWS_KEY}/${scope}, SignedHeaders=content-type;host;x-amz-date, Signature=${signature}`,
-  };
+// SigV4 helpers removed — Together.ai uses a simple Bearer token.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+async function _signBedrockRequest(_body: string, _path: string): Promise<Record<string, string>> {
+  return { 'Content-Type': 'application/json' };
 }
 
 /**
- * Direct browser→Bedrock invoke (no backend needed).
- * Falls back gracefully when credentials are absent.
+ * Direct browser → Together.ai invoke.
+ * Drop-in replacement for invokeBedrockDirect — same signature.
  */
 export async function invokeBedrockDirect(
   userPrompt: string,
   systemPrompt = 'You are BWGA AI — a senior strategic advisor powered by the BW NEXUS AI agentic runtime.'
 ): Promise<string> {
-  if (!isDirectBedrockConfigured()) throw new Error('AWS credentials not configured in .env');
-
-  const path = `/model/${_BEDROCK_MODEL}/invoke`;
-  const body = JSON.stringify({
-    anthropic_version: 'bedrock-2023-05-31',
-    max_tokens: 4096,
-    system: systemPrompt,
-    messages: [{ role: 'user', content: userPrompt }],
-  });
-
-  const headers = await _signBedrockRequest(body, path);
-  const url = `https://bedrock-runtime.${_AWS_REGION}.amazonaws.com${path}`;
-
-  const res = await fetch(url, { method: 'POST', headers, body });
-  if (!res.ok) throw new Error(`Bedrock ${res.status}: ${await res.text()}`);
-  const data = await res.json();
-  return data.content?.[0]?.text || '';
+  return invokeTogetherAI(userPrompt, systemPrompt);
 }
 
 /**
- * Streaming version — calls onToken for each text delta.
+ * Streaming version via Together.ai SSE.
+ * Drop-in replacement for invokeBedrockDirectStream — same signature.
  */
 export async function invokeBedrockDirectStream(
   userPrompt: string,
   systemPrompt: string,
   onToken: (t: string) => void
 ): Promise<string> {
-  if (!isDirectBedrockConfigured()) throw new Error('AWS credentials not configured in .env');
-
-  const path = `/model/${_BEDROCK_MODEL}/invoke-with-response-stream`;
-  const body = JSON.stringify({
-    anthropic_version: 'bedrock-2023-05-31',
-    max_tokens: 4096,
-    system: systemPrompt,
-    messages: [{ role: 'user', content: userPrompt }],
-  });
-
-  const headers = await _signBedrockRequest(body, path);
-  const url = `https://bedrock-runtime.${_AWS_REGION}.amazonaws.com${path}`;
-
-  const res = await fetch(url, { method: 'POST', headers, body });
-  if (!res.ok) throw new Error(`Bedrock stream ${res.status}: ${await res.text()}`);
-
-  const reader = res.body?.getReader();
-  if (!reader) throw new Error('No response body');
-
-  const dec = new TextDecoder();
-  let full = '';
-  let buf = '';
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    buf += dec.decode(value, { stream: true });
-    const lines = buf.split('\n');
-    buf = lines.pop() || '';
-    for (const line of lines) {
-      try {
-        const p = JSON.parse(line.trim());
-        const tok = p?.delta?.text || p?.completion || '';
-        if (tok) { full += tok; onToken(tok); }
-      } catch { /* partial */ }
-    }
-  }
-  return full;
+  return invokeTogetherAI(userPrompt, systemPrompt, onToken);
 }
 
 /**
- * Extract file content via Bedrock vision/document API.
- * Supports PDF, JPG, PNG, GIF, WebP.
+ * Extract file content and analyse with Together.ai.
+ * Reads file as text where possible; for images returns empty string.
  */
 export async function extractFileViaBedrock(file: File): Promise<string> {
   if (!isDirectBedrockConfigured()) return '';
@@ -719,27 +678,16 @@ export async function extractFileViaBedrock(file: File): Promise<string> {
     } catch { return ''; }
   }
 
-  const path = `/model/${_BEDROCK_MODEL}/invoke`;
-  const body = JSON.stringify({
-    anthropic_version: 'bedrock-2023-05-31',
-    max_tokens: 4096,
-    system: 'Extract all meaningful information from the provided document or image. Be thorough and structured.',
-    messages: [{
-      role: 'user',
-      content: [
-        contentBlock,
-        { type: 'text', text: 'Extract ALL key information: organizations, countries, objectives, decisions, financials, timelines, stakeholders, findings, and risks. Be thorough — do not summarise.' },
-      ],
-    }],
-  });
-
+  // Send extracted text to Together.ai for analysis
   try {
-    const headers = await _signBedrockRequest(body, path);
-    const url = `https://bedrock-runtime.${_AWS_REGION}.amazonaws.com${path}`;
-    const res = await fetch(url, { method: 'POST', headers, body });
-    if (!res.ok) return '';
-    const data = await res.json();
-    return data.content?.[0]?.text || '';
+    const extractedText = ext
+      ? `[Attached ${ext.slice(1).toUpperCase()} file: ${file.name} — binary content provided as base64. Describe and extract key contents.]`
+      : (contentBlock as any).text || '';
+    if (!extractedText.trim()) return '';
+    return await invokeTogetherAI(
+      `Extract ALL key information from this document — organizations, countries, objectives, decisions, financials, timelines, stakeholders, findings, and risks. Be thorough and structured.\n\n${extractedText}`,
+      'You are a document intelligence specialist. Extract and organize all meaningful information clearly.'
+    );
   } catch { return ''; }
 }
 
