@@ -1,0 +1,82 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "BW NEXUS Analysis Action",
+    "version": "1.0.0",
+    "description": "Runs multi-dimensional brain engine analysis for organisations and countries"
+  },
+  "paths": {
+    "/analysis": {
+      "post": {
+        "summary": "Run multi-dimensional strategic brain analysis",
+        "description": "Runs the BW Brain Engine across 8 analysis dimensions: SPI, Investment Climate, Regulatory, Political, Economic, Social, Infrastructure, and Partnership Viability",
+        "operationId": "runAnalysis",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["organizationName", "country"],
+                "properties": {
+                  "organizationName": {
+                    "type": "string",
+                    "description": "Name of the organisation being analysed"
+                  },
+                  "country": {
+                    "type": "string",
+                    "description": "Primary country or jurisdiction"
+                  },
+                  "organizationType": {
+                    "type": "string",
+                    "description": "Type of organisation (e.g., 'Government Ministry', 'Private Company', 'NGO', 'Development Bank')"
+                  },
+                  "sector": {
+                    "type": "string",
+                    "description": "Industry sector"
+                  },
+                  "objectives": {
+                    "type": "string",
+                    "description": "Strategic objectives for the engagement"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Multi-dimensional analysis results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "brainContext": {
+                      "type": "string",
+                      "description": "JSON-encoded brain analysis including SPI scores, opportunities, risks, recommendations, and narrative prompt block"
+                    },
+                    "spiScore": {
+                      "type": "number",
+                      "description": "Strategic Partnership Index score (0-100)"
+                    },
+                    "readinessScore": {
+                      "type": "number",
+                      "description": "Market readiness score (0-100)"
+                    },
+                    "organizationName": {
+                      "type": "string"
+                    },
+                    "country": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

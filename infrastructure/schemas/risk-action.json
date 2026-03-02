@@ -1,0 +1,81 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "BW NEXUS Risk Action",
+    "version": "1.0.0",
+    "description": "Adversarial risk assessment and red-team analysis for strategic engagements"
+  },
+  "paths": {
+    "/risk": {
+      "post": {
+        "summary": "Run adversarial risk assessment",
+        "description": "Conducts a multi-dimensional risk assessment covering political, economic, regulatory, and reputational risks. Includes deal-breaker identification and specific mitigation strategies.",
+        "operationId": "assessRisk",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["organizationName", "country"],
+                "properties": {
+                  "organizationName": {
+                    "type": "string",
+                    "description": "Organisation being assessed"
+                  },
+                  "country": {
+                    "type": "string",
+                    "description": "Country or jurisdiction"
+                  },
+                  "sector": {
+                    "type": "string",
+                    "description": "Industry sector"
+                  },
+                  "dealType": {
+                    "type": "string",
+                    "description": "Type of deal or engagement (e.g., 'strategic partnership', 'joint venture', 'government contract', 'investment')"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Risk assessment results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "risks": {
+                      "type": "string",
+                      "description": "JSON-encoded risk assessment with political, economic, regulatory, reputational risks and mitigations"
+                    },
+                    "organizationName": {
+                      "type": "string"
+                    },
+                    "country": {
+                      "type": "string"
+                    },
+                    "sector": {
+                      "type": "string"
+                    },
+                    "riskRating": {
+                      "type": "string",
+                      "description": "Overall risk rating: Low, Medium, High, or Critical"
+                    },
+                    "overallRiskScore": {
+                      "type": "number",
+                      "description": "Composite risk score 0-100 (100=maximum risk)"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

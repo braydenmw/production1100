@@ -1,0 +1,81 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "BW NEXUS Partner Action",
+    "version": "1.0.0",
+    "description": "Strategic partner identification and ecosystem mapping for BW engagements"
+  },
+  "paths": {
+    "/partner": {
+      "post": {
+        "summary": "Identify strategic partners and map the partnership ecosystem",
+        "description": "Identifies named strategic partner organisations (government bodies, multilaterals, private sector leaders, development banks, NGOs) most relevant to the engagement objectives.",
+        "operationId": "identifyPartners",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["organizationName"],
+                "properties": {
+                  "organizationName": {
+                    "type": "string",
+                    "description": "Organisation seeking partners"
+                  },
+                  "country": {
+                    "type": "string",
+                    "description": "Primary country or region"
+                  },
+                  "sector": {
+                    "type": "string",
+                    "description": "Industry or sector"
+                  },
+                  "partnerType": {
+                    "type": "string",
+                    "description": "Type of partnership sought (e.g., 'strategic', 'financial', 'technical', 'government', 'multilateral')"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Partner intelligence results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "partners": {
+                      "type": "string",
+                      "description": "JSON-encoded partner data with named organisations, relevance scores, engagement approaches, and timelines"
+                    },
+                    "organizationName": {
+                      "type": "string"
+                    },
+                    "country": {
+                      "type": "string"
+                    },
+                    "sector": {
+                      "type": "string"
+                    },
+                    "partnerCount": {
+                      "type": "integer",
+                      "description": "Number of partners identified"
+                    },
+                    "priorityPartner": {
+                      "type": "string",
+                      "description": "Name of the highest-priority recommended partner"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

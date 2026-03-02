@@ -1,0 +1,22 @@
+{
+  "name": "bw-nexus-bedrock-infrastructure",
+  "version": "1.0.0",
+  "description": "AWS CDK infrastructure for BW NEXUS Bedrock Agents pipeline",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "deploy": "cdk deploy BwNexusBedrockStack --require-approval never",
+    "diff":   "cdk diff BwNexusBedrockStack",
+    "synth":  "cdk synth BwNexusBedrockStack",
+    "destroy": "cdk destroy BwNexusBedrockStack"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "^2.130.0",
+    "constructs": "^10.3.0"
+  },
+  "devDependencies": {
+    "aws-cdk": "^2.130.0",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.4.0"
+  }
+}

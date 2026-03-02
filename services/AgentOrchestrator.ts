@@ -30,6 +30,10 @@
  */
 
 import { generateWithTogether, TOGETHER_SYSTEM_PROMPT } from './togetherAIService';
+import {
+  isBedrockAgentConfigured,
+  runAutonomousPipeline,
+} from './bedrockAgentService';
 import IntelligentDocumentGenerator, {
   type GeneratedDocument,
   type DocumentCatalogEntry,
@@ -122,6 +126,68 @@ export class AgentOrchestrator {
     };
 
     try {
+      // ── Bedrock Agent fast-path ──────────────────────────────────────────────
+      // When VITE_BEDROCK_AGENT_ID is configured, hand the full pipeline off to
+      // the AWS Bedrock Agent supervisor (Claude 3.5 Sonnet) which orchestrates
+      // the 5 Lambda action groups autonomously. Falls back to the local
+      // Together.ai multi-agent loop below if Bedrock is not configured.
+      if (isBedrockAgentConfigured()) {
+        emit('research', 'Bedrock Agent', 5, 'Routing to AWS Bedrock Agent supervisor...', 'BedrockAgent: supervisor pipeline starting');
+
+        const bedrockResult = await runAutonomousPipeline({
+          organizationName,
+          country,
+          sector,
+          organizationType,
+          objectives: objectives || strategicIntent.join(', '),
+          onToken,
+        });
+
+        emit('complete', 'Complete', 100, `Bedrock Agent pipeline complete`, `BedrockAgent: done in ${((Date.now() - startMs) / 1000).toFixed(1)}s`);
+
+        // Map Bedrock raw output into OrchestratorResult shape
+        const wordCount = bedrockResult.output.split(/\s+/).length;
+        const bedrockDoc: GeneratedDocument = {
+          id: `bedrock-${Date.now()}`,
+          typeId: 'strategic-intelligence-brief',
+          typeName: 'Strategic Intelligence Brief',
+          category: 'Strategic',
+          classification: 'CONFIDENTIAL',
+          preparedFor: organizationName,
+          preparedBy: 'BW NEXUS AI — Bedrock Agent Supervisor',
+          date: new Date().toLocaleDateString('en-AU', { year: 'numeric', month: 'long', day: 'numeric' }),
+          reportId: `BWN-${Date.now()}`,
+          fullMarkdown: bedrockResult.output,
+          sections: [
+            {
+              id: 'bedrock-full-output',
+              title: 'Autonomous Intelligence Output',
+              content: bedrockResult.output,
+              wordCount,
+              intelligenceSources: ['AWS Bedrock Agent', 'Claude 3.5 Sonnet', 'Lambda Action Groups'],
+            },
+          ],
+          metadata: {
+            country,
+            sector,
+            organization: organizationName,
+            wordCount,
+            brainContextUsed: true,
+            intelligenceDimensions: ['Research', 'Analysis', 'Risk', 'Partner', 'Document'],
+          },
+        };
+
+        return {
+          success: true,
+          documents: [bedrockDoc],
+          selectedDocs: [],
+          brainContext: null,
+          agentLog: log,
+          totalWordCount: bedrockDoc.metadata.wordCount,
+          durationMs: Date.now() - startMs,
+        };
+      }
+
       // ── Phase 1: Research Agent ──────────────────────────────────────────────
       emit('research', 'Research Agent', 5, 'Initialising brain context...', 'ResearchAgent: started');
 

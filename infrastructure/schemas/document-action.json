@@ -1,0 +1,96 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "BW NEXUS Document Action",
+    "version": "1.0.0",
+    "description": "Generates professional advisory documents from 247 template types"
+  },
+  "paths": {
+    "/document": {
+      "post": {
+        "summary": "Generate a professional advisory document",
+        "description": "Generates a complete, section-by-section professional advisory document. Supported types include strategic investment briefs, partnership proposals, country risk reports, market entry strategies, government funding proposals, due diligence reports, stakeholder briefings, and MOU frameworks.",
+        "operationId": "generateDocument",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["typeId", "organizationName"],
+                "properties": {
+                  "typeId": {
+                    "type": "string",
+                    "description": "Document type identifier. Options: 'strategic-investment-brief', 'partnership-proposal', 'country-risk-report', 'market-entry-strategy', 'government-funding-proposal', 'due-diligence-report', 'stakeholder-briefing', 'mou-framework'"
+                  },
+                  "organizationName": {
+                    "type": "string",
+                    "description": "Name of the primary organisation"
+                  },
+                  "country": {
+                    "type": "string",
+                    "description": "Target country or jurisdiction"
+                  },
+                  "sector": {
+                    "type": "string",
+                    "description": "Industry or sector"
+                  },
+                  "caseContext": {
+                    "type": "string",
+                    "description": "Background case context and engagement details"
+                  },
+                  "brainBlock": {
+                    "type": "string",
+                    "description": "Intelligence narrative from the Analysis action (inject for richer, contextualised content)"
+                  },
+                  "documentTitle": {
+                    "type": "string",
+                    "description": "Optional custom document title override"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Generated document",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "document": {
+                      "type": "string",
+                      "description": "Full markdown-formatted document"
+                    },
+                    "typeId": {
+                      "type": "string"
+                    },
+                    "typeName": {
+                      "type": "string"
+                    },
+                    "organizationName": {
+                      "type": "string"
+                    },
+                    "country": {
+                      "type": "string"
+                    },
+                    "sectionCount": {
+                      "type": "integer",
+                      "description": "Number of sections generated"
+                    },
+                    "wordCount": {
+                      "type": "integer",
+                      "description": "Approximate word count of the full document"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

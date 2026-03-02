@@ -1,0 +1,81 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "BW NEXUS Research Action",
+    "version": "1.0.0",
+    "description": "Gathers country, market and sector intelligence for BW Global Advisory engagements"
+  },
+  "paths": {
+    "/research": {
+      "post": {
+        "summary": "Conduct strategic market and country intelligence research",
+        "description": "Searches for country data, market intelligence, investment climate information, and sector-specific insights relevant to the BW engagement",
+        "operationId": "conductResearch",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["query"],
+                "properties": {
+                  "query": {
+                    "type": "string",
+                    "description": "The specific intelligence question or research topic to investigate"
+                  },
+                  "country": {
+                    "type": "string",
+                    "description": "The target country or region for the research (e.g., 'Papua New Guinea', 'Southeast Asia')"
+                  },
+                  "sector": {
+                    "type": "string",
+                    "description": "The industry or sector to focus on (e.g., 'Mining', 'Infrastructure', 'Agriculture')"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Research intelligence findings",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "findings": {
+                      "type": "string",
+                      "description": "Structured intelligence report with market overview, opportunities, risks and recommendations"
+                    },
+                    "query": {
+                      "type": "string",
+                      "description": "The original research query"
+                    },
+                    "country": {
+                      "type": "string",
+                      "description": "Country/region researched"
+                    },
+                    "sector": {
+                      "type": "string",
+                      "description": "Sector researched"
+                    },
+                    "dataQuality": {
+                      "type": "integer",
+                      "description": "Data quality score 0-100"
+                    },
+                    "sources": {
+                      "type": "array",
+                      "items": { "type": "string" },
+                      "description": "Data sources referenced"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
