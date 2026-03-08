@@ -1,10 +1,13 @@
 ﻿/**
  * â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
- * AWS BEDROCK AI SERVICE
- * â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+ * TOGETHER.AI SERVICE (legacy name: awsBedrockService)
  * 
- * Production: AWS Bedrock (no external API keys needed)
- * All AI calls route through AWS Bedrock. Gemini removed.
+ * NOTE: Despite the filename, ALL code in this file calls Together.ai.
+ * AWS Bedrock integration was removed. The filename and export names are
+ * preserved for backward compatibility with existing imports.
+ *
+ * Primary: Together.ai (Llama 3.1 70B-Instruct-Turbo)
+ * Key:     VITE_TOGETHER_API_KEY in .env
  */
 
 import LiveDataService from './LiveDataService';
@@ -609,7 +612,10 @@ export default {
 
 export const isDirectBedrockConfigured = (): boolean => {
   const key = _TOGETHER_KEY();
-  return Boolean(key && key.length > 10 && !key.includes('YOUR_'));
+  if (!key || key.length < 20) return false;
+  const lower = key.toLowerCase();
+  if (lower.includes('your-') || lower.includes('your_') || lower.includes('placeholder') || lower.includes('key-here')) return false;
+  return true;
 };
 
 // SigV4 helpers removed — Together.ai uses a simple Bearer token.

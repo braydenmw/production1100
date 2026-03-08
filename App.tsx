@@ -642,6 +642,7 @@ const App: React.FC = () => {
                             if (payload?.query) setPendingConsultantQuery(payload.query);
                             setViewMode('main');
                         }}
+                        onNavigate={(mode) => setViewMode(mode as ViewMode)}
                     />
                 </div>
             );

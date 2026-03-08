@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import { OutcomeLearningService } from '../services/OutcomeLearningService';
 import { LiveDataService } from '../services/LiveDataService';
-import { getChatSession, extractFileTextViaAI } from '../services/geminiService';
+import { extractFileTextViaAI } from '../services/geminiService';
 import { AgentToolRegistry, AgentMemoryStore, registerBuiltInTools } from '../services/agent';
 import { ProfessionalDocumentExporter } from '../services/ProfessionalDocumentExporter';
 import type { ProfessionalDocument, DocumentSection } from '../services/ProfessionalDocumentExporter';
@@ -753,6 +753,8 @@ const REGIONAL_PARTNER_CANDIDATES: PartnerCandidate[] = [
 
 interface BWConsultantOSProps {
   onOpenWorkspace?: (payload?: { query?: string; results?: Record<string, unknown>[] }) => void;
+  /** Navigate to other OS modules (viewModes defined in App.tsx) */
+  onNavigate?: (viewMode: string) => void;
   embedded?: boolean;
   initialConsultantQuery?: string;
   onInitialConsultantQueryHandled?: () => void;
@@ -766,7 +768,8 @@ interface BWConsultantOSProps {
   onInitialContextHandled?: () => void;
 }
 
-const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, embedded = false, initialConsultantQuery, onInitialConsultantQueryHandled, initialContext, onInitialContextHandled }) => {
+const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, onNavigate, embedded = false, initialConsultantQuery, onInitialConsultantQueryHandled, initialContext, onInitialContextHandled }) => {
+  const [showToolsMenu, setShowToolsMenu] = useState(false);
   // Core state
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
@@ -1066,7 +1069,6 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, embedd
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const lastKernelSignalRef = useRef<string>('');
-  const chatSession = useRef(getChatSession());
   const agenticAIRef = useRef(new BWConsultantAgenticAI());
   const sessionId = useRef(crypto.randomUUID());
   const agentRegistry = useRef((() => {
@@ -6296,6 +6298,44 @@ Use concrete facts from the case. No template language. Write the complete repor
             <Globe size={16} />
             {showPilotWindow ? 'Close Live Research' : 'Live Research'}
           </button>
+
+          {/* Tools dropdown — unlocks all OS modules */}
+          {onNavigate && (
+            <div className="relative z-20">
+              <button
+                onClick={() => setShowToolsMenu(prev => !prev)}
+                className="relative z-10 ml-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-sm font-medium flex items-center gap-2 border border-white/20 transition-all"
+              >
+                <Briefcase size={16} />
+                Tools
+              </button>
+              {showToolsMenu && (
+                <div className="absolute right-0 top-full mt-1 w-64 bg-white border border-stone-200 shadow-xl z-50" onClick={() => setShowToolsMenu(false)}>
+                  {[
+                    { mode: 'documents',           icon: '📄', label: 'Document Generation Suite' },
+                    { mode: 'advanced-report',      icon: '📊', label: 'Advanced Report Generator' },
+                    { mode: 'exec-summary',         icon: '📋', label: 'Executive Summary' },
+                    { mode: 'letters',              icon: '✉️', label: 'Letters & MOUs' },
+                    { mode: 'global-location-intel', icon: '🌍', label: 'Location Intelligence' },
+                    { mode: 'matchmaking',          icon: '🤝', label: 'Partner Matchmaking' },
+                    { mode: 'intake',               icon: '📝', label: 'Structured Intake Form' },
+                    { mode: 'admin',                icon: '⚙️', label: 'Admin Dashboard' },
+                    { mode: 'user-manual',          icon: '📖', label: 'User Manual' },
+                    { mode: 'command-center',       icon: '🏠', label: 'Back to Command Center' },
+                  ].map(item => (
+                    <button
+                      key={item.mode}
+                      onClick={() => onNavigate(item.mode)}
+                      className="w-full text-left px-4 py-2.5 text-sm text-slate-700 hover:bg-blue-50 hover:text-blue-700 flex items-center gap-3 transition-colors"
+                    >
+                      <span className="text-base">{item.icon}</span>
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Main Content */}

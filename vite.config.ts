@@ -24,8 +24,18 @@ export default defineConfig(({ mode }) => {
       },
       plugins: [react()],
       define: {
-        'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY || env.VITE_GEMINI_API_KEY || ''),
-        'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY || env.VITE_GEMINI_API_KEY || '')
+        // Legacy REACT_APP_ references → Vite VITE_ equivalents
+        'process.env.REACT_APP_USE_REAL_AI':             JSON.stringify(env.VITE_USE_REAL_AI || env.REACT_APP_USE_REAL_AI || 'true'),
+        'process.env.REACT_APP_USE_REAL_DATA':           JSON.stringify(env.VITE_USE_REAL_DATA || env.REACT_APP_USE_REAL_DATA || 'true'),
+        'process.env.REACT_APP_USE_REAL_BACKEND':        JSON.stringify(env.VITE_USE_REAL_BACKEND || env.REACT_APP_USE_REAL_BACKEND || 'true'),
+        'process.env.REACT_APP_SHOW_DEMO_INDICATORS':    JSON.stringify(env.VITE_SHOW_DEMO_INDICATORS || 'false'),
+        'process.env.REACT_APP_ENABLE_ANALYTICS':        JSON.stringify(env.VITE_ENABLE_ANALYTICS || 'false'),
+        'process.env.REACT_APP_ENABLE_AUTH':             JSON.stringify(env.VITE_ENABLE_AUTH || 'false'),
+        'process.env.REACT_APP_API_BASE_URL':            JSON.stringify(env.VITE_API_BASE_URL || ''),
+        'process.env.NODE_ENV':                          JSON.stringify(env.NODE_ENV || 'development'),
+        // Legacy Gemini references (dead but prevents ReferenceError)
+        'process.env.API_KEY':        JSON.stringify(''),
+        'process.env.GEMINI_API_KEY': JSON.stringify(''),
       },
       resolve: {
         alias: {

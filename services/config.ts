@@ -1,22 +1,28 @@
 ﻿// Feature flags and configuration for demo/production modes
 // V6.0 - Nexus Intelligence OS - ALL LIVE DATA BY DEFAULT
+// Uses import.meta.env.VITE_* (Vite) with process.env fallback (SSR / tests)
+const _env = (key: string, fallback = ''): string =>
+  (typeof import.meta !== 'undefined' && (import.meta as any).env?.[key]) ||
+  (typeof process !== 'undefined' && (process as any).env?.[key]) ||
+  fallback;
+
 export const config = {
   // AI & Backend Features - ENABLED BY DEFAULT FOR LIVE SYSTEM
-  useRealAI: process.env.REACT_APP_USE_REAL_AI !== 'false', // Default TRUE
-  useRealData: process.env.REACT_APP_USE_REAL_DATA !== 'false', // Default TRUE
-  useRealBackend: process.env.REACT_APP_USE_REAL_BACKEND !== 'false', // Default TRUE
+  useRealAI:      _env('VITE_USE_REAL_AI',      'true') !== 'false',
+  useRealData:    _env('VITE_USE_REAL_DATA',    'true') !== 'false',
+  useRealBackend: _env('VITE_USE_REAL_BACKEND', 'true') !== 'false',
 
   // UI Features
-  showDemoIndicators: process.env.REACT_APP_SHOW_DEMO_INDICATORS === 'true',
-  enableAnalytics: process.env.REACT_APP_ENABLE_ANALYTICS === 'true',
-  enableAuth: process.env.REACT_APP_ENABLE_AUTH === 'true',
+  showDemoIndicators: _env('VITE_SHOW_DEMO_INDICATORS') === 'true',
+  enableAnalytics:    _env('VITE_ENABLE_ANALYTICS')     === 'true',
+  enableAuth:         _env('VITE_ENABLE_AUTH')           === 'true',
 
   // API Configuration
-  apiBaseUrl: process.env.REACT_APP_API_BASE_URL || 'http://localhost:3001/api',
+  apiBaseUrl: _env('VITE_API_BASE_URL', 'http://localhost:3001/api'),
 
   // Development flags
-  isDevelopment: process.env.NODE_ENV === 'development',
-  isProduction: process.env.NODE_ENV === 'production',
+  isDevelopment: _env('NODE_ENV') === 'development' || (typeof import.meta !== 'undefined' && (import.meta as any).env?.DEV),
+  isProduction:  _env('NODE_ENV') === 'production'  || (typeof import.meta !== 'undefined' && (import.meta as any).env?.PROD),
   
   // Multi-Agent Brain System v6.0 (Nexus Intelligence OS)
   enableMultiAgent: true,
@@ -55,7 +61,7 @@ export const features = {
 
 // System status messages
 export const systemMessages = {
-  aiResponse: "AI analysis powered by multi-model synthesis (Gemini, GPT-4, Claude).",
+  aiResponse: "AI analysis powered by Together.ai (Llama 3.1 70B) with NSIL intelligence engines.",
   dataSource: "Processing with live data integration and intelligent caching.",
   analysis: "Analysis complete using NSIL Intelligence Hub with 5-persona reasoning.",
   generation: "Document generated with professional formatting and export options.",

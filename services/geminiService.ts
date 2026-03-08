@@ -36,10 +36,13 @@ async function apiPost(path: string, body: object): Promise<any> {
   return null;
 }
 
-/** Check if Together.ai API key is available */
+/** Check if a REAL Together.ai API key is present (rejects placeholders) */
 function isTogetherConfigured(): boolean {
   const key = (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_TOGETHER_API_KEY) || '';
-  return key.length > 0;
+  if (key.length < 20) return false;
+  const lower = key.toLowerCase();
+  if (lower.includes('your-') || lower.includes('your_') || lower.includes('placeholder') || lower.includes('key-here')) return false;
+  return true;
 }
 
 /**

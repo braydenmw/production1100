@@ -52,11 +52,16 @@ export async function callTogether(
     (typeof process !== 'undefined' && process.env?.TOGETHER_API_KEY) ||
     '';
 
-  if (!key) {
+  // Reject placeholder keys
+  const lower = key.toLowerCase();
+  if (!key || key.length < 20 || lower.includes('your-') || lower.includes('your_') || lower.includes('key-here') || lower.includes('placeholder')) {
     throw new Error(
-      'Together.ai API key not configured. ' +
-      'Add VITE_TOGETHER_API_KEY=<key> to .env and restart the dev server. ' +
-      'Get your free key at https://api.together.xyz'
+      '\n\n=== BW NEXUS AI — API KEY REQUIRED ===\n\n' +
+      'No valid Together.ai API key found.\n\n' +
+      '1. Get a FREE key at: https://api.together.xyz\n' +
+      '2. Open .env and set: VITE_TOGETHER_API_KEY=<your-real-key>\n' +
+      '3. Restart the dev server (npm run dev)\n\n' +
+      'The system will fully activate once a real key is present.\n'
     );
   }
 
