@@ -789,6 +789,21 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, onNavi
   const voiceSpeakingRef = useRef(false);
   const displayedMsgIds = useRef<Set<string>>(new Set());
   const spokenMsgIds = useRef<Set<string>>(new Set());
+
+  // ── TTS: fires whenever a new assistant message arrives and loading is done ──
+  // Completely decoupled from TypewriterText so it always triggers regardless
+  // of animation state, user interactions, or mid-animation unmounts.
+  useEffect(() => {
+    if (!voiceEnabled || isLoading) return;
+    const last = messages[messages.length - 1];
+    if (!last || last.role !== 'assistant') return;
+    if (spokenMsgIds.current.has(last.id)) return;
+    spokenMsgIds.current.add(last.id);
+    voiceSpeakingRef.current = true;
+    ttsService.speak(last.content).finally(() => {
+      voiceSpeakingRef.current = false;
+    });
+  }, [messages, isLoading, voiceEnabled]);
   const [isListening, setIsListening] = useState(false);
   const recognitionRef = useRef<{ stop(): void } | null>(null);
   // Background brain context — updated on every enrichment pass
@@ -6679,16 +6694,7 @@ Use concrete facts from the case. No template language. Write the complete repor
                           {msg.role === 'assistant' && msgIdx === messages.length - 1 && !isLoading && !displayedMsgIds.current.has(msg.id) ? (
                             <TypewriterText text={msg.content} speed={75}
                               onComplete={() => {
-                                // Mark as displayed so subsequent renders use the static span
                                 displayedMsgIds.current.add(msg.id);
-                                // Speak only after full text is on screen (voice/text in sync)
-                                if (voiceEnabled && !spokenMsgIds.current.has(msg.id)) {
-                                  spokenMsgIds.current.add(msg.id);
-                                  voiceSpeakingRef.current = true;
-                                  ttsService.speak(msg.content).finally(() => {
-                                    voiceSpeakingRef.current = false;
-                                  });
-                                }
                               }}
                             />
                           ) : (
