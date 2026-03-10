@@ -3035,13 +3035,22 @@ ${agentRegistry.current.toManifest()}`;
     // ── INFORMATION / RESEARCH QUESTION ───────────────────────────────────────
     // "tell me about X", "what is X", "explain X", "describe X", etc.
     // These are questions, not intake answers — respond to what was actually asked.
-    const isInfoQuestion = /^(tell me about|what is|what are|who is|explain|describe|give me info|can you tell me|i want to know about|what do you know about|research|find out about)\b/i.test(trimmed);
+    const isInfoQuestion = /^(tell me about|tell me more about|more about|what is|what are|who is|explain|describe|give me info|can you tell me|i want to know about|i want to know more about|what do you know about|research|find out about|background on|background about)\b/i.test(trimmed);
 
     if (isInfoQuestion) {
-      // Extract the topic from the question for a direct acknowledgement
-      const topicMatch = trimmed.match(/^(?:tell me about|what is|what are|who is|explain|describe|give me info(?: on| about)?|can you tell me about|i want to know about|what do you know about|research|find out about)\s+(.+)/i);
+      // Extract the topic from the question for a direct response
+      const topicMatch = trimmed.match(/^(?:tell me(?:\s+more)?\s+about|more about|what is|what are|who is|explain|describe|give me info(?: on| about)?|can you tell me about|i want to know(?:\s+more)?\s+about|what do you know about|research|find out about|background (?:on|about))\s+(.+)/i);
       const topic = topicMatch?.[1]?.trim() || trimmed;
-      return `I can look into **${topic}** — but to make this analysis work for you, I need to know what decision or opportunity it connects to.\n\nFor example: Are you evaluating it as a market to enter, looking at a partnership there, approaching government, or assessing an investment? Once I know the context, I can give you a targeted advisory take rather than a generic overview.\n\nWhat are you specifically trying to achieve?`;
+      // Detect if it's a person query vs location/topic query
+      const isPersonQuery = /^(mayor|governor|president|minister|ceo|director|secretary|senator|congressman|general|admiral|chief)\s+/i.test(topic) || /\b(mayor|governor|minister|ceo|director)\b/i.test(topic);
+      const isLocationQuery = /\b(city|province|region|state|country|district|municipality|barangay|island)\b/i.test(topic) || /\b(mindanao|luzon|visayas|pagadian|davao|cebu|manila|zamboanga)\b/i.test(topic);
+      if (isPersonQuery) {
+        return `To give you a substantive brief on **${topic}**, I need to pull from live intelligence — my profile data on individual officials depends on their public record and jurisdiction.\n\nHere's what I can do right now: if you tell me the specific city or province they govern, I can brief you on the political environment, their institutional relationships, key priorities of their office, and how to position an approach to their administration.\n\nWhat's the context — are you preparing a government engagement, mapping stakeholder influence, or assessing political risk for an investment?`;
+      }
+      if (isLocationQuery) {
+        return `I can build a full intelligence profile on **${topic}** — political leadership, economic fundamentals, infrastructure, investment programs, and strategic positioning.\n\nTo sharpen the analysis: what's driving your interest? Are you assessing it as a market entry point, evaluating it for a partnership or project base, or making an investment decision there?\n\nGive me the context and I'll run the full NSIL location analysis immediately.`;
+      }
+      return `I can brief you on **${topic}** — let me anchor that to what matters most for your situation.\n\nWhat's the decision or opportunity this connects to? (Market entry, partnership, government engagement, investment, or something else.) That context lets me go beyond background information and give you an advisory-grade read.`;
     }
 
     // ── GENERAL FALLBACK — only reference data extracted from THIS input ───────
@@ -4524,6 +4533,10 @@ ${agentRegistry.current.toManifest()}`;
           caseDraft.contactRole ? `Contact role: ${caseDraft.contactRole}` : null,
         ].filter(Boolean).join('\n');
 
+        // Detect if the user is asking a factual/research question so the AI answers it rather than deflecting
+        const isInfoQueryTurn = /^(tell me about|tell me more about|more about|what is|what are|who is|explain|describe|give me info|can you tell me|i want to know about|i want to know more about|what do you know about|research|find out about|background on|background about|i want to learn|what can you tell me)/i.test(trimmedUserContent)
+          || /\b(who is|who was|what is|what are|tell me about|more about)\b.{3,}/i.test(trimmedUserContent);
+
         const openingInstruction = isOpeningTurn
           ? `You are BW Consultant — a world-class strategic advisory AI backed by the NSIL Agentic Runtime.
 
@@ -4532,12 +4545,18 @@ CRITICAL RULES — READ BEFORE RESPONDING:
 - Do NOT mention "Energy Transition" or "Advance new markets" unless the user explicitly said those words.
 - Do NOT list numbered intake questions ("1) Name 2) Country 3) Decision") — that is scripted chatbot behaviour.
 - Do NOT invent case context that wasn't in the user's message.
+- Do NOT ask for context before answering — ANSWER FIRST, then optionally ask ONE follow-up.
 
-${thisTurnContext ? `## WHAT I EXTRACTED FROM THE USER'S MESSAGE THIS TURN:
+${isInfoQueryTurn ? `## THIS IS A FACTUAL / RESEARCH QUESTION — ANSWER IT DIRECTLY
+The user is asking a specific factual question. You MUST provide substantive information on the topic FIRST.
+- For a person (mayor, official, executive): brief their role, known priorities, political/institutional standing, tenure, and any notable policy positions or actions
+- For a location (city, province, country): cover economic profile, key sectors, strategic advantages, infrastructure, investment climate, and political environment
+- For a topic/policy: explain what it is, current status, key stakeholders, and strategic implications
+After providing the briefing, ask ONE targeted follow-up about how this connects to the user's objective.` : thisTurnContext ? `## WHAT I EXTRACTED FROM THE USER'S MESSAGE THIS TURN:
 ${thisTurnContext}
 
 Use this to give a specific, grounded response. Reference their actual sector and region.` : `## NO CASE CONTEXT YET
-The user has provided minimal context. Briefly (2-3 sentences) demonstrate one concrete thing you can do relevant to their message, then ask ONE open natural question about their situation.`}
+The user has provided minimal context. Briefly demonstrate one concrete insight relevant to their message, then ask ONE open question about their situation.`}
 
 BEHAVIOUR:
 - Respond DIRECTLY to what the user actually said — show you understood it
