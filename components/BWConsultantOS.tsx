@@ -785,6 +785,18 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, onNavi
   const brainCtxRef = useRef<BrainContext | null>(null);
   // Persistent cross-session memory (survives page reload via localStorage)
   const memoryRef = useRef<PersistentMemorySystem>(new PersistentMemorySystem());
+  // Latest CaseStudyAnalyzer output — written synchronously in handleSend,
+  // read by buildNaturalFallbackReply (bypasses React async state lag)
+  const latestDocAnalysisRef = useRef<{
+    title: string;
+    country: string;
+    sector: string;
+    summary: string;
+    keyIssues: string[];
+    stakeholders: string[];
+    historicalParallels: string[];
+    scores: Record<string, number>;
+  } | null>(null);
 
   // Case study state — declared early so useEffects below can reference it without TDZ
   const [caseStudy, setCaseStudy] = useState<CaseStudy>({
@@ -2860,29 +2872,62 @@ ${agentRegistry.current.toManifest()}`;
     }
 
     // ── DOCUMENT UPLOAD AWARENESS ──
-    // When the user has uploaded documents, provide document-aware analysis
-    // instead of looping on intake questions.
-    const hasUploadedDocs = caseStudy.uploadedDocuments.length > 0;
+    // Read from the synchronous ref first (bypasses React async state lag),
+    // then fall back to the state-based aiInsights.
     const hasDocContent = /\*\*Uploaded Documents:\*\*/.test(trimmed);
-    const docInsights = caseStudy.aiInsights.filter(i => i.length > 30);
+    const refAnalysis = latestDocAnalysisRef.current;
+    const hasUploadedDocs = refAnalysis !== null || caseStudy.uploadedDocuments.length > 0;
 
-    if (hasDocContent || (hasUploadedDocs && docInsights.length > 0)) {
+    if (hasDocContent || hasUploadedDocs) {
       const cs = caseStudy;
+
+      // Build the response from ref analysis (synchronous, always fresh)
+      if (refAnalysis) {
+        const lines: string[] = [];
+        lines.push(`**Document reviewed:** ${refAnalysis.title || 'Uploaded document'}`);
+        if (refAnalysis.country) lines.push(`**Country/Region:** ${refAnalysis.country}`);
+        if (refAnalysis.sector) lines.push(`**Domain:** ${refAnalysis.sector}`);
+        if (refAnalysis.stakeholders.length) lines.push(`**Key actors:** ${refAnalysis.stakeholders.slice(0, 4).join(', ')}`);
+
+        let reply = `**I have reviewed the uploaded document. Here is what the NSIL engines identified:**\n\n`;
+        reply += lines.join('\n') + '\n\n';
+
+        if (refAnalysis.keyIssues.length > 0) {
+          reply += `**Key issues surfaced from this document:**\n`;
+          reply += refAnalysis.keyIssues.map(i => `\u2022 ${i}`).join('\n');
+          reply += '\n\n';
+        }
+
+        const scores = refAnalysis.scores;
+        if (Object.keys(scores).length > 0) {
+          reply += `**NSIL Diagnostic Scores (0\u2013100):**\n`;
+          reply += `\u2022 Governance Quality: ${scores.governance ?? 'N/A'}\n`;
+          reply += `\u2022 Stakeholder Alignment: ${scores.stakeholderAlignment ?? 'N/A'}\n`;
+          reply += `\u2022 Implementation Readiness: ${scores.implementationReadiness ?? 'N/A'}\n`;
+          reply += `\u2022 Overall Viability: ${scores.overallViability ?? 'N/A'}\n\n`;
+        }
+
+        if (refAnalysis.historicalParallels.length > 0) {
+          reply += `**Historical parallels matched:**\n`;
+          reply += refAnalysis.historicalParallels.map(h => `\u2022 ${h}`).join('\n');
+          reply += '\n\n';
+        }
+
+        reply += `To activate a full AI-powered deep analysis of this document, add your Together.ai API key to the .env file. That will run the complete 4-step ReasoningPipeline across all issues identified above and produce a board-ready advisory brief.\n\nAlternatively, tell me what specific aspect you want to focus on and I will build that analysis now.`;
+        return reply;
+      }
+
+      // Fallback if ref is empty but state has something
+      const docInsights = cs.aiInsights.filter(i => i.length > 30);
       const profileParts: string[] = [];
       if (cs.country.trim()) profileParts.push(`**Country/Region:** ${cs.country}`);
       if (cs.organizationType.trim()) profileParts.push(`**Sector:** ${cs.organizationType}`);
       if (cs.currentMatter.trim()) profileParts.push(`**Subject:** ${cs.currentMatter}`);
-      if (cs.targetAudience.trim()) profileParts.push(`**Key Stakeholders:** ${cs.targetAudience}`);
-      if (cs.decisionDeadline.trim()) profileParts.push(`**Timeframe:** ${cs.decisionDeadline}`);
 
-      let reply = `**I\u2019ve reviewed the uploaded document${caseStudy.uploadedDocuments.length > 1 ? 's' : ''}.** Here\u2019s what the NSIL engines extracted:\n\n`;
-      if (profileParts.length > 0) {
-        reply += profileParts.join('\n') + '\n\n';
-      }
-      if (docInsights.length > 0) {
-        reply += `**Analysis Summary:**\n${docInsights.slice(0, 3).map(i => `\u2022 ${i.slice(0, 300)}`).join('\n')}\n\n`;
-      }
-      reply += `I can generate a full report, strategic recommendation, letter of intent, or executive brief based on this document. What would you like me to produce?`;
+      let reply = `**Document received.** Here is what was extracted:\n\n`;
+      if (profileParts.length > 0) reply += profileParts.join('\n') + '\n\n';
+      if (docInsights.length > 0) reply += `**Analysis:**\n${docInsights.slice(0, 3).map(i => `\u2022 ${i.slice(0, 300)}`).join('\n')}\n\n`;
+      reply += `Tell me what aspect you want me to focus on and I will produce the analysis.`;
       return reply;
     }
 
@@ -3086,24 +3131,35 @@ ${agentRegistry.current.toManifest()}`;
 
       // ── IssueSolutionPipeline — run all 7 analysis engines in parallel ───────
       //
-      //   GlobalIssueResolver   → issue classification + root causes
-      //   SituationAnalysisEngine → 7-perspective analysis
-      //   ProblemToSolutionGraph  → leverage points
-      //   HistoricalParallelMatcher → real historical case matches
-      //   MotivationDetector      → hidden risk signals
-      //   NSILIntelligenceHub     → strategic trust score
-      //   DecisionPipeline        → decision frame + immediate actions
+      // IMPORTANT: the 7 engines are pure algorithmic (no AI calls) and were
+      // designed for a short issue statement (~200 chars), NOT a 30k-char document.
+      // When the userInput contains uploaded document content, we extract just
+      // the typed query + a condensed document header so the engines get a
+      // focused, meaningful issue to classify — not a keyword soup.
       //
-      //   All run synchronously (no external API) so the await is fast.
+      const docSeparatorIdx = userInput.indexOf('\n\n**Uploaded Documents:**');
+      const typedQuery = docSeparatorIdx > -1
+        ? userInput.slice(0, docSeparatorIdx).trim()
+        : userInput;
+      // Build a short issue description from ref analysis if available
+      const docRef = latestDocAnalysisRef.current;
+      const docIssueSummary = docRef
+        ? `Document analysis — ${docRef.title} (${docRef.country}, ${docRef.sector}).` +
+          ` Key issues: ${docRef.keyIssues.slice(0, 3).join('; ')}.`
+        : documentContext?.slice(0, 500) ?? '';
+      const issueForPipeline = typedQuery
+        ? `${typedQuery}${docIssueSummary ? ` Context: ${docIssueSummary}` : ''}`
+        : (docIssueSummary || userInput.slice(0, 500));
+
       const intelligenceBlock = await runIssuePipeline({
-        issue: userInput,
-        country: caseStudy.country || undefined,
+        issue: issueForPipeline,
+        country: caseStudy.country || docRef?.country || undefined,
         organizationName: caseStudy.organizationName || undefined,
-        organizationType: caseStudy.organizationType || undefined,
+        organizationType: caseStudy.organizationType || docRef?.sector || undefined,
         objectives: caseStudy.objectives || undefined,
-        currentMatter: caseStudy.currentMatter || undefined,
+        currentMatter: caseStudy.currentMatter || docRef?.title || undefined,
         constraints: (caseStudy as any).constraints || undefined,
-        sector: (caseStudy as any).sector || caseStudy.organizationType || undefined,
+        sector: (caseStudy as any).sector || caseStudy.organizationType || docRef?.sector || undefined,
         uploadedDocuments: [],
       }).catch(() => undefined);
 
@@ -3669,6 +3725,30 @@ ${agentRegistry.current.toManifest()}`;
         try {
           const analysis = CaseStudyAnalyzer.analyze(file.name, fileContent);
           const summary = CaseStudyAnalyzer.toConsultantSummary(analysis);
+
+          // ── Store analysis in ref synchronously so buildNaturalFallbackReply
+          //    can read it immediately — React setCaseStudy is async and won't
+          //    be visible in the same render cycle ──────────────────────────────
+          const keyIssues: string[] = [
+            ...analysis.weaknesses.slice(0, 5).map(w => `${w.category}: ${w.description}`),
+            ...analysis.historicalParallels.slice(0, 2).map(h => `Historical parallel — ${h.name} (${h.country}): ${h.lesson}`),
+          ];
+          latestDocAnalysisRef.current = {
+            title: analysis.title,
+            country: analysis.country,
+            sector: analysis.sector,
+            summary,
+            keyIssues,
+            stakeholders: analysis.stakeholders,
+            historicalParallels: analysis.historicalParallels.map(h => `${h.name} (${h.country}, ${h.outcome})`),
+            scores: {
+              governance: analysis.scores.governanceQuality,
+              stakeholderAlignment: analysis.scores.stakeholderAlignment,
+              implementationReadiness: analysis.scores.implementationReadiness,
+              overallViability: analysis.scores.overallViability,
+            },
+          };
+
           setCaseStudy(prev => {
             const next = {
               ...prev,
