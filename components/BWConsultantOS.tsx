@@ -377,6 +377,12 @@ const TypewriterText: React.FC<{ text: string; speed?: number; onStart?: () => v
   const rafRef = React.useRef<number | null>(null);
   const lastRef = React.useRef(0);
   const startedRef = React.useRef(false);
+  // Use refs for callbacks so inline arrow functions from parent JSX
+  // don't cause the animation useEffect to restart on every parent re-render.
+  const onStartRef = React.useRef(onStart);
+  const onCompleteRef = React.useRef(onComplete);
+  React.useEffect(() => { onStartRef.current = onStart; });
+  React.useEffect(() => { onCompleteRef.current = onComplete; });
 
   React.useEffect(() => {
     indexRef.current = 0;
@@ -388,7 +394,7 @@ const TypewriterText: React.FC<{ text: string; speed?: number; onStart?: () => v
     const step = (ts: number) => {
       if (!startedRef.current) {
         startedRef.current = true;
-        onStart?.();
+        onStartRef.current?.();
       }
       if (!lastRef.current) lastRef.current = ts;
       const elapsed = ts - lastRef.current;
@@ -400,7 +406,7 @@ const TypewriterText: React.FC<{ text: string; speed?: number; onStart?: () => v
         lastRef.current = ts;
         if (nextIdx >= text.length) {
           setDone(true);
-          onComplete?.();
+          onCompleteRef.current?.();
           return;
         }
       }
@@ -409,7 +415,7 @@ const TypewriterText: React.FC<{ text: string; speed?: number; onStart?: () => v
 
     rafRef.current = requestAnimationFrame(step);
     return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
-  }, [text, speed, onStart, onComplete]);
+  }, [text, speed]); // ← callbacks intentionally excluded; stable via refs above
 
   const html = displayed
     .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold">$1</strong>')
@@ -6672,10 +6678,10 @@ Use concrete facts from the case. No template language. Write the complete repor
                         <div className={`whitespace-pre-wrap ${msg.role === 'assistant' ? 'text-[13px] leading-[1.7] text-slate-800' : ''}`}>
                           {msg.role === 'assistant' && msgIdx === messages.length - 1 && !isLoading && !displayedMsgIds.current.has(msg.id) ? (
                             <TypewriterText text={msg.content} speed={75}
-                              onStart={() => {
-                                displayedMsgIds.current.add(msg.id);
-                              }}
                               onComplete={() => {
+                                // Mark as displayed so subsequent renders use the static span
+                                displayedMsgIds.current.add(msg.id);
+                                // Speak only after full text is on screen (voice/text in sync)
                                 if (voiceEnabled && !spokenMsgIds.current.has(msg.id)) {
                                   spokenMsgIds.current.add(msg.id);
                                   voiceSpeakingRef.current = true;
