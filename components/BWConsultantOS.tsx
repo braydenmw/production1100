@@ -63,6 +63,7 @@ import { EventBus } from '../services/EventBus';
 import { autonomousScheduler } from '../services/AutonomousScheduler';
 import { MultiAgentOrchestrator, type SynthesizedAnalysis } from '../services/MultiAgentOrchestrator';
 import { PartnerIntelligenceEngine, type PartnerCandidate } from '../services/PartnerIntelligenceEngine';
+import { selfLearningEngine } from '../services/selfLearningEngine';
 
 // ============================================================================
 // TYPES
@@ -1196,6 +1197,12 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, onNavi
       successfulInterventions: signal === 'up' ? ['consultant-response'] : [],
       governanceThreshold: 80,
       rankingDelta: signal === 'up' ? 1 : -1
+    });
+    // Feed selfLearningEngine via EventBus so it can adapt performance weights
+    EventBus.publish({
+      type: 'outcomeRecorded',
+      reportId: msgId,
+      outcome: { success: signal === 'up', notes: `User feedback: ${signal}` }
     });
   }, []);
 
@@ -4447,6 +4454,26 @@ ${agentRegistry.current.toManifest()}`;
               );
             }
 
+            // ── SELF-LEARNING ADAPTIVE STATE ────────────────────────────────────
+            {
+              const learningState = OutcomeLearningService.getState();
+              const _ = selfLearningEngine; // ensure singleton is live (wires EventBus subs)
+              void _;
+              if (learningState.records.length > 0) {
+                const successCount = learningState.records.filter(
+                  r => r.successfulInterventions.length > 0
+                ).length;
+                const successRate = Math.round((successCount / learningState.records.length) * 100);
+                blocks.push(
+                  `## ADAPTIVE SELF-LEARNING STATE (OutcomeLearningService — ${learningState.records.length} sessions logged)\n` +
+                  `Session success rate: ${successRate}% | ` +
+                  `Adaptive governance threshold: ${learningState.suggestedGovernanceThreshold}% | ` +
+                  `Ranking bias: ${learningState.suggestedRankingBias > 0 ? '+' : ''}${learningState.suggestedRankingBias.toFixed(1)}\n` +
+                  `Apply: calibrate confidence and governance strictness to these learned thresholds.`
+                );
+              }
+            }
+
             // ── TIER 3 ENGINE OUTPUTS (readiness >= 60) ──────────────────────
 
             if (adversarialResult) {
@@ -5646,13 +5673,23 @@ Use concrete facts from the case. No template language. Write the complete repor
       const combined = allResults.map(r => `## ${r.title}\n\n${r.content}`).join('\n\n---\n\n');
       setGeneratedContent(combined);
 
+      const genReportId = crypto.randomUUID();
       setMessages(prev => [...prev, {
-        id: crypto.randomUUID(),
+        id: genReportId,
         role: 'assistant',
         content: `${allResults.length} document${allResults.length !== 1 ? 's' : ''} generated:\n${allResults.map((r, i) => `${i + 1}. **${r.title}**`).join('\n')}\n\nEach document is available as a print-ready HTML file from the Document Ready panel. Open in your browser and use File → Print → Save as PDF for a professional PDF.`,
         timestamp: new Date(),
         phase: 'generation'
       }]);
+      // Record successful generation as a positive outcome for self-learning
+      EventBus.publish({
+        type: 'outcomeRecorded',
+        reportId: genReportId,
+        outcome: {
+          success: true,
+          notes: `${allResults.length} docs generated — ${caseStudy.country || 'unknown country'}, ${caseStudy.situationType || 'unknown sector'}`
+        }
+      });
     } catch (error) {
       console.error('Generation error:', error);
       setMessages(prev => [...prev, {
