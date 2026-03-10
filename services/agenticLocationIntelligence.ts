@@ -217,7 +217,7 @@ async function simulateWebSearch(keywords: string[], category: string): Promise<
         title: lr.title || `${keywords[0]} - Intelligence`,
         snippet: lr.snippet || `Live intelligence for ${searchQuery}.`,
         url: lr.url,
-        confidence: 0.75 + Math.random() * 0.2,
+        confidence: 0.85,
         timestamp,
       });
     }

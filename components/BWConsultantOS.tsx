@@ -3164,6 +3164,13 @@ ${agentRegistry.current.toManifest()}`;
         uploadedDocuments: [],
       }).catch(() => undefined);
 
+      // Build conversation history from prior completed messages so the AI
+      // remembers earlier turns in the session (excluding the current loading stub).
+      const conversationHistory = messages
+        .filter(m => (m.role === 'user' || m.role === 'assistant') && m.content?.trim())
+        .slice(-8)
+        .map(m => ({ role: m.role as 'user' | 'assistant', content: m.content.slice(0, 400) }));
+
       const result = await runReasoningPipelineStream(
         {
           // Use the typed query as the user message so the AI sees a clean prompt,
@@ -3173,6 +3180,7 @@ ${agentRegistry.current.toManifest()}`;
           caseContext: Object.keys(caseContextMap).length ? caseContextMap : undefined,
           brainBlock: context || undefined,
           intelligenceBlock: intelligenceBlock || undefined,
+          conversationHistory: conversationHistory.length ? conversationHistory : undefined,
         },
         (streamedAnswer) => onChunk(streamedAnswer)
       );
@@ -3190,7 +3198,7 @@ ${agentRegistry.current.toManifest()}`;
       onChunk(fallbackText);
       return fallbackText;
     }
-  }, [buildConsultantPrompt, processWithAI, buildNaturalFallbackReply, caseStudy, consultantCaseBrief, consultantGateReady, consultantGateMissing, captureAugmentedAIFromPayload]);
+  }, [buildConsultantPrompt, processWithAI, buildNaturalFallbackReply, caseStudy, consultantCaseBrief, consultantGateReady, consultantGateMissing, captureAugmentedAIFromPayload, messages]);
 
   const getHighestValueFollowUp = useCallback((draft: CaseStudy) => {
     if (!draft.organizationName.trim()) return 'Which organization is the decision owner for this matter?';

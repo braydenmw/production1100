@@ -748,7 +748,7 @@ async function findSimilarCities(
               city: result.title.split(',')[0],
               country: result.title.includes(',') ? result.title.split(',').pop()?.trim() || country : country,
               region: region,
-              similarity: 75 + Math.floor(Math.random() * 20),
+              similarity: 82,
               reason: extracted.industries.length > 0 
                 ? `Similar economic focus: ${extracted.industries.slice(0, 2).join(', ')}`
                 : `Same region: ${region || country}`,

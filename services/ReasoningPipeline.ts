@@ -122,9 +122,7 @@ const THINK_PROMPT = (input: ReasoningInput) => {
     ? `\n\n## RECENT CONVERSATION:\n${input.conversationHistory.slice(-4).map(t => `${t.role.toUpperCase()}: ${t.content.slice(0, 300)}`).join('\n\n')}`
     : '';
 
-  return `${SYSTEM_INSTRUCTION_SHORT}
-
-You are about to respond to a user. Before writing your answer, you MUST reason through the problem in three steps. Think carefully — this reasoning shapes the quality of your final answer.
+  return `You are about to respond to a user. Before writing your answer, you MUST reason through the problem in three steps. Think carefully — this reasoning shapes the quality of your final answer.
 
 ## USER MESSAGE:
 "${input.userMessage}"
@@ -162,9 +160,11 @@ const ANSWER_PROMPT = (input: ReasoningInput, reasoning: {
     ? `\n\n## DOCUMENT CONTENT (you have already read this):\n${input.documentContext.slice(0, 32000)}`
     : '';
 
-  return `${SYSTEM_INSTRUCTION_SHORT}
+  const historyBlock = input.conversationHistory?.length
+    ? `\n\n## PRIOR CONVERSATION:\n${input.conversationHistory.slice(-6).map(t => `${t.role.toUpperCase()}: ${t.content.slice(0, 400)}`).join('\n\n')}`
+    : '';
 
-You have already reasoned through this problem. Now write the final response.
+  return `You have already reasoned through this problem. Now write the final response.
 
 ## YOUR REASONING:
 **What the user is really asking:** ${reasoning.step1_question}
@@ -175,8 +175,8 @@ You have already reasoned through this problem. Now write the final response.
 "${input.userMessage}"
 
 ## CASE CONTEXT:
-${caseLines || '(none yet)'}${docBlock}
-${input.brainBlock ? `\n## INTELLIGENCE DATA:\n${input.brainBlock.slice(0, 2000)}` : ''}
+${caseLines || '(none yet)'}${docBlock}${historyBlock}
+${input.brainBlock ? `\n## INTELLIGENCE DATA:\n${input.brainBlock.slice(0, 8000)}` : ''}
 
 ---
 
@@ -205,7 +205,10 @@ export async function runReasoningPipeline(
 
   try {
     const thinkRaw = await callTogether(
-      [{ role: 'user', content: THINK_PROMPT(input) }],
+      [
+        { role: 'system', content: SYSTEM_INSTRUCTION_SHORT },
+        { role: 'user', content: THINK_PROMPT(input) },
+      ],
       { model: 'meta-llama/Llama-3.1-70B-Instruct-Turbo', maxTokens: 600, temperature: 0.2 }
     );
 
@@ -233,7 +236,10 @@ export async function runReasoningPipeline(
     // Full pipeline: use the thought to ground the answer
     try {
       answer = await callTogether(
-        [{ role: 'user', content: ANSWER_PROMPT(input, reasoning) }],
+        [
+          { role: 'system', content: SYSTEM_INSTRUCTION_SHORT },
+          { role: 'user', content: ANSWER_PROMPT(input, reasoning) },
+        ],
         { model: 'meta-llama/Llama-3.1-70B-Instruct-Turbo', maxTokens: 4096, temperature: 0.35 }
       );
     } catch (err) {
@@ -251,7 +257,10 @@ export async function runReasoningPipeline(
         document_driven: Boolean(input.documentContext),
       });
       answer = await callTogether(
-        [{ role: 'user', content: directPrompt }],
+        [
+          { role: 'system', content: SYSTEM_INSTRUCTION_SHORT },
+          { role: 'user', content: directPrompt },
+        ],
         { model: 'meta-llama/Llama-3.1-70B-Instruct-Turbo', maxTokens: 4096, temperature: 0.4 }
       );
     } catch (err) {
@@ -290,7 +299,10 @@ export async function runReasoningPipelineStream(
 
   try {
     const thinkRaw = await callTogether(
-      [{ role: 'user', content: THINK_PROMPT(input) }],
+      [
+        { role: 'system', content: SYSTEM_INSTRUCTION_SHORT },
+        { role: 'user', content: THINK_PROMPT(input) },
+      ],
       { model: 'meta-llama/Llama-3.1-70B-Instruct-Turbo', maxTokens: 600, temperature: 0.2 }
     );
     const jsonMatch = thinkRaw.match(/\{[\s\S]*\}/);
@@ -320,7 +332,10 @@ export async function runReasoningPipelineStream(
 
   try {
     await callTogether(
-      [{ role: 'user', content: answerPrompt }],
+      [
+        { role: 'system', content: SYSTEM_INSTRUCTION_SHORT },
+        { role: 'user', content: answerPrompt },
+      ],
       { model: 'meta-llama/Llama-3.1-70B-Instruct-Turbo', maxTokens: 4096, temperature: 0.35, stream: true },
       (token) => {
         accumulated += token;
