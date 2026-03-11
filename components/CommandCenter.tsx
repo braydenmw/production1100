@@ -85,13 +85,13 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
         },
         'b': {
             title: 'Agentic & Autonomous Systems',
-            subtitle: 'Self-directed agents that plan research, spawn specialists, evolve their own models, and simulate cascading futures.',
+            subtitle: 'Self-directed agents that plan research, spawn specialists, evolve their own models, query live global data, and simulate cascading futures.',
             icon: 'B',
             color: 'from-emerald-600 to-emerald-800',
-            summary: 'Multi-model consensus voting, goal-directed agent spawning with governance gates, self-modifying formulas with rollback, and forward-looking system dynamics simulation.',
+            summary: 'A 22-engine parallel brain fires on every query — multi-model consensus, goal-directed agent spawning, self-modifying formulas, live intelligence from 10+ global APIs (ACLED, OpenSanctions, UN Comtrade, GDELT, World Bank, Wikidata), and forward-looking system dynamics simulation.',
             full: (
                 <div className="space-y-6">
-                    <p className="text-sm text-slate-700 leading-relaxed">These systems give the OS the ability to act on its own \u2014 not just respond to prompts. They plan research, spawn specialist agents, evolve their own scoring models based on outcomes, and simulate futures with cascading feedback loops. Every autonomous action is governed by gates that control what happens without human approval.</p>
+                    <p className="text-sm text-slate-700 leading-relaxed">These systems give the OS the ability to act on its own &mdash; not just respond to prompts. They plan research, spawn specialist agents, evolve their own scoring models based on outcomes, query live global data sources in real time, and simulate futures with cascading feedback loops. Every autonomous action is governed by gates that control what happens without human approval.</p>
 
                     <div className="border-l-2 border-emerald-600 pl-4">
                         <h4 className="font-semibold text-slate-900 text-sm mb-1">Multi-Agent Brain System</h4>
@@ -115,6 +115,30 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                         <h4 className="font-semibold text-slate-900 text-sm mb-1">Scenario Simulation Engine</h4>
                         <p className="text-sm text-slate-600 leading-relaxed">Forward-looking system dynamics based on Forrester (1961): stocks, flows, and feedback loops modelled as coupled differential equations. Monte Carlo uncertainty propagation through causal graphs with Markov chain state transitions. Simulates cascading futures where one change triggers downstream effects through workforce, housing, supply chain, and tax base. Each simulation produces probability-weighted branching timelines.</p>
                         <p className="text-xs text-slate-500 mt-1 italic">Role in the OS: Called during NSIL Layer 6 for strategic recommendations. Produces the forward-looking scenarios that appear in generated documents.</p>
+                    </div>
+
+                    <div className="border-l-2 border-emerald-600 pl-4">
+                        <h4 className="font-semibold text-slate-900 text-sm mb-1">Brain Integration Service &mdash; 22-Engine Parallel Brain</h4>
+                        <p className="text-sm text-slate-600 leading-relaxed">Every query fires 22+ engines simultaneously via <code className="text-xs bg-slate-100 px-1 rounded">Promise.allSettled</code> &mdash; formula indices, regional development kernel, decision pipeline, domain agent synthesis, persona debate, derived indices, OSINT search, opportunity detection, risk monitoring, conflict analysis, sanctions screening, trade statistics, and deep web research. Results are unpacked, merged, and injected into a unified strategic prompt. Engines that fail gracefully degrade without blocking the rest.</p>
+                        <p className="text-xs text-slate-500 mt-1 italic">Role in the OS: The runtime brain. Sits between your input and the AI response, ensuring every answer draws on the full weight of the system&rsquo;s intelligence.</p>
+                    </div>
+
+                    <div className="border-l-2 border-emerald-600 pl-4">
+                        <h4 className="font-semibold text-slate-900 text-sm mb-1">Global Issue Resolver</h4>
+                        <p className="text-sm text-slate-600 leading-relaxed">A universal problem-solver that treats any query as a solvable issue. Performs root cause analysis, gathers real-time data via the Reactive Intelligence Engine, applies multi-layer NSIL analysis, and produces a structured resolution plan with specific interventions, timelines, and resource requirements. Wired into the Brain Integration Service so it runs on every strategic question.</p>
+                        <p className="text-xs text-slate-500 mt-1 italic">Role in the OS: NSIL Layer 6 &mdash; autonomous intelligence. Ensures the system always attempts to solve the underlying problem, not just describe it.</p>
+                    </div>
+
+                    <div className="border-l-2 border-emerald-600 pl-4">
+                        <h4 className="font-semibold text-slate-900 text-sm mb-1">Live External Intelligence Layer &mdash; 10+ Global Data APIs</h4>
+                        <p className="text-sm text-slate-600 leading-relaxed">The system now queries live external sources on every analysis: <strong>ACLED</strong> (real-time conflict &amp; political violence events), <strong>OpenSanctions</strong> (OFAC, UN, EU, UK, INTERPOL sanctions &amp; PEP screening), <strong>UN Comtrade</strong> (bilateral trade statistics), <strong>GDELT</strong> (global news event monitoring), <strong>World Bank</strong> (GDP, inflation, governance indicators), <strong>Wikidata</strong> (structured knowledge graph via SPARQL), <strong>Wikipedia</strong> (encyclopedic context), <strong>REST Countries</strong> (country profiles, population, currencies), <strong>DuckDuckGo</strong> (live web search), and <strong>Tavily</strong> (deep AI-synthesised research). Every data point carries a freshness timestamp and confidence score.</p>
+                        <p className="text-xs text-slate-500 mt-1 italic">Role in the OS: Feeds into the Brain Integration Service, Location Intelligence, and GlobalIssueResolver. Replaces all simulated data with real-world signals.</p>
+                    </div>
+
+                    <div className="border-l-2 border-emerald-600 pl-4">
+                        <h4 className="font-semibold text-slate-900 text-sm mb-1">Reactive Intelligence Engine</h4>
+                        <p className="text-sm text-slate-600 leading-relaxed">Real-time opportunity detection and risk monitoring. Scans live web sources, detects emerging investment signals, flags political and economic risks as they develop, and feeds structured intelligence into the Brain Integration Service. Also powers the multi-agent location research system &mdash; 7 research categories (Economy, Demographics, News, Business, Leadership, Culture, Infrastructure) each querying multiple APIs simultaneously for any city or region worldwide.</p>
+                        <p className="text-xs text-slate-500 mt-1 italic">Role in the OS: Runs alongside every analysis. Ensures the system is working with current intelligence, not stale assumptions.</p>
                     </div>
                 </div>
             ),
@@ -157,13 +181,13 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
         },
         'd': {
             title: 'Self-Monitoring & Calibration',
-            subtitle: 'The system audits its own reasoning, detects when the world has changed, and can reject recommendations on ethical grounds.',
+            subtitle: 'The system audits its own reasoning, learns from every interaction, detects when the world has changed, and can reject recommendations on ethical grounds.',
             icon: 'D',
             color: 'from-violet-600 to-violet-800',
-            summary: 'Metacognitive bias detection, statistical drift monitoring with automatic recalibration, and computational ethics scoring against Rawlsian fairness principles.',
+            summary: 'Metacognitive bias detection, statistical drift monitoring with automatic recalibration, event-driven continuous learning, runtime weight tuning with rollback, and computational ethics scoring against Rawlsian fairness principles.',
             full: (
                 <div className="space-y-6">
-                    <p className="text-sm text-slate-700 leading-relaxed">These systems ensure the OS doesn\u2019t just produce analysis \u2014 it continuously checks whether that analysis is trustworthy. They detect cognitive bias in the system\u2019s own reasoning, catch when the world has changed enough that models need recalibration, and apply formal ethical frameworks to every recommendation.</p>
+                    <p className="text-sm text-slate-700 leading-relaxed">These systems ensure the OS doesn&rsquo;t just produce analysis &mdash; it continuously checks whether that analysis is trustworthy, learns from every interaction, and tunes itself over time. They detect cognitive bias in the system&rsquo;s own reasoning, catch when the world has changed enough that models need recalibration, apply formal ethical frameworks to every recommendation, and feed outcome data back into the engine weights for continuous improvement.</p>
 
                     <div className="border-l-2 border-violet-600 pl-4">
                         <h4 className="font-semibold text-slate-900 text-sm mb-1">MetaCognition Engine</h4>
@@ -179,8 +203,20 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
 
                     <div className="border-l-2 border-violet-600 pl-4">
                         <h4 className="font-semibold text-slate-900 text-sm mb-1">Ethical Reasoning Engine</h4>
-                        <p className="text-sm text-slate-600 leading-relaxed">Computational ethics applied to every recommendation. Calculates multi-stakeholder utility, Rawls\u2019 Difference Principle (does the least-advantaged group benefit?), intergenerational equity using Stern Review discount rates (\u22641.4%), proportionality calculus, and Gini coefficient for inequality impact. These are mathematical scores, not checkbox exercises. The system can recommend \u201Creject\u201D on ethical grounds alone \u2014 even when the financial case is strong.</p>
-                        <p className="text-xs text-slate-500 mt-1 italic">Role in the OS: NSIL Layer 9 \u2014 compliance checking. Ethical scoring runs alongside regulatory compliance as a hard gate before output.</p>
+                        <p className="text-sm text-slate-600 leading-relaxed">Computational ethics applied to every recommendation. Calculates multi-stakeholder utility, Rawls&rsquo; Difference Principle (does the least-advantaged group benefit?), intergenerational equity using Stern Review discount rates (&le;1.4%), proportionality calculus, and Gini coefficient for inequality impact. These are mathematical scores, not checkbox exercises. The system can recommend &ldquo;reject&rdquo; on ethical grounds alone &mdash; even when the financial case is strong.</p>
+                        <p className="text-xs text-slate-500 mt-1 italic">Role in the OS: NSIL Layer 9 &mdash; compliance checking. Ethical scoring runs alongside regulatory compliance as a hard gate before output.</p>
+                    </div>
+
+                    <div className="border-l-2 border-violet-600 pl-4">
+                        <h4 className="font-semibold text-slate-900 text-sm mb-1">Self-Improvement Engine &mdash; Runtime Weight Tuning</h4>
+                        <p className="text-sm text-slate-600 leading-relaxed">Records per-run performance metrics (duration, accuracy, confidence), detects accuracy drift via Welch&rsquo;s t-test across rolling windows, and auto-tunes formula weights when regression is detected. Every weight change carries a rollback checkpoint &mdash; if a tuning degrades accuracy, the system reverts automatically. Runs in the background on every Brain Integration Service invocation at readiness &ge;50%.</p>
+                        <p className="text-xs text-slate-500 mt-1 italic">Role in the OS: Continuous background process. Keeps formula calibration aligned with real-world accuracy, not static assumptions. Full audit trail of every adjustment.</p>
+                    </div>
+
+                    <div className="border-l-2 border-violet-600 pl-4">
+                        <h4 className="font-semibold text-slate-900 text-sm mb-1">Self-Learning Engine &mdash; Event-Driven Continuous Learning</h4>
+                        <p className="text-sm text-slate-600 leading-relaxed">Listens for events across the entire system via an EventBus &mdash; new analyses, user feedback, outcome data, formula executions, agent completions. Each event is processed as a learning signal that builds institutional knowledge over time. Pattern recognition across accumulated events surfaces recurring success factors and failure modes that inform future analyses.</p>
+                        <p className="text-xs text-slate-500 mt-1 italic">Role in the OS: Persistent background listener. Over time, the system gets smarter by learning from its own operations &mdash; not just from training data.</p>
                     </div>
                 </div>
             ),
@@ -487,8 +523,11 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                         <p className="text-base text-slate-700 leading-relaxed text-justify mb-4">
                             All of them are orchestrated through <strong className="text-slate-900">NSIL</strong> (Neuro-Symbolic Intelligence Layer) &mdash; a 10-layer pipeline that chains every engine in sequence. Every input passes through input validation, adversarial multi-persona debate, 38 quantitative formulas, stress testing, neuroscience-based cognition modelling, autonomous agent intelligence, proactive self-monitoring, reflexive analysis of the user, compliance checking, and audience-adaptive output &mdash; in that order &mdash; before a single result is produced. Nothing is optional. Nothing is skipped.
                         </p>
+                        <p className="text-base text-slate-700 leading-relaxed text-justify mb-4">
+                            The system now connects to <strong className="text-slate-900">10+ live external data sources</strong> on every analysis &mdash; ACLED conflict data, OpenSanctions screening, UN Comtrade trade statistics, GDELT global news, World Bank indicators, Wikidata knowledge graphs, and more. A 22-engine parallel brain fires these alongside every internal engine via <code className="text-xs bg-slate-100 px-1 rounded">Promise.allSettled</code>, ensuring no single failure blocks the rest. The system learns from every interaction, tunes its own weights, and rolls back automatically if accuracy drifts.
+                        </p>
                         <p className="text-base text-slate-700 leading-relaxed text-justify">
-                            The result is a system that reasons, argues with itself, detects what you&rsquo;re not saying, checks whether its own conclusions are drifting, and adapts its language depending on who reads the output. Below is what was developed and why none of it existed before.
+                            The result is a system that reasons, argues with itself, queries live global intelligence, detects what you&rsquo;re not saying, checks whether its own conclusions are drifting, learns from every run, and adapts its language depending on who reads the output. Below is what was developed and why none of it existed before.
                         </p>
                     </div>
 
@@ -527,11 +566,11 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                                     <span className="flex-shrink-0 w-9 h-9 rounded-full bg-white/20 text-white text-sm font-bold flex items-center justify-center"><GitBranch size={16} /></span>
                                     <h3 className="text-lg font-bold text-white leading-snug">The Intelligence Architecture</h3>
                                 </div>
-                                <p className="text-xs text-white/80 leading-relaxed">The NSIL pipeline that chains every engine together</p>
+                                <p className="text-xs text-white/80 leading-relaxed">The NSIL pipeline, 22-engine parallel brain, and live external intelligence layer</p>
                             </div>
                             <div className="p-5 flex flex-col flex-1">
                                 <p className="text-sm text-slate-600 leading-relaxed flex-1">
-                                    None of these systems existed before this project. The NSIL chains all of them &mdash; every layer runs, every engine contributes, and the output carries the full weight of everything above. That is why this system thinks differently.
+                                    None of these systems existed before this project. The NSIL chains all of them &mdash; every layer runs, every engine contributes, and 10+ live global data APIs feed real-time intelligence into every analysis. The output carries the full weight of everything above. That is why this system thinks differently.
                                 </p>
                                 <button
                                     onClick={() => setShowFormulas(true)}
@@ -3725,10 +3764,63 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                                 </ul>
                             </div>
 
+                            <h4 className="text-lg font-bold text-blue-800 pt-4 border-t-2 border-blue-200 mt-6">Live External Intelligence Layer &mdash; 10+ Global Data APIs</h4>
+                            <p className="text-sm text-slate-700 mb-3">The system now connects to live external data sources on every analysis. No simulated data, no cached proxies &mdash; real-time signals from authoritative global sources:</p>
+                            <div className="bg-emerald-50/60 border border-emerald-200 rounded-sm p-4 mb-4">
+                                <div className="grid md:grid-cols-2 gap-2">
+                                    <ul className="space-y-1 text-sm text-slate-600">
+                                        <li>&bull; <strong>ACLED</strong> &mdash; Real-time conflict &amp; political violence events with severity scoring and risk levels</li>
+                                        <li>&bull; <strong>OpenSanctions</strong> &mdash; Entity screening against OFAC, UN, EU, UK, INTERPOL + PEP databases</li>
+                                        <li>&bull; <strong>UN Comtrade</strong> &mdash; Bilateral trade statistics: exports, imports, trade balance by country pair</li>
+                                        <li>&bull; <strong>GDELT</strong> &mdash; Global news event monitoring with geolocation and sentiment analysis</li>
+                                        <li>&bull; <strong>World Bank</strong> &mdash; GDP, inflation, trade openness, governance indicators by country</li>
+                                    </ul>
+                                    <ul className="space-y-1 text-sm text-slate-600">
+                                        <li>&bull; <strong>Wikidata</strong> &mdash; Structured knowledge graph via SPARQL queries for entities, relationships, facts</li>
+                                        <li>&bull; <strong>Wikipedia</strong> &mdash; Encyclopedic context and summaries for cities, regions, organisations</li>
+                                        <li>&bull; <strong>REST Countries</strong> &mdash; Country profiles: population, area, borders, currencies, languages, timezones</li>
+                                        <li>&bull; <strong>DuckDuckGo</strong> &mdash; Live web search for current events and breaking developments</li>
+                                        <li>&bull; <strong>Tavily</strong> &mdash; Deep AI-synthesised web research with source attribution and confidence scores</li>
+                                    </ul>
+                                </div>
+                                <p className="text-sm text-slate-700 mt-3">Every data point carries a <strong>freshness timestamp</strong> and <strong>confidence score</strong>. The Regional Development Kernel blocks output when data confidence drops below threshold. All sources are queried in parallel via the Brain Integration Service.</p>
+                            </div>
+
+                            <h4 className="text-lg font-bold text-blue-800 pt-2">Brain Integration Service &mdash; 22-Engine Parallel Brain</h4>
+                            <p className="text-sm text-slate-700 mb-3">Every query fires 22+ engines simultaneously via <code className="text-xs bg-slate-100 px-1 rounded">Promise.allSettled</code>. The Brain Integration Service is the runtime core that sits between your input and the AI response:</p>
+                            <div className="bg-blue-50/60 border border-blue-200 rounded-sm p-4 mb-4">
+                                <ul className="list-disc list-inside space-y-1 pl-2 text-sm text-slate-600">
+                                    <li><strong>Formula indices</strong> &mdash; All 46+ proprietary formulas via CompositeScoreService</li>
+                                    <li><strong>Regional Development Kernel</strong> &mdash; Interventions, partners, causal graphs, governance readiness</li>
+                                    <li><strong>Decision Pipeline</strong> &mdash; Structured decision packets with ranked strategic options</li>
+                                    <li><strong>Domain Agent Synthesis</strong> &mdash; Gov Policy, Banking, Corporate, Market, Risk, Historical agents</li>
+                                    <li><strong>Persona Engine</strong> &mdash; Skeptic, Advocate, Regulator, Accountant debate</li>
+                                    <li><strong>ReactiveIntelligenceEngine</strong> &mdash; Opportunity detection + live risk monitoring</li>
+                                    <li><strong>GlobalIssueResolver</strong> &mdash; Universal problem-solver with root cause analysis</li>
+                                    <li><strong>SelfImprovementEngine</strong> &mdash; Runtime weight tuning with drift detection and rollback</li>
+                                    <li><strong>ACLED, OpenSanctions, UN Comtrade, Tavily</strong> &mdash; Live external data agents</li>
+                                    <li><strong>OSINT search</strong> &mdash; Open-source intelligence for country/org context</li>
+                                    <li><strong>Derived indices</strong> &mdash; PRI (Political Risk), TCO (Total Cost), CRI (Country Risk)</li>
+                                </ul>
+                                <p className="text-sm text-slate-700 mt-3">Engines that fail gracefully degrade without blocking the rest. Results are unpacked, merged, and injected into a unified strategic prompt with full source attribution.</p>
+                            </div>
+
+                            <h4 className="text-lg font-bold text-blue-800 pt-2">Self-Learning &amp; Self-Improvement Loop</h4>
+                            <p className="text-sm text-slate-700 mb-3">The system continuously improves from its own operations:</p>
+                            <div className="bg-violet-50/60 border border-violet-200 rounded-sm p-4 mb-4">
+                                <ul className="list-disc list-inside space-y-1 pl-2 text-sm text-slate-600">
+                                    <li><strong>SelfImprovementEngine</strong> &mdash; Records per-run performance metrics, detects accuracy drift via Welch&rsquo;s t-test, auto-tunes formula weights with full rollback safety</li>
+                                    <li><strong>selfLearningEngine</strong> &mdash; EventBus-driven continuous learning: listens for analysis completions, user feedback, formula executions, and agent outcomes to build institutional knowledge over time</li>
+                                    <li><strong>Adaptive Query Routing</strong> &mdash; Detects query type (info question, person lookup, location research, complex analysis) and routes to the optimal processing path automatically</li>
+                                    <li><strong>World Knowledge Grants</strong> &mdash; Every AI turn receives a system-level knowledge instruction, ensuring accurate factual responses for general questions alongside deep NSIL analysis</li>
+                                </ul>
+                            </div>
+
                             <h4 className="text-lg font-bold text-slate-900 pt-2">Implementation Inventory</h4>
                             <ul className="list-disc list-inside space-y-1 pl-2 text-sm text-slate-600 mb-6">
-                                <li><strong>50,000+ lines of TypeScript code</strong> across 155+ service files</li>
+                                <li><strong>55,000+ lines of TypeScript code</strong> across 165+ service files</li>
                                 <li><strong>Fully implemented, no placeholders:</strong> Every engine has working code, type definitions, and unit test coverage</li>
+                                <li><strong>10+ live external data APIs:</strong> ACLED, OpenSanctions, UN Comtrade, Tavily, GDELT, World Bank, Wikidata, Wikipedia, REST Countries, DuckDuckGo</li>
                                 <li><strong>Published mathematical foundations:</strong> Each model cites academic sources (Wilson-Cowan, Rao &amp; Ballard, Friston, Gentner, etc.)</li>
                                 <li><strong>Deterministic seeding:</strong> Hash-based RNG ensures reproducibility. Same input, same output, every time, across machines and deployments</li>
                                 <li><strong>Audit-ready architecture:</strong> Every decision traces to source data, formula component, neuroscience model, or autonomous engine with full confidence intervals</li>
@@ -3890,9 +3982,12 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                                     <li><strong>10-Layer Deterministic Pipeline</strong> — Laws &rarr; Shield &rarr; Boardroom &rarr; Engine &rarr; Stress Test &rarr; Brain &rarr; Autonomous &rarr; Proactive &rarr; Output &rarr; Reflexive</li>
                                     <li><strong>46+ Proprietary Formulas</strong> — Strategic core indices, advanced evaluation matrices, structural assessments, risk models, financial metrics, operational scores, market analysis, governance frameworks, partner scoring</li>
                                     <li><strong>7 Neuroscience Models</strong> — Wilson-Cowan, Predictive Coding, Free Energy Principle, Attention, Emotional Processing, Global Workspace, Working Memory</li>
+                                    <li><strong>22-Engine Parallel Brain</strong> — BrainIntegrationService fires formula indices, regional kernel, decision pipeline, domain agents, persona debate, derived indices, OSINT, ReactiveIntelligence, GlobalIssueResolver, SelfImprovementEngine, ACLED, OpenSanctions, UN Comtrade, and Tavily simultaneously via Promise.allSettled</li>
+                                    <li><strong>10+ Live External Data APIs</strong> — ACLED conflict data, OpenSanctions screening, UN Comtrade trade statistics, GDELT global news, World Bank indicators, Wikidata SPARQL, Wikipedia, REST Countries, DuckDuckGo web search, Tavily deep research — every data point timestamped with confidence scoring</li>
                                     <li><strong>Regional Development Kernel</strong> — RegionalDevelopmentOrchestrator, Partner Intelligence Engine, Problem-to-Solution Graph, Global Data Fabric, Outcome Learning Service</li>
                                     <li><strong>Case Study Method Layer</strong> — 5-gate methodological validation enforced across all entry paths before any output generates</li>
-                                    <li><strong>Reactive Agentic Runtime</strong> — Streamed responses, draft-time signal extraction, concurrent planner/executor tasks, and message-level provenance confidence</li>
+                                    <li><strong>Reactive Agentic Runtime</strong> — Streamed responses, draft-time signal extraction, concurrent planner/executor tasks, message-level provenance confidence, adaptive query routing (info/person/location/complex analysis detection), and world knowledge grants on every turn</li>
+                                    <li><strong>Self-Learning &amp; Self-Improvement Loop</strong> — SelfImprovementEngine (runtime weight tuning with Welch&rsquo;s t-test drift detection and rollback), selfLearningEngine (EventBus-driven continuous learning from every system event), GlobalIssueResolver (universal problem-solver with root cause analysis)</li>
                                     <li><strong>8 Global Issue Packs</strong> — Water Security, Energy Transition, Logistics Corridors, Housing Systems, Health Systems, Digital Infrastructure, Workforce Transition, Climate Resilience</li>
                                     <li><strong>Output at Scale</strong> — 156+ letter templates, 247+ document outputs, adaptive intake-to-generation flow, full case study analysis, multi-audience translation, partner-aware institutional drafting</li>
                                 </ul>
