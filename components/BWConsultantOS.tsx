@@ -14,7 +14,7 @@ import {
   Bot, Send, Paperclip, Loader2, X,
   FileText, Mail, Briefcase, Shield, BarChart3, Users, Scale, 
   Globe, FileCheck, PenTool, Download, Copy, Check,
-  HelpCircle, ChevronRight,
+  HelpCircle,
   ThumbsUp, ThumbsDown, Languages, Zap, AlertTriangle, CheckCircle2, PlayCircle,
   Mic, MicOff,
 } from 'lucide-react';
@@ -7057,111 +7057,135 @@ You MUST write each section in full prose, formatted with ## headers, to the spe
       <div className="h-screen flex flex-col">
         {/* Blue Banner Header */}
         <div 
-          className="px-6 py-4 flex items-center justify-between relative overflow-hidden"
+          className="relative overflow-hidden"
           style={{
             backgroundImage: 'url(https://images.unsplash.com/photo-1677442136019-21780ecad995?w=1400&h=300&fit=crop&q=80)',
             backgroundSize: 'cover',
             backgroundPosition: 'center',
           }}
         >
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-900/90 via-blue-800/80 to-blue-900/70" />
-          <div className="relative z-10 flex items-center gap-4">
+          <div className="absolute inset-0 bg-gradient-to-r from-slate-900/95 via-blue-900/90 to-slate-900/95" />
+
+          {/* Top Row: Brand + Utility Controls */}
+          <div className="relative z-10 px-6 pt-4 pb-2 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Bot size={24} className="text-white" />
+              <div className="w-9 h-9 rounded-lg bg-white/15 backdrop-blur flex items-center justify-center border border-white/20">
+                <Bot size={20} className="text-white" />
+              </div>
               <div>
-                <h1 className="text-xl font-bold text-white">BW Consultant</h1>
-                <span className="text-blue-200 text-xs">Powered by NSIL Agentic Runtime • Case Study Builder</span>
+                <h1 className="text-lg font-semibold text-white tracking-wide leading-tight">BW Consultant</h1>
+                <span className="text-blue-300/70 text-[10px] font-medium uppercase tracking-widest">NSIL Agentic Runtime &bull; Case Study Builder</span>
               </div>
             </div>
-          </div>
-          
-          {/* Phase Indicator */}
-          <div className="relative z-10 hidden md:flex items-center gap-2">
-            {Object.entries(phaseLabels).map(([phase, info], idx) => (
-              <React.Fragment key={phase}>
-                {idx > 0 && <ChevronRight size={14} className="text-blue-300/50" />}
-                <div className={`px-3 py-1.5 text-xs font-medium transition-all ${
-                  currentPhase === phase 
-                    ? 'bg-white text-blue-800' 
-                    : Object.keys(phaseLabels).indexOf(currentPhase) > idx 
-                      ? 'bg-blue-700/50 text-blue-100'
-                      : 'bg-blue-800/30 text-blue-300/70'
-                }`}>
-                  {info.label}
-                </div>
-              </React.Fragment>
-            ))}
-          </div>
 
-          {/* Final Report Button */}
-          <button
-            onClick={() => setShowFinalReport(true)}
-            className="relative z-10 px-3 py-2 bg-amber-600/80 hover:bg-amber-500 text-white text-sm font-medium flex items-center gap-1.5 border border-amber-400/40 transition-all"
-            title="Generate or view Final Report"
-          >
-            <FileText size={14} />
-            Final Report
-          </button>
-
-          {/* Language Selector */}
-          <div className="relative z-10 flex items-center gap-1 mr-2">
-            <Languages size={14} className="text-blue-200" />
-            <select
-              value={locale}
-              onChange={(e) => setLocale(e.target.value)}
-              className="bg-white/10 text-white text-xs border border-white/20 px-1.5 py-1 focus:outline-none"
-              title="Output locale / language"
-            >
-              {LOCALES.map((l) => (
-                <option key={l.code} value={l.code} className="text-black bg-white">{l.label}</option>
-              ))}
-            </select>
-          </div>
-          <button
-            onClick={() => setShowPilotWindow((prev) => !prev)}
-            className="relative z-10 ml-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-sm font-medium flex items-center gap-2 border border-white/20 transition-all"
-          >
-            <Globe size={16} />
-            {showPilotWindow ? 'Close Live Research' : 'Live Research'}
-          </button>
-
-          {/* Tools dropdown - unlocks all OS modules */}
-          {onNavigate && (
-            <div className="relative z-20">
-              <button
-                onClick={() => setShowToolsMenu(prev => !prev)}
-                className="relative z-10 ml-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-sm font-medium flex items-center gap-2 border border-white/20 transition-all"
-              >
-                <Briefcase size={16} />
-                Tools
-              </button>
-              {showToolsMenu && (
-                <div className="absolute right-0 top-full mt-1 w-64 bg-white border border-stone-200 shadow-xl z-50" onClick={() => setShowToolsMenu(false)}>
-                  {[
-                    { mode: 'documents',           icon: '', label: 'Document Generation Suite' },
-                    { mode: 'advanced-report',      icon: '', label: 'Advanced Report Generator' },
-                    { mode: 'exec-summary',         icon: '', label: 'Executive Summary' },
-                    { mode: 'letters',              icon: '', label: 'Letters & MOUs' },
-                    { mode: 'global-location-intel', icon: '', label: 'Location Intelligence' },
-                    { mode: 'matchmaking',          icon: '', label: 'Partner Matchmaking' },
-                    { mode: 'intake',               icon: '', label: 'Structured Intake Form' },
-                    { mode: 'admin',                icon: '', label: 'Admin Dashboard' },
-                    { mode: 'user-manual',          icon: '', label: 'User Manual' },
-                    { mode: 'command-center',       icon: '', label: 'Back to Command Center' },
-                  ].map(item => (
-                    <button
-                      key={item.mode}
-                      onClick={() => onNavigate(item.mode)}
-                      className="w-full text-left px-4 py-2.5 text-sm text-slate-700 hover:bg-blue-50 hover:text-blue-700 flex items-center gap-3 transition-colors"
-                    >
-                      <span className="text-base">{item.icon}</span>
-                      {item.label}
-                    </button>
+            <div className="flex items-center gap-2">
+              {/* Language Selector */}
+              <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-white/10 border border-white/15 backdrop-blur">
+                <Languages size={13} className="text-blue-200/70" />
+                <select
+                  value={locale}
+                  onChange={(e) => setLocale(e.target.value)}
+                  className="bg-transparent text-white text-xs font-medium focus:outline-none cursor-pointer"
+                  title="Output locale / language"
+                >
+                  {LOCALES.map((l) => (
+                    <option key={l.code} value={l.code} className="text-slate-800 bg-white">{l.label}</option>
                   ))}
+                </select>
+              </div>
+
+              {/* Live Research */}
+              <button
+                onClick={() => setShowPilotWindow((prev) => !prev)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-white/10 hover:bg-white/20 text-white text-xs font-medium border border-white/15 backdrop-blur transition-all"
+              >
+                <Globe size={13} />
+                {showPilotWindow ? 'Close Research' : 'Live Research'}
+              </button>
+
+              {/* Tools dropdown */}
+              {onNavigate && (
+                <div className="relative z-20">
+                  <button
+                    onClick={() => setShowToolsMenu(prev => !prev)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-white/10 hover:bg-white/20 text-white text-xs font-medium border border-white/15 backdrop-blur transition-all"
+                  >
+                    <Briefcase size={13} />
+                    Tools
+                  </button>
+                  {showToolsMenu && (
+                    <div className="absolute right-0 top-full mt-1.5 w-56 bg-white/95 backdrop-blur-xl rounded-lg border border-slate-200 shadow-2xl z-50 py-1 overflow-hidden" onClick={() => setShowToolsMenu(false)}>
+                      {[
+                        { mode: 'documents',           icon: '', label: 'Document Generation Suite' },
+                        { mode: 'advanced-report',      icon: '', label: 'Advanced Report Generator' },
+                        { mode: 'exec-summary',         icon: '', label: 'Executive Summary' },
+                        { mode: 'letters',              icon: '', label: 'Letters & MOUs' },
+                        { mode: 'global-location-intel', icon: '', label: 'Location Intelligence' },
+                        { mode: 'matchmaking',          icon: '', label: 'Partner Matchmaking' },
+                        { mode: 'intake',               icon: '', label: 'Structured Intake Form' },
+                        { mode: 'admin',                icon: '', label: 'Admin Dashboard' },
+                        { mode: 'user-manual',          icon: '', label: 'User Manual' },
+                        { mode: 'command-center',       icon: '', label: 'Back to Command Center' },
+                      ].map(item => (
+                        <button
+                          key={item.mode}
+                          onClick={() => onNavigate(item.mode)}
+                          className="w-full text-left px-4 py-2 text-sm text-slate-600 hover:bg-blue-50 hover:text-blue-700 flex items-center gap-2.5 transition-colors"
+                        >
+                          {item.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
-          )}
+          </div>
+
+          {/* Bottom Row: Phase Steps + Final Report */}
+          <div className="relative z-10 px-6 pb-3 pt-1 flex items-center justify-between">
+            <div className="hidden md:flex items-center gap-0.5 bg-black/20 rounded-lg p-1 backdrop-blur">
+              {Object.entries(phaseLabels).map(([phase, info], idx) => {
+                const isActive = currentPhase === phase;
+                const isCompleted = Object.keys(phaseLabels).indexOf(currentPhase) > idx;
+                return (
+                  <div
+                    key={phase}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all cursor-default ${
+                      isActive
+                        ? 'bg-white text-blue-900 shadow-sm'
+                        : isCompleted
+                          ? 'text-blue-200 bg-white/10'
+                          : 'text-blue-400/50'
+                    }`}
+                  >
+                    <span className={`w-4.5 h-4.5 text-[10px] font-bold rounded-full inline-flex items-center justify-center ${
+                      isActive
+                        ? 'bg-blue-600 text-white'
+                        : isCompleted
+                          ? 'bg-blue-400/30 text-blue-200'
+                          : 'bg-white/10 text-blue-400/40'
+                    }`}>
+                      {idx + 1}
+                    </span>
+                    {info.label}
+                  </div>
+                );
+              })}
+            </div>
+
+            <button
+              onClick={() => setShowFinalReport(true)}
+              className="flex items-center gap-1.5 px-4 py-1.5 rounded-md bg-amber-500/90 hover:bg-amber-400 text-white text-xs font-semibold shadow-lg shadow-amber-900/20 border border-amber-400/50 transition-all"
+              title="Generate or view Final Report"
+            >
+              <FileText size={13} />
+              Final Report
+            </button>
+          </div>
+
+          {/* Subtle bottom border glow */}
+          <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-400/40 to-transparent z-10" />
         </div>
 
         {/* Main Content */}
