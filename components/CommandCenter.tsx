@@ -88,7 +88,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
             subtitle: 'Self-directed agents that plan research, spawn specialists, evolve their own models, query live global data, and simulate cascading futures.',
             icon: 'B',
             color: 'from-emerald-600 to-emerald-800',
-            summary: 'A 22-engine parallel brain fires on every query - multi-model consensus, goal-directed agent spawning, self-modifying formulas, live intelligence from 10+ global APIs (ACLED, OpenSanctions, UN Comtrade, GDELT, World Bank, Wikidata), and forward-looking system dynamics simulation.',
+            summary: 'A 22-engine parallel brain fires on every query - multi-model consensus, goal-directed agent spawning, self-modifying formulas, live intelligence from 15+ global APIs (ACLED, OpenSanctions, GLEIF, OpenCorporates, V-Dem, Brave Search, UN Comtrade, GDELT, World Bank, Wikidata), an Entity Intelligence Pipeline that verifies every mentioned entity across 7 sources in parallel, and forward-looking system dynamics simulation.',
             full: (
                 <div className="space-y-6">
                     <p className="text-sm text-slate-700 leading-relaxed">These systems give the OS the ability to act on its own &mdash; not just respond to prompts. They plan research, spawn specialist agents, evolve their own scoring models based on outcomes, query live global data sources in real time, and simulate futures with cascading feedback loops. Every autonomous action is governed by gates that control what happens without human approval.</p>
@@ -130,9 +130,15 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                     </div>
 
                     <div className="border-l-2 border-emerald-600 pl-4">
-                        <h4 className="font-semibold text-slate-900 text-sm mb-1">Live External Intelligence Layer &mdash; 10+ Global Data APIs</h4>
-                        <p className="text-sm text-slate-600 leading-relaxed">The system now queries live external sources on every analysis: <strong>ACLED</strong> (real-time conflict &amp; political violence events), <strong>OpenSanctions</strong> (OFAC, UN, EU, UK, INTERPOL sanctions &amp; PEP screening), <strong>UN Comtrade</strong> (bilateral trade statistics), <strong>GDELT</strong> (global news event monitoring), <strong>World Bank</strong> (GDP, inflation, governance indicators), <strong>Wikidata</strong> (structured knowledge graph via SPARQL), <strong>Wikipedia</strong> (encyclopedic context), <strong>REST Countries</strong> (country profiles, population, currencies), <strong>DuckDuckGo</strong> (live web search), and <strong>Tavily</strong> (deep AI-synthesised research). Every data point carries a freshness timestamp and confidence score.</p>
-                        <p className="text-xs text-slate-500 mt-1 italic">Role in the OS: Feeds into the Brain Integration Service, Location Intelligence, and GlobalIssueResolver. Replaces all simulated data with real-world signals.</p>
+                        <h4 className="font-semibold text-slate-900 text-sm mb-1">Live External Intelligence Layer &mdash; 15+ Global Data APIs</h4>
+                        <p className="text-sm text-slate-600 leading-relaxed">The system now queries live external sources on every analysis: <strong>ACLED</strong> (real-time conflict &amp; political violence events), <strong>OpenSanctions</strong> (OFAC, UN, EU, UK, INTERPOL sanctions &amp; PEP screening), <strong>OpenCorporates</strong> (corporate registry verification), <strong>GLEIF</strong> (Legal Entity Identifier lookups), <strong>V-Dem v14</strong> (academic governance scores from the University of Gothenburg), <strong>Brave Search</strong> (independent non-Google web index), <strong>UN Comtrade</strong> (bilateral trade statistics), <strong>GDELT</strong> (global news event monitoring), <strong>World Bank</strong> (GDP, inflation, governance indicators), <strong>Wikidata</strong> (structured knowledge graph via SPARQL), <strong>Wikipedia</strong> (encyclopedic context), <strong>REST Countries</strong> (country profiles, population, currencies), <strong>DuckDuckGo</strong> (live web search), and <strong>Tavily</strong> (deep AI-synthesised research). Every data point carries a freshness timestamp and confidence score.</p>
+                        <p className="text-xs text-slate-500 mt-1 italic">Role in the OS: Feeds into the Brain Integration Service, Entity Intelligence Pipeline, Location Intelligence, and GlobalIssueResolver. Replaces all simulated data with real-world signals.</p>
+                    </div>
+
+                    <div className="border-l-2 border-emerald-600 pl-4">
+                        <h4 className="font-semibold text-slate-900 text-sm mb-1">Entity Intelligence Pipeline &mdash; 7-Source Parallel Verification</h4>
+                        <p className="text-sm text-slate-600 leading-relaxed">When any entity is mentioned in a query, the Entity Intelligence Pipeline fires automatically. It runs <strong>OpenSanctions</strong> (sanctions/PEP screening), <strong>OpenCorporates</strong> (corporate registry), <strong>GLEIF</strong> (LEI/ownership chain), <strong>Tavily</strong> (deep web research), <strong>Brave Search</strong> (independent search), <strong>GDELT</strong> (news sentiment), and <strong>V-Dem</strong> (jurisdiction governance) in parallel. Produces a composite Entity Intelligence Report with verified/unverified status, risk rating (LOW/MODERATE/HIGH/CRITICAL), and full source accountability. Supports <strong>Groq function calling</strong> with 4 tool schemas so the AI can autonomously decide which verification tools to invoke.</p>
+                        <p className="text-xs text-slate-500 mt-1 italic">Role in the OS: Bridges country-level NSIL scoring and entity-level due diligence. Ensures every mentioned company, partner, or individual is verified against real registries &mdash; not training-data guesses.</p>
                     </div>
 
                     <div className="border-l-2 border-emerald-600 pl-4">
@@ -429,62 +435,153 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-50/40 via-transparent to-transparent" />
                 <div className="relative max-w-4xl mx-auto">
                     <h2 className="text-4xl md:text-5xl font-light text-center leading-tight mb-4 text-slate-900">
-                        BWGA Ai &mdash; An Institutional Intelligence Operating System
+                        An Institutional Intelligence Operating System
                     </h2>
                     <p className="text-center text-lg md:text-xl font-light mb-12 max-w-3xl mx-auto text-slate-600">
                         Regional cities are too important to be managed with fragmented tooling. I built this because the tools that existed weren&rsquo;t built for the problems I kept seeing in real regional decision environments. This is a <span className="text-blue-600 font-normal">full operating system for strategic decisions</span> &mdash; part research analyst, part debate room, part document engine. You describe your situation. It builds the case. You walk away with something defensible.
                     </p>
                     <div id="brain" className="relative -top-28" />
+
+                    {/* ── The Gap: What Advisory AI Actually Lacks ── */}
                     <h2 className="text-3xl md:text-4xl font-bold text-slate-900 leading-tight mb-6">
-                        What Is BWGA Ai &mdash; and What Is the BW Consultant?
+                        What Every AI Advisory System Gets Wrong
                     </h2>
                     <div className="space-y-4 mb-10">
                         <p className="text-lg text-slate-700 leading-relaxed text-justify">
-                            BWGA Ai is the technology platform of BW Global Advisory. Think of it as a full intelligence operating system &mdash; not a tool you open, paste something into, and get a paragraph back. It is a system you <em>work through</em>. You bring your situation. It brings the analysis.
-                        </p>
-                        <p className="text-lg text-slate-700 leading-relaxed text-justify">
-                            The <strong className="text-slate-900">BW Consultant</strong> is the front door to that system. You have a conversation with it &mdash; describe what you&rsquo;re dealing with, what you&rsquo;re trying to achieve, where you&rsquo;re operating. As you type, the system is already building your case. It detects signals, identifies gaps, models your jurisdiction, and decides which questions matter most. By the time you&rsquo;re mid-conversation, a full institutional case study is forming behind the scenes.
-                        </p>
-                        <p className="text-lg text-slate-700 leading-relaxed text-justify">
-                            When the case is ready, the system recommends exactly which reports and letters your situation requires &mdash; and generates them with full traceability to method, evidence, and scoring logic. <strong className="text-slate-900">That is what makes it an OS, not a chatbot.</strong> Every response is grounded in deterministic analysis. Every document produced is audit-committee defensible.
+                            The single biggest gap across every general-purpose AI when it comes to strategic advisory work is this: <strong className="text-slate-900">they don&rsquo;t know who they&rsquo;re talking to, and they don&rsquo;t verify what they&rsquo;re talking about.</strong>
                         </p>
                     </div>
 
-                    {/* Comparison - Photo + Script Cards (matches How It Thinks pattern) */}
-                    <div className="grid md:grid-cols-2 gap-8">
-                        {/* Standard AI Card */}
-                        <div className="group bg-white border border-slate-200 overflow-hidden shadow-sm hover:shadow-lg transition-shadow">
-                            <div className="h-48 relative overflow-hidden">
-                                <img src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=800&h=400&fit=crop&q=80" alt="Standard AI limitations" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 to-slate-900/20" />
-                                <div className="absolute bottom-4 left-5 right-5">
-                                    <h3 className="text-lg font-bold text-white">Standard AI</h3>
-                                    <p className="text-[11px] text-slate-300">Probabilistic &bull; Opaque &bull; Inconsistent</p>
-                                </div>
+                    {/* Four Problem Cards */}
+                    <div className="grid md:grid-cols-2 gap-6 mb-14">
+                        {/* Problem 1: No Identity */}
+                        <div className="bg-white border border-slate-200 p-6 shadow-sm">
+                            <div className="flex items-center gap-3 mb-3">
+                                <span className="flex-shrink-0 w-8 h-8 rounded-full bg-red-100 text-red-700 text-sm font-bold flex items-center justify-center">1</span>
+                                <h3 className="text-base font-bold text-slate-900">No Identity, No Context, No Continuity</h3>
                             </div>
-                            <div className="p-6">
-                                <p className="text-sm text-slate-700 leading-relaxed text-justify">
-                                    Ask ChatGPT the same question twice and you will often get different answers. Ask it about a specific regulation and it may cite a rule that doesn&rsquo;t exist. Ask it to score a partnership opportunity and it will write something plausible &mdash; not something verifiable. In low-stakes environments, this is fine. When a government budget, a board decision, or a cross-border investment depends on your analysis, plausible is not good enough.
-                                </p>
-                            </div>
+                            <p className="text-sm text-slate-700 leading-relaxed text-justify">
+                                Standard AI doesn&rsquo;t ask who you are. It doesn&rsquo;t know if you&rsquo;re a first-time founder exploring Papua New Guinea or a seasoned infrastructure investor evaluating a $200M port deal in Mozambique. It treats both identically &mdash; a blank prompt box. There&rsquo;s no intake, no case building, no memory of your situation across turns. Every conversation starts at zero.
+                            </p>
                         </div>
 
-                        {/* BW Ai Card */}
-                        <div className="group bg-white border border-slate-200 overflow-hidden shadow-sm hover:shadow-lg transition-shadow">
-                            <div className="h-48 relative overflow-hidden">
-                                <img src="https://images.unsplash.com/photo-1639322537228-f710d846310a?w=800&h=400&fit=crop&q=80" alt="BW Ai intelligence" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                                <div className="absolute inset-0 bg-gradient-to-t from-blue-900/80 to-blue-900/20" />
-                                <div className="absolute bottom-4 left-5 right-5">
-                                    <h3 className="text-lg font-bold text-white">BW Ai</h3>
-                                    <p className="text-[11px] text-blue-200">Deterministic &bull; Auditable &bull; Defensible</p>
-                                </div>
+                        {/* Problem 2: No Verification */}
+                        <div className="bg-white border border-slate-200 p-6 shadow-sm">
+                            <div className="flex items-center gap-3 mb-3">
+                                <span className="flex-shrink-0 w-8 h-8 rounded-full bg-red-100 text-red-700 text-sm font-bold flex items-center justify-center">2</span>
+                                <h3 className="text-base font-bold text-slate-900">No Entity Verification &mdash; Just Confident Guessing</h3>
                             </div>
-                            <div className="p-6">
-                                <p className="text-sm text-slate-700 leading-relaxed text-justify">
-                                    BWGA Ai runs your situation through 46+ proprietary formulas &mdash; not estimates, not generated text, but calculated scores with traceable inputs. Every output comes with a method trail: what was used, how confident it is, and which assumptions were made. Run it again tomorrow with the same inputs and you get the same answer. That is the standard required for committee-ready, board-defensible strategic outputs.
-                                </p>
-                            </div>
+                            <p className="text-sm text-slate-700 leading-relaxed text-justify">
+                                Ask a standard AI &ldquo;Is Sunrise Holdings Ltd in Fiji a legitimate company?&rdquo; and it will give you a fluent, confident answer &mdash; entirely fabricated from statistical patterns. It cannot check a corporate registry. It cannot screen against sanctions lists. It cannot verify a Legal Entity Identifier. It <em>sounds</em> authoritative. It is not. In advisory work &mdash; where someone might commit capital or brief a minister based on what an AI tells them &mdash; that&rsquo;s dangerous.
+                            </p>
                         </div>
+
+                        {/* Problem 3: Bias */}
+                        <div className="bg-white border border-slate-200 p-6 shadow-sm">
+                            <div className="flex items-center gap-3 mb-3">
+                                <span className="flex-shrink-0 w-8 h-8 rounded-full bg-red-100 text-red-700 text-sm font-bold flex items-center justify-center">3</span>
+                                <h3 className="text-base font-bold text-slate-900">The Bias Problem Nobody Talks About</h3>
+                            </div>
+                            <p className="text-sm text-slate-700 leading-relaxed text-justify">
+                                Every large language model is trained on internet text. The internet has orders of magnitude more content about New York, London, and Singapore than about Suva, Port Moresby, Lusaka, or Tbilisi. When you ask a general AI to evaluate a lesser-known market, it defaults to the nearest well-known comparison, surfaces mainly negative framing, or pads the answer with generic GDP statistics. <strong className="text-slate-900">Well-known places get the benefit of the doubt. Unknown places get the benefit of the stereotype.</strong> That&rsquo;s not advisory &mdash; that&rsquo;s pattern-matching dressed up as analysis.
+                            </p>
+                        </div>
+
+                        {/* Problem 4: No Adversarial Check */}
+                        <div className="bg-white border border-slate-200 p-6 shadow-sm">
+                            <div className="flex items-center gap-3 mb-3">
+                                <span className="flex-shrink-0 w-8 h-8 rounded-full bg-red-100 text-red-700 text-sm font-bold flex items-center justify-center">4</span>
+                                <h3 className="text-base font-bold text-slate-900">No Adversarial Check on Its Own Output</h3>
+                            </div>
+                            <p className="text-sm text-slate-700 leading-relaxed text-justify">
+                                When a standard AI gives you an answer, there is no second engine challenging it. No counterfactual analysis asking &ldquo;what if the opposite is true?&rdquo; No unbiased scoring engine running the same formula for Fiji that it runs for Singapore. No Monte Carlo simulation stress-testing the probability of loss. It&rsquo;s one model, one pass, one perspective.
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* ── The BW Consultant: How This System Is Different ── */}
+                    <h2 className="text-3xl md:text-4xl font-bold text-slate-900 leading-tight mb-6">
+                        How This System Is Architecturally Different
+                    </h2>
+                    <div className="space-y-4 mb-10">
+                        <p className="text-lg text-slate-700 leading-relaxed text-justify">
+                            The <strong className="text-slate-900">BW Consultant</strong> is the front door to BWGA Ai. You have a conversation with it &mdash; describe what you&rsquo;re dealing with, what you&rsquo;re trying to achieve, where you&rsquo;re operating. But before it advises, it establishes <em>who it&rsquo;s speaking to</em>.
+                        </p>
+                    </div>
+
+                    {/* Intake Flow */}
+                    <div className="bg-slate-50 border border-slate-200 rounded-sm p-6 mb-10">
+                        <h3 className="text-base font-bold text-slate-900 mb-4">Structured Intake &mdash; The System Learns You First</h3>
+                        <div className="grid md:grid-cols-5 gap-4 mb-4">
+                            {[
+                                { num: '1', label: 'Who am I speaking to?', sub: 'Name, role, experience' },
+                                { num: '2', label: 'What firm or organisation?', sub: 'Scale, sector, credibility' },
+                                { num: '3', label: 'What is your purpose here?', sub: 'Exploring, evaluating, executing' },
+                                { num: '4', label: 'What results do you need?', sub: 'Market entry, due diligence, funding' },
+                                { num: '5', label: 'Experience level', sub: 'Inferred from how you describe your situation' },
+                            ].map(item => (
+                                <div key={item.num} className="text-center">
+                                    <span className="inline-flex w-8 h-8 rounded-full bg-blue-600 text-white text-sm font-bold items-center justify-center mb-2">{item.num}</span>
+                                    <p className="text-xs font-semibold text-slate-900">{item.label}</p>
+                                    <p className="text-[11px] text-slate-500 mt-0.5">{item.sub}</p>
+                                </div>
+                            ))}
+                        </div>
+                        <p className="text-sm text-slate-600 leading-relaxed text-justify">
+                            A novice gets more educational framing and broader exploration. A professional gets deeper entity-level intelligence and risk quantification immediately. Both get the same unbiased data &mdash; but the <em>presentation</em> adapts to the person. That&rsquo;s the difference between a search engine with a chat interface and an actual advisory system.
+                        </p>
+                    </div>
+
+                    {/* Six Solution Points - Matching Against the Four Problems */}
+                    <div className="grid md:grid-cols-2 gap-6 mb-10">
+                        <div className="bg-white border border-blue-200 p-5 shadow-sm">
+                            <div className="flex items-center gap-2 mb-2">
+                                <CheckCircle2 size={18} className="text-blue-600 flex-shrink-0" />
+                                <h4 className="text-sm font-bold text-slate-900">Entity Verification Pipeline</h4>
+                            </div>
+                            <p className="text-sm text-slate-600 leading-relaxed">When someone mentions a company, partner, or jurisdiction, the system queries <strong>real registries</strong> &mdash; OpenSanctions screening, OpenCorporates corporate registry, GLEIF Legal Entity Identifiers, V-Dem governance data, Brave independent web search, GDELT news monitoring, and Tavily deep research. It tells you what it verified and what it couldn&rsquo;t.</p>
+                        </div>
+                        <div className="bg-white border border-blue-200 p-5 shadow-sm">
+                            <div className="flex items-center gap-2 mb-2">
+                                <Scale size={18} className="text-blue-600 flex-shrink-0" />
+                                <h4 className="text-sm font-bold text-slate-900">Identical Formula, Every Country</h4>
+                            </div>
+                            <p className="text-sm text-slate-600 leading-relaxed">The CompositeScoreService runs the same weighted scoring model for Papua New Guinea that it runs for the United States. The data inputs differ (because reality differs), but the <strong>methodology doesn&rsquo;t discriminate</strong>. Regional unknowns are evaluated on true merit using V-Dem academic governance scores, not internet popularity.</p>
+                        </div>
+                        <div className="bg-white border border-blue-200 p-5 shadow-sm">
+                            <div className="flex items-center gap-2 mb-2">
+                                <Shield size={18} className="text-blue-600 flex-shrink-0" />
+                                <h4 className="text-sm font-bold text-slate-900">Multi-Engine Triangulation</h4>
+                            </div>
+                            <p className="text-sm text-slate-600 leading-relaxed">19 engines challenge, verify, and stress-test every assessment &mdash; adversarial analysis, historical precedent matching, counterfactual simulation, blind-spot detection, sanctions screening, and live entity intelligence. No single model, no single pass.</p>
+                        </div>
+                        <div className="bg-white border border-blue-200 p-5 shadow-sm">
+                            <div className="flex items-center gap-2 mb-2">
+                                <Briefcase size={18} className="text-blue-600 flex-shrink-0" />
+                                <h4 className="text-sm font-bold text-slate-900">Persistent Case Memory</h4>
+                            </div>
+                            <p className="text-sm text-slate-600 leading-relaxed">The system remembers who you are, what you&rsquo;re working on, and what was discussed before. It builds a <strong>case file</strong>, not a chat log. Context shapes the depth of analysis, the risks surfaced, and the follow-up questions asked.</p>
+                        </div>
+                        <div className="bg-white border border-blue-200 p-5 shadow-sm">
+                            <div className="flex items-center gap-2 mb-2">
+                                <FileCheck size={18} className="text-blue-600 flex-shrink-0" />
+                                <h4 className="text-sm font-bold text-slate-900">Source Accountability</h4>
+                            </div>
+                            <p className="text-sm text-slate-600 leading-relaxed">When the system makes a claim about an entity, it tells you <strong>which data source</strong> that claim came from &mdash; GLEIF LEI record, OpenSanctions clearance, V-Dem governance band, corporate registry match. When it doesn&rsquo;t have data, it says so &mdash; instead of filling the gap with confident fiction.</p>
+                        </div>
+                        <div className="bg-white border border-blue-200 p-5 shadow-sm">
+                            <div className="flex items-center gap-2 mb-2">
+                                <TrendingUp size={18} className="text-blue-600 flex-shrink-0" />
+                                <h4 className="text-sm font-bold text-slate-900">Deterministic &bull; Auditable &bull; Defensible</h4>
+                            </div>
+                            <p className="text-sm text-slate-600 leading-relaxed">46+ proprietary formulas produce calculated scores with traceable inputs. Every output comes with a method trail. Run it again tomorrow with the same inputs and you get the same answer. That is the standard required for committee-ready, board-defensible strategic outputs.</p>
+                        </div>
+                    </div>
+
+                    <div className="text-center">
+                        <p className="text-base text-slate-600 italic max-w-2xl mx-auto">
+                            General AI systems are <strong className="text-slate-900">answer machines</strong> &mdash; they optimise for giving you a fluent response. This system is a <strong className="text-slate-900">case-building advisor</strong> &mdash; it optimises for giving you a verified, unbiased, contextual assessment you could actually act on.
+                        </p>
                     </div>
                 </div>
             </section>
@@ -524,7 +621,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                             All of them are orchestrated through <strong className="text-slate-900">NSIL</strong> (Neuro-Symbolic Intelligence Layer) &mdash; a 10-layer pipeline that chains every engine in sequence. Every input passes through input validation, adversarial multi-persona debate, 38 quantitative formulas, stress testing, neuroscience-based cognition modelling, autonomous agent intelligence, proactive self-monitoring, reflexive analysis of the user, compliance checking, and audience-adaptive output &mdash; in that order &mdash; before a single result is produced. Nothing is optional. Nothing is skipped.
                         </p>
                         <p className="text-base text-slate-700 leading-relaxed text-justify mb-4">
-                            The system now connects to <strong className="text-slate-900">10+ live external data sources</strong> on every analysis &mdash; ACLED conflict data, OpenSanctions screening, UN Comtrade trade statistics, GDELT global news, World Bank indicators, Wikidata knowledge graphs, and more. A 22-engine parallel brain fires these alongside every internal engine via <code className="text-xs bg-slate-100 px-1 rounded">Promise.allSettled</code>, ensuring no single failure blocks the rest. The system learns from every interaction, tunes its own weights, and rolls back automatically if accuracy drifts.
+                            The system now connects to <strong className="text-slate-900">15+ live external data sources</strong> on every analysis &mdash; ACLED conflict data, OpenSanctions screening, UN Comtrade trade statistics, GDELT global news, World Bank indicators, Wikidata knowledge graphs, <strong className="text-slate-900">GLEIF</strong> Legal Entity Identifiers, <strong className="text-slate-900">OpenCorporates</strong> corporate registry, <strong className="text-slate-900">Brave Search</strong> independent web index, <strong className="text-slate-900">V-Dem</strong> academic governance scores from the University of Gothenburg, and more. A full <strong className="text-slate-900">Entity Intelligence Pipeline</strong> orchestrates 7 verification sources in parallel for every entity mentioned. A 22-engine parallel brain fires these alongside every internal engine via <code className="text-xs bg-slate-100 px-1 rounded">Promise.allSettled</code>, ensuring no single failure blocks the rest. The system learns from every interaction, tunes its own weights, and rolls back automatically if accuracy drifts.
                         </p>
                         <p className="text-base text-slate-700 leading-relaxed text-justify">
                             The result is a system that reasons, argues with itself, queries live global intelligence, detects what you&rsquo;re not saying, checks whether its own conclusions are drifting, learns from every run, and adapts its language depending on who reads the output. Below is what was developed and why none of it existed before.
@@ -566,11 +663,11 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                                     <span className="flex-shrink-0 w-9 h-9 rounded-full bg-white/20 text-white text-sm font-bold flex items-center justify-center"><GitBranch size={16} /></span>
                                     <h3 className="text-lg font-bold text-white leading-snug">The Intelligence Architecture</h3>
                                 </div>
-                                <p className="text-xs text-white/80 leading-relaxed">The NSIL pipeline, 22-engine parallel brain, and live external intelligence layer</p>
+                                <p className="text-xs text-white/80 leading-relaxed">The NSIL pipeline, 22-engine parallel brain, Entity Intelligence Pipeline, and live external intelligence layer</p>
                             </div>
                             <div className="p-5 flex flex-col flex-1">
                                 <p className="text-sm text-slate-600 leading-relaxed flex-1">
-                                    None of these systems existed before this project. The NSIL chains all of them &mdash; every layer runs, every engine contributes, and 10+ live global data APIs feed real-time intelligence into every analysis. The output carries the full weight of everything above. That is why this system thinks differently.
+                                    None of these systems existed before this project. The NSIL chains all of them &mdash; every layer runs, every engine contributes, and 15+ live global data APIs feed real-time intelligence into every analysis. The Entity Intelligence Pipeline verifies every entity across OpenSanctions, OpenCorporates, GLEIF, Tavily, Brave, GDELT, and V-Dem in parallel. The output carries the full weight of everything above. That is why this system thinks differently.
                                 </p>
                                 <button
                                     onClick={() => setShowFormulas(true)}
@@ -3764,26 +3861,50 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                                 </ul>
                             </div>
 
-                            <h4 className="text-lg font-bold text-blue-800 pt-4 border-t-2 border-blue-200 mt-6">Live External Intelligence Layer &mdash; 10+ Global Data APIs</h4>
+                            <h4 className="text-lg font-bold text-blue-800 pt-4 border-t-2 border-blue-200 mt-6">Entity Intelligence Pipeline &mdash; Real-Time Entity Verification</h4>
+                            <p className="text-sm text-slate-700 mb-3">When any entity (company, partner, organisation, individual) is mentioned in a query, the Entity Intelligence Pipeline fires automatically. It runs 7 verification sources in parallel and produces a composite assessment:</p>
+                            <div className="bg-amber-50/60 border border-amber-200 rounded-sm p-4 mb-4">
+                                <div className="grid md:grid-cols-2 gap-2">
+                                    <ul className="space-y-1 text-sm text-slate-600">
+                                        <li>&bull; <strong>OpenSanctions</strong> &mdash; OFAC, UN, EU, UK, INTERPOL sanctions + PEP screening with clearance levels</li>
+                                        <li>&bull; <strong>OpenCorporates</strong> &mdash; Corporate registry verification: jurisdiction, incorporation date, active status</li>
+                                        <li>&bull; <strong>GLEIF</strong> &mdash; Legal Entity Identifier (LEI) lookup: ownership chain, parent entities, registration status</li>
+                                        <li>&bull; <strong>V-Dem v14</strong> &mdash; Academic governance scores (University of Gothenburg): rule of law, corruption control, civil liberties, democratic quality across 40+ countries</li>
+                                    </ul>
+                                    <ul className="space-y-1 text-sm text-slate-600">
+                                        <li>&bull; <strong>Tavily</strong> &mdash; Deep AI-synthesised web research with source attribution for entity background</li>
+                                        <li>&bull; <strong>Brave Search</strong> &mdash; Independent non-Google web index providing unbiased search results</li>
+                                        <li>&bull; <strong>GDELT</strong> &mdash; Global news monitoring with tone/sentiment analysis for media coverage assessment</li>
+                                    </ul>
+                                </div>
+                                <p className="text-sm text-slate-700 mt-3">The pipeline produces a composite <strong>Entity Intelligence Report</strong>: verified/unverified status, sanctions clearance, PEP flags, jurisdiction governance band, media sentiment, and an overall risk rating (LOW/MODERATE/HIGH/CRITICAL). Every claim traces to its data source. When a source returns no data, the system says so.</p>
+                            </div>
+                            <p className="text-sm text-slate-700 mb-3">The system also supports <strong>Groq function calling</strong> &mdash; 4 tool schemas (<code className="text-xs bg-slate-100 px-1 rounded">screen_entity</code>, <code className="text-xs bg-slate-100 px-1 rounded">lookup_company</code>, <code className="text-xs bg-slate-100 px-1 rounded">research_entity</code>, <code className="text-xs bg-slate-100 px-1 rounded">compare_governance</code>) allow the AI to autonomously decide which verification tools to invoke during a conversation, executing up to 3 rounds of tool use before producing a final answer.</p>
+
+                            <h4 className="text-lg font-bold text-blue-800 pt-4 border-t-2 border-blue-200 mt-6">Live External Intelligence Layer &mdash; 15+ Global Data APIs</h4>
                             <p className="text-sm text-slate-700 mb-3">The system now connects to live external data sources on every analysis. No simulated data, no cached proxies &mdash; real-time signals from authoritative global sources:</p>
                             <div className="bg-emerald-50/60 border border-emerald-200 rounded-sm p-4 mb-4">
                                 <div className="grid md:grid-cols-2 gap-2">
                                     <ul className="space-y-1 text-sm text-slate-600">
                                         <li>&bull; <strong>ACLED</strong> &mdash; Real-time conflict &amp; political violence events with severity scoring and risk levels</li>
                                         <li>&bull; <strong>OpenSanctions</strong> &mdash; Entity screening against OFAC, UN, EU, UK, INTERPOL + PEP databases</li>
+                                        <li>&bull; <strong>OpenCorporates</strong> &mdash; Company verification: jurisdiction, status, incorporation date, registry data</li>
+                                        <li>&bull; <strong>GLEIF</strong> &mdash; Legal Entity Identifier lookups: LEI codes, ownership chains, registration status</li>
+                                        <li>&bull; <strong>V-Dem v14</strong> &mdash; Academic governance scores: 12+ dimensions for 40+ countries (University of Gothenburg)</li>
                                         <li>&bull; <strong>UN Comtrade</strong> &mdash; Bilateral trade statistics: exports, imports, trade balance by country pair</li>
                                         <li>&bull; <strong>GDELT</strong> &mdash; Global news event monitoring with geolocation and sentiment analysis</li>
                                         <li>&bull; <strong>World Bank</strong> &mdash; GDP, inflation, trade openness, governance indicators by country</li>
                                     </ul>
                                     <ul className="space-y-1 text-sm text-slate-600">
+                                        <li>&bull; <strong>Brave Search</strong> &mdash; Independent non-Google web index for unbiased entity and market research</li>
+                                        <li>&bull; <strong>Tavily</strong> &mdash; Deep AI-synthesised web research with source attribution and confidence scores</li>
                                         <li>&bull; <strong>Wikidata</strong> &mdash; Structured knowledge graph via SPARQL queries for entities, relationships, facts</li>
                                         <li>&bull; <strong>Wikipedia</strong> &mdash; Encyclopedic context and summaries for cities, regions, organisations</li>
                                         <li>&bull; <strong>REST Countries</strong> &mdash; Country profiles: population, area, borders, currencies, languages, timezones</li>
                                         <li>&bull; <strong>DuckDuckGo</strong> &mdash; Live web search for current events and breaking developments</li>
-                                        <li>&bull; <strong>Tavily</strong> &mdash; Deep AI-synthesised web research with source attribution and confidence scores</li>
                                     </ul>
                                 </div>
-                                <p className="text-sm text-slate-700 mt-3">Every data point carries a <strong>freshness timestamp</strong> and <strong>confidence score</strong>. The Regional Development Kernel blocks output when data confidence drops below threshold. All sources are queried in parallel via the Brain Integration Service.</p>
+                                <p className="text-sm text-slate-700 mt-3">Every data point carries a <strong>freshness timestamp</strong> and <strong>confidence score</strong>. The Regional Development Kernel blocks output when data confidence drops below threshold. All sources are queried in parallel via the Brain Integration Service and Entity Intelligence Pipeline.</p>
                             </div>
 
                             <h4 className="text-lg font-bold text-blue-800 pt-2">Brain Integration Service &mdash; 22-Engine Parallel Brain</h4>
@@ -3820,7 +3941,8 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                             <ul className="list-disc list-inside space-y-1 pl-2 text-sm text-slate-600 mb-6">
                                 <li><strong>55,000+ lines of TypeScript code</strong> across 165+ service files</li>
                                 <li><strong>Fully implemented, no placeholders:</strong> Every engine has working code, type definitions, and unit test coverage</li>
-                                <li><strong>10+ live external data APIs:</strong> ACLED, OpenSanctions, UN Comtrade, Tavily, GDELT, World Bank, Wikidata, Wikipedia, REST Countries, DuckDuckGo</li>
+                                <li><strong>15+ live external data APIs:</strong> ACLED, OpenSanctions, OpenCorporates, GLEIF, V-Dem, Brave Search, UN Comtrade, GDELT, Tavily, World Bank, Wikidata, Wikipedia, REST Countries, DuckDuckGo</li>
+                                <li><strong>Entity Intelligence Pipeline:</strong> 7-source parallel entity verification with composite risk assessment, sanctions screening, corporate registry, LEI lookup, governance scoring, news sentiment</li>
                                 <li><strong>Published mathematical foundations:</strong> Each model cites academic sources (Wilson-Cowan, Rao &amp; Ballard, Friston, Gentner, etc.)</li>
                                 <li><strong>Deterministic seeding:</strong> Hash-based RNG ensures reproducibility. Same input, same output, every time, across machines and deployments</li>
                                 <li><strong>Audit-ready architecture:</strong> Every decision traces to source data, formula component, neuroscience model, or autonomous engine with full confidence intervals</li>
@@ -3983,7 +4105,9 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                                     <li><strong>46+ Proprietary Formulas</strong> - Strategic core indices, advanced evaluation matrices, structural assessments, risk models, financial metrics, operational scores, market analysis, governance frameworks, partner scoring</li>
                                     <li><strong>7 Neuroscience Models</strong> - Wilson-Cowan, Predictive Coding, Free Energy Principle, Attention, Emotional Processing, Global Workspace, Working Memory</li>
                                     <li><strong>22-Engine Parallel Brain</strong> - BrainIntegrationService fires formula indices, regional kernel, decision pipeline, domain agents, persona debate, derived indices, OSINT, ReactiveIntelligence, GlobalIssueResolver, SelfImprovementEngine, ACLED, OpenSanctions, UN Comtrade, and Tavily simultaneously via Promise.allSettled</li>
-                                    <li><strong>10+ Live External Data APIs</strong> - ACLED conflict data, OpenSanctions screening, UN Comtrade trade statistics, GDELT global news, World Bank indicators, Wikidata SPARQL, Wikipedia, REST Countries, DuckDuckGo web search, Tavily deep research - every data point timestamped with confidence scoring</li>
+                                    <li><strong>Entity Intelligence Pipeline</strong> - 7-source parallel entity verification: OpenSanctions screening, OpenCorporates registry, GLEIF LEI lookup, V-Dem governance scoring, Tavily deep research, Brave independent search, GDELT news sentiment. Produces composite risk ratings with source accountability</li>
+                                    <li><strong>Groq Function Calling</strong> - 4 tool schemas (screen_entity, lookup_company, research_entity, compare_governance) enable the AI to autonomously invoke verification tools during conversation with up to 3 rounds of tool use</li>
+                                    <li><strong>15+ Live External Data APIs</strong> - ACLED conflict data, OpenSanctions screening, OpenCorporates, GLEIF, V-Dem v14 governance, Brave Search, UN Comtrade trade statistics, GDELT global news, World Bank indicators, Wikidata SPARQL, Wikipedia, REST Countries, DuckDuckGo web search, Tavily deep research - every data point timestamped with confidence scoring</li>
                                     <li><strong>Regional Development Kernel</strong> - RegionalDevelopmentOrchestrator, Partner Intelligence Engine, Problem-to-Solution Graph, Global Data Fabric, Outcome Learning Service</li>
                                     <li><strong>Case Study Method Layer</strong> - 5-gate methodological validation enforced across all entry paths before any output generates</li>
                                     <li><strong>Reactive Agentic Runtime</strong> - Streamed responses, draft-time signal extraction, concurrent planner/executor tasks, message-level provenance confidence, adaptive query routing (info/person/location/complex analysis detection), and world knowledge grants on every turn</li>
