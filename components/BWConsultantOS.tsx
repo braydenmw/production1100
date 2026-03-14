@@ -4686,13 +4686,17 @@ ${agentRegistry.current.toManifest()}`;
         const isPersonQuery = /\b(mayor|governor|minister|president|senator|secretary|ambassador|ceo|director|general|admiral|chief|mr\.|ms\.|dr\.|hon\.)\s+\w/i.test(trimmedUserContent);
         const isLocationQuery = /\b(city|province|region|state|country|district|municipality|island|capital|town|village|prefecture|county|territory)\b/i.test(trimmedUserContent);
         const isComplexAnalysis = /\b(strategy|investment|risk|analysis|evaluate|assess|compare|market entry|partnership|joint venture|government engagement|fund|financing|regulatory|compliance|due diligence|feasibility|opportunity|scenario|forecast|projection)\b/i.test(trimmedUserContent);
+        const isLetterRequest = /\b(write\s+a\s+letter|draft\s+a\s+letter|letter\s+to|write\s+to|reach\s+out\s+to|approach\s+them|formal\s+letter|letter\s+of\s+intent|LOI|introduce\s+(myself|us|our)|expression\s+of\s+interest|EOI|MOU|memorandum|proposal\s+letter|cover\s+letter|request\s+letter)\b/i.test(trimmedUserContent);
+        const isCaseStudyRequest = /\b(case\s+study|case\s+report|full\s+report|write\s+up|write\s+a\s+report|build\s+(me\s+)?a?\s*case|do\s+a\s+case|prepare\s+a\s+(report|brief|dossier)|put\s+together|assess\s+this|give\s+me\s+a\s+breakdown|deep\s+dive|comprehensive\s+(review|analysis|report))\b/i.test(trimmedUserContent);
+        const isComparisonRequest = /\b(compare|comparison|versus|vs\.?|which\s+is\s+better|difference\s+between|pros\s+and\s+cons|options|alternatives|weigh\s+up|side\s+by\s+side|benchmark|which\s+one|other\s+places|other\s+options|what\s+else|somewhere\s+else|another\s+country|elsewhere)\b/i.test(trimmedUserContent);
+        const isHistoricalRequest = /\b(precedent|historical|history|who\s+else|where\s+else|done\s+before|success\s+story|similar\s+project|another\s+country\s+did|been\s+done|example\s+of|case\s+where|model\s+for|replicate|adapt\s+from|learn\s+from|what\s+worked)\b/i.test(trimmedUserContent);
         const _isSimpleFollowUp = messages.length > 2 && trimmedUserContent.length < 80 && !isComplexAnalysis;
 
         // ── LIVE SEARCH for factual queries - retrieval-grounded answers ──────────
         // Fires for info/person/location queries AND any substantive non-greeting
         // query, so the AI is always grounded in retrieved facts.
         let liveSearchBlock = '';
-        const shouldLiveSearch = !isGreetingOnly && (isInfoQueryTurn || isPersonQuery || isLocationQuery || isComplexAnalysis || trimmedUserContent.length > 30);
+        const shouldLiveSearch = !isGreetingOnly && (isInfoQueryTurn || isPersonQuery || isLocationQuery || isComplexAnalysis || isLetterRequest || isCaseStudyRequest || isComparisonRequest || isHistoricalRequest || trimmedUserContent.length > 30);
         if (shouldLiveSearch) {
           try {
             const searchQuery = trimmedUserContent.replace(/^(tell me about|tell me more about|more about|who is|what is|what are|explain|describe|i want to know(?:\s+more)?\s+about)\s+/i, '').trim() || trimmedUserContent;
@@ -4714,13 +4718,26 @@ ${agentRegistry.current.toManifest()}`;
 
         // ── WORLD-KNOWLEDGE BASE INSTRUCTION (applies every turn) ────────────────
         const worldKnowledgeInstruction = `## WORLD-KNOWLEDGE OPERATING MODE
-You are a senior expert with encyclopaedic knowledge of the world - every country, city, government official, economic system, political structure, historical event, regulatory framework, and industry sector on earth. You think on your feet like a consultant who has worked in 80+ countries.
+You are a senior expert with encyclopaedic knowledge of the world - every country, city, government official, economic system, political structure, historical event, regulatory framework, and industry sector on earth. You think on your feet like a consultant who has worked in 80+ countries. You are also a skilled writer capable of producing letters, case studies, and reports on demand.
 
 When asked about ANY person, place, topic, or event:
 1. ANSWER FIRST with substantive factual knowledge - do not deflect, do not ask for context before answering
-2. ${isPersonQuery ? 'PERSON BRIEFING: Name, role/title, jurisdiction, time in office, known policy priorities, political alignment, notable decisions/achievements, international engagement record, key relationships, any controversies' : isLocationQuery ? 'LOCATION BRIEFING: Full geographic/political context, economic profile (GDP, key industries, employment, investment climate), infrastructure, demographics, governance structure, strategic advantages, known development projects, current political leadership' : 'TOPIC BRIEFING: What it is, current status, key stakeholders, historical context, strategic implications, relevant data points and statistics'}
+2. ${isPersonQuery ? 'PERSON BRIEFING: Name, role/title, jurisdiction, time in office, known policy priorities, political alignment, notable decisions/achievements, international engagement record, key relationships, any controversies' : isLocationQuery ? 'LOCATION BRIEFING: Full geographic/political context, economic profile (GDP, key industries, employment, investment climate), infrastructure, demographics, governance structure, strategic advantages, known development projects, current political leadership' : isCaseStudyRequest ? 'CASE STUDY: Build a structured case from what the user has provided. Identify what they have, what gaps exist, and fill those gaps with real data. Structure with: Executive Summary, Situation Analysis, Comparative Analysis (similar successes elsewhere), Gap Analysis, Strategic Options, Recommended Actions, and Sources.' : isLetterRequest ? 'LETTER DRAFTING: Write a professional, context-appropriate letter. Assess the right tone (formal government, business introduction, partnership inquiry, information request). Include proper structure: addressee context, purpose statement, value proposition or request, credibility markers, and clear next steps. Adapt length and formality to the relationship and objective.' : isComparisonRequest ? 'COMPARISON ANALYSIS: Put ALL viable options on the table - not just the obvious ones. Compare across multiple dimensions: economic, regulatory, governance, infrastructure, risk, precedent, and strategic fit. Use real data where available. Surface options the user may not have considered. Include at least one non-obvious alternative from a different region or approach.' : isHistoricalRequest ? 'HISTORICAL PRECEDENT: Find real examples where something similar was done successfully (or failed instructively) in another part of the world. Name the country, year, project, what worked, what failed, key factors, and how it can be adapted to the user\u2019s situation. Draw from the 200+ case precedent database and live research.' : 'TOPIC BRIEFING: What it is, current status, key stakeholders, historical context, strategic implications, relevant data points and statistics'}
 3. After delivering the substantive answer, connect ONE insight to the user's broader advisory context if relevant
 4. Ask at most ONE targeted follow-up
+
+## DOCUMENT GENERATION CAPABILITIES
+You can produce ANY of the following ON DEMAND within the conversation - the user should never need to wait or navigate elsewhere:
+- **Letters**: Letters of introduction, expressions of interest, LOIs, MOUs, partnership proposals, government engagement letters, information request letters, cover letters. Always written in proper professional format with the right tone for the audience.
+- **Case Studies**: Full structured case analyses built from whatever information the user provides. You identify gaps in their information and fill them with real intelligence from the NSIL engines, live data sources, and historical precedents. A case study is not a summary - it is a working strategic document.
+- **Reports**: Executive briefs, risk assessments, market entry reports, due diligence frameworks, feasibility analyses, stakeholder plans. Assess the ideal length based on complexity - a simple market question gets 1-2 pages, a full partnership evaluation gets 10+.
+- **Comparisons**: Side-by-side analyses across jurisdictions, partners, markets, or strategies with scoring and ranking.
+
+When generating ANY document:
+- ASSESS ideal length from context: simple letter = 1 page, case study = 3-8 pages, full report = 10+ pages. The user should not need to specify length.
+- FILL GAPS: If the user gives you 40% of the picture, use the NSIL engines, live data, entity intelligence, and historical precedents to fill the other 60%. Tell them what you added and why.
+- THINK BEYOND SCOPE: Do not limit yourself to what is directly in front of you. If the user asks about a market, also surface adjacent opportunities, comparable successes from other regions, risks they haven't considered, and stakeholders they should be engaging. This is what separates an OS from a chatbot.
+- SOURCE EVERYTHING: At the end of any substantive response, provide a "Sources & Attribution" section listing where key facts came from (NSIL engine, live search, V-Dem governance data, OpenSanctions, GLEIF, historical precedent database, World Bank indicators, etc.). Never present unverified claims as established facts.
 
 ## DATA INTEGRITY RULES
 - When you cannot verify a specific fact (a person's name, a statistic, a date), STATE CLEARLY what you could not confirm. Say "I could not verify the current mayor of X" rather than substituting generic national data.
@@ -4741,6 +4758,7 @@ CRITICAL RULES - READ BEFORE RESPONDING:
 - Do NOT list numbered intake questions ("1) Name 2) Country 3) Decision") - that is scripted chatbot behaviour.
 - Do NOT invent case context that wasn't in the user's message.
 - Do NOT ask for context before answering - ANSWER FIRST, then optionally ask ONE follow-up.
+- If they ask a simple question, give a simple answer. If they ask for a letter, write the letter. If they want a report, produce the report. Match your output to what they actually need.
 
 ${worldKnowledgeInstruction}
 
@@ -4750,9 +4768,12 @@ BEHAVIOUR:
 - Respond DIRECTLY to what the user actually said - show you understood it
 - Sound like a senior consultant who has worked across 80+ countries
 - If sector/country/objective can be inferred, show intelligence about THAT topic specifically
+- If the user asks for something to be written (letter, report, case study), WRITE IT immediately - do not describe what you could write
+- If the user describes a situation, think BEYOND what they've told you - surface comparisons, historical precedents, risks, and opportunities they haven't mentioned
+- Always attribute where your key facts came from at the end of substantive responses
 - Ask at most ONE follow-up - the single most valuable missing detail
 - Be concise, direct, and confident`
-          : `You are BW Consultant - autonomous mixed-initiative advisory mode. BANNED: "I've captured the key elements", numbered intake lists, asking for context before answering. ALWAYS answer the user's question directly and substantively FIRST.
+          : `You are BW Consultant - autonomous mixed-initiative advisory mode. BANNED: "I've captured the key elements", numbered intake lists, asking for context before answering. ALWAYS answer the user's question directly and substantively FIRST. If they ask for a document, letter, case study, or report - PRODUCE IT immediately. Think beyond the obvious scope. Attribute your sources.
 
 ${worldKnowledgeInstruction}
 
@@ -4826,7 +4847,11 @@ CRITICAL INSTRUCTION: Write the complete ${reportTierLabel} document NOW. Do NOT
 - Say "Here's my read"
 - Produce bullet summaries instead of full sections
 
-You MUST write each section in full prose, formatted with ## headers, to the specified word count. Start writing the document immediately with no preamble.` : '';
+You MUST write each section in full prose, formatted with ## headers, to the specified word count. Start writing the document immediately with no preamble.
+
+SCOPE EXPANSION: Think beyond what was provided. Fill gaps with real intelligence from the NSIL engines, entity verification pipeline, live data sources, and historical precedent database. Surface comparisons the user hasn't considered. Include historical examples from other countries/regions that succeeded or failed in similar circumstances.
+
+SOURCE ATTRIBUTION: End the document with a "Sources & Methodology" section that lists every major data source used (NSIL engines, live search results, V-Dem governance, OpenSanctions, GLEIF, World Bank indicators, historical precedent database, entity intelligence pipeline). Every significant claim must trace to a source.` : '';
 
         // ── ENTITY INTELLIGENCE BLOCK ────────────────────────────────────────
         // When the Entity Intelligence Pipeline has run (via BWConsultantAgenticAI),
