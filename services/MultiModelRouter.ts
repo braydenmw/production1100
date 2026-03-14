@@ -18,6 +18,7 @@
 
 import {
   callTogether,
+  isTogetherAvailable,
   TOGETHER_DEFAULT_MODEL,
   TOGETHER_FAST_MODEL,
   TOGETHER_VISION_MODEL,
@@ -120,7 +121,56 @@ export async function routeAITask(
 
   const start = Date.now();
 
-  // Try primary model
+  // If Together is down (circuit-breaker), jump straight to fallback chain
+  if (!isTogetherAvailable() || model.startsWith('openai:') || model.startsWith('groq:')) {
+    // Skip primary Together attempt — go straight to best available provider
+    const fallbacks = FALLBACK_CHAIN[model] || [];
+    // Prepend the model itself if it's an OpenAI/Groq model
+    const chain = model.startsWith('openai:') || model.startsWith('groq:') ? [model, ...fallbacks] : fallbacks;
+    for (const fallbackModel of chain) {
+      try {
+        let fallbackResult: string;
+        if (fallbackModel.startsWith('openai:')) {
+          if (!isOpenAIAvailable()) continue;
+          const openaiModel = fallbackModel.replace('openai:', '');
+          fallbackResult = await callOpenAIChat(
+            messages,
+            { model: openaiModel, maxTokens: mergedOptions.maxTokens, temperature: mergedOptions.temperature },
+            onToken
+          );
+        } else if (fallbackModel.startsWith('groq:')) {
+          if (!isGroqAvailable()) continue;
+          const groqModel = fallbackModel.replace('groq:', '');
+          fallbackResult = await callGroq(
+            messages,
+            { model: groqModel, maxTokens: mergedOptions.maxTokens, temperature: mergedOptions.temperature },
+            onToken
+          );
+        } else {
+          if (!isTogetherAvailable()) continue;
+          fallbackResult = await callTogether(
+            messages,
+            { ...mergedOptions, model: fallbackModel },
+            onToken
+          );
+        }
+        logUsage({
+          model: fallbackModel,
+          taskType,
+          tokensEstimated: estimateTokens(messages, fallbackResult),
+          latencyMs: Date.now() - start,
+          success: true,
+          timestamp: Date.now(),
+        });
+        return fallbackResult;
+      } catch {
+        continue;
+      }
+    }
+    throw new Error(`All providers failed for ${taskType}`);
+  }
+
+  // Primary path: Together is available — try it first
   try {
     const result = await callTogether(messages, mergedOptions, onToken);
     logUsage({
@@ -157,6 +207,7 @@ export async function routeAITask(
             onToken
           );
         } else {
+          if (!isTogetherAvailable()) continue;
           fallbackResult = await callTogether(
             messages,
             { ...mergedOptions, model: fallbackModel },

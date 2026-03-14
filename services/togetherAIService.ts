@@ -25,6 +25,27 @@ import { SYSTEM_INSTRUCTION } from './aiPolicy';
 import { monitoringService } from './MonitoringService';
 export const TOGETHER_SYSTEM_PROMPT = SYSTEM_INSTRUCTION;
 
+// ─── Circuit Breaker ──────────────────────────────────────────────────────────
+// After an auth failure (401/403), stop trying Together for 5 minutes to avoid
+// burning rate limits on fallback providers like Groq.
+
+let _circuitOpen = false;
+let _circuitOpenUntil = 0;
+
+function markCircuitOpen(): void {
+  _circuitOpen = true;
+  _circuitOpenUntil = Date.now() + 5 * 60 * 1000; // 5 minutes
+}
+
+function isCircuitOpen(): boolean {
+  if (!_circuitOpen) return false;
+  if (Date.now() > _circuitOpenUntil) {
+    _circuitOpen = false;
+    return false;
+  }
+  return true;
+}
+
 // ─── Client ───────────────────────────────────────────────────────────────────
 
 export interface TogetherMessage {
@@ -39,6 +60,24 @@ export interface TogetherOptions {
   stream?: boolean;
 }
 
+/** Returns true if Together.ai key looks valid AND circuit-breaker is not tripped. */
+export function isTogetherAvailable(): boolean {
+  if (isCircuitOpen()) return false;
+  const key = (
+    (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_TOGETHER_API_KEY) ||
+    (typeof process !== 'undefined' && process.env?.TOGETHER_API_KEY) ||
+    ''
+  );
+  if (!key || key.length < 20) return false;
+  const lower = key.toLowerCase();
+  return !(
+    lower.includes('your-') ||
+    lower.includes('your_') ||
+    lower.includes('key-here') ||
+    lower.includes('placeholder')
+  );
+}
+
 /**
  * Call Together.ai chat completions API.
  * - `onToken` triggers streaming mode via SSE.
@@ -49,6 +88,11 @@ export async function callTogether(
   options: TogetherOptions = {},
   onToken?: (token: string) => void
 ): Promise<string> {
+  // Fast-fail if circuit breaker is tripped (previous 401/403)
+  if (isCircuitOpen()) {
+    throw new Error('Together.ai circuit-breaker open (previous auth failure)');
+  }
+
   const key =
     (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_TOGETHER_API_KEY) ||
     (typeof process !== 'undefined' && process.env?.TOGETHER_API_KEY) ||
@@ -110,6 +154,10 @@ export async function callTogether(
       success: false,
       error: `${res.status}: ${errText.slice(0, 200)}`,
     });
+    // Trip the circuit breaker on auth failures so we stop hammering a dead key
+    if (res.status === 401 || res.status === 403) {
+      markCircuitOpen();
+    }
     throw new Error(`Together.ai ${res.status}: ${errText}`);
   }
 
@@ -179,4 +227,4 @@ export async function generateWithTogether(
   );
 }
 
-export default { callTogether, generateWithTogether };
+export default { callTogether, generateWithTogether, isTogetherAvailable };
