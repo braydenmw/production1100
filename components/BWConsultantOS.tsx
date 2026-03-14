@@ -4739,6 +4739,18 @@ When generating ANY document:
 - THINK BEYOND SCOPE: Do not limit yourself to what is directly in front of you. If the user asks about a market, also surface adjacent opportunities, comparable successes from other regions, risks they haven't considered, and stakeholders they should be engaging. This is what separates an OS from a chatbot.
 - SOURCE EVERYTHING: At the end of any substantive response, provide a "Sources & Attribution" section listing where key facts came from (NSIL engine, live search, V-Dem governance data, OpenSanctions, GLEIF, historical precedent database, World Bank indicators, etc.). Never present unverified claims as established facts.
 
+## GEOPOLITICAL ARBITRAGE AWARENESS
+The world does not stand still. Wars, sanctions, trade fractures, supply-chain breaks, and political instability in MAJOR markets constantly create structural openings for REGIONAL and ALTERNATIVE markets — if someone spots them first.
+
+When advising ANY user on ANY market, country, or investment:
+- CHECK the Geopolitical Arbitrage Intelligence block (if provided above) for active disruptions
+- PROACTIVELY INFORM the user how current world events — good or bad — may affect their situation
+- When a crisis hurts a major market (sanctions on Russia, US-China tariffs, Red Sea shipping disruption, EU energy shock), identify where the user's regional city, small island, or lesser-known jurisdiction could CAPTURE displaced demand, talent, capital, or supply-chain links
+- CITE historical precedents: Vietnam replacing China in textiles post-tariff (2018), Dubai absorbing Gulf War capital (1991), Georgia's tech boom from Russian IT worker relocation (2022), Bangladesh capturing diverted garment orders
+- Think about OFFSETTING MARKETS: if the user's client is hurting from a global event, find where in the world that same event creates a buyer, a supplier, a partner, or a safer alternative
+- Small islands in the Philippines, Pacific nations, Caribbean states, African coastal cities — these are NOT peripheral. A supply-chain fracture in the South China Sea makes Mindanao's ports strategic. A sanctions regime makes Fiji's clean jurisdiction valuable. A European energy crisis makes Morocco's solar capacity relevant.
+- NEVER assume the user already knows about these connections. Surface them proactively — this is what separates an advisory OS from a search engine.
+
 ## DATA INTEGRITY RULES
 - When you cannot verify a specific fact (a person's name, a statistic, a date), STATE CLEARLY what you could not confirm. Say "I could not verify the current mayor of X" rather than substituting generic national data.
 - Do NOT pad a city-specific question with country-level GDP data that doesn't answer the question.
@@ -4895,9 +4907,16 @@ SOURCE ATTRIBUTION: End the document with a "Sources & Methodology" section that
           vdemBlock = `\n\n## GOVERNANCE INTELLIGENCE (V-Dem v14 - University of Gothenburg)\nGovernance Band: ${vdemData.governanceBand}${vdemData.ruleOfLaw != null ? ` | Rule of Law: ${(vdemData.ruleOfLaw * 100).toFixed(0)}/100` : ''}${vdemData.corruptionControl != null ? ` | Corruption Control: ${(vdemData.corruptionControl * 100).toFixed(0)}/100` : ''}${vdemData.civilLiberties != null ? ` | Civil Liberties: ${(vdemData.civilLiberties * 100).toFixed(0)}/100` : ''}\nThis is independent academic data — use it to assess governance quality objectively.`;
         }
 
+        // Geopolitical Arbitrage block — live global disruption intelligence
+        let geoArbBlock = '';
+        const geoArbData = agenticAIRef.current.getEngineResults()?.geopoliticalArbitrage;
+        if (geoArbData && geoArbData.summaryForPrompt) {
+          geoArbBlock = geoArbData.summaryForPrompt;
+        }
+
         const effectiveSystemPrompt = isReportGeneration
-          ? `${reportGenerationOverride}\n\n${memoryBlock}${brainBlock}${advancedIntelligenceBlock}${entityIntelBlock}${vdemBlock}`
-          : `${liveSearchBlock}${brainBlock}${advancedIntelligenceBlock}${entityIntelBlock}${vdemBlock}${memoryBlock}${docUploadBlock}${openingInstruction}`;
+          ? `${reportGenerationOverride}\n\n${memoryBlock}${brainBlock}${advancedIntelligenceBlock}${entityIntelBlock}${vdemBlock}${geoArbBlock}`
+          : `${liveSearchBlock}${brainBlock}${advancedIntelligenceBlock}${entityIntelBlock}${vdemBlock}${geoArbBlock}${memoryBlock}${docUploadBlock}${openingInstruction}`;
 
         // Strip the GENERATE_REPORT_NOW:: prefix before sending to AI
         const effectiveUserContent = isReportGeneration

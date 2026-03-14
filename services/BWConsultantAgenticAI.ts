@@ -4,6 +4,7 @@ import { automaticSearchService, type SearchResult } from './AutomaticSearchServ
 import { ReactiveIntelligenceEngine } from './ReactiveIntelligenceEngine';
 import { detectEntityInQuery, runEntityIntelligence, type EntityIntelligenceReport } from './EntityIntelligencePipeline';
 import { getVDemProfile } from './vdemGovernanceService';
+import { analyseGeopoliticalArbitrage, type DisruptionOpportunityReport } from './GeopoliticalArbitrageEngine';
 
 export interface ConsultantInsight {
   id: string;
@@ -42,6 +43,8 @@ export interface EngineResultsSummary {
   // Entity Intelligence Pipeline results (Tier 1 + 2 data sources)
   entityIntel?: EntityIntelligenceReport | null;
   vdemGovernance?: { governanceBand: string; ruleOfLaw?: number; corruptionControl?: number; civilLiberties?: number } | null;
+  // Geopolitical Arbitrage Engine results
+  geopoliticalArbitrage?: DisruptionOpportunityReport | null;
 }
 
 export interface BWConsultantState {
@@ -161,6 +164,11 @@ export class BWConsultantAgenticAI {
     // Enrich country-level analysis with granular governance data
     const govInsight = this.generateGovernanceInsight(params);
     if (govInsight) insights.push(govInsight);
+
+    // ── GEOPOLITICAL ARBITRAGE ENGINE ──
+    // Scan live global news for disruptions that create opportunities for regional/alternative markets
+    const geoArbInsights = await this.runGeopoliticalArbitrage(params);
+    insights.push(...geoArbInsights);
 
     // Risk assessment insights (now context-aware, not generic)
     const riskInsights = await this.generateRiskInsights(params);
@@ -521,6 +529,50 @@ export class BWConsultantAgenticAI {
       proactive: true,
       timestamp: new Date(),
     };
+  }
+
+  // ── GEOPOLITICAL ARBITRAGE ENGINE ──
+  // Scans live global news for disruptions (wars, sanctions, trade fractures,
+  // supply-chain breaks) and identifies where regional/alternative markets
+  // can capture displaced demand, capital, or supply-chain links.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private async runGeopoliticalArbitrage(params: any): Promise<ConsultantInsight[]> {
+    const insights: ConsultantInsight[] = [];
+    try {
+      const report = await analyseGeopoliticalArbitrage({
+        country: params.country || undefined,
+        region: params.region || undefined,
+        industry: params.industry || undefined,
+        query: params.problemStatement || params.userQuery || '',
+      });
+
+      // Store in engine results for BWConsultantOS prompt injection
+      if (this._engineResults) {
+        this._engineResults.geopoliticalArbitrage = report;
+      }
+
+      if (report.globalDisruptions.length > 0) {
+        const topDisruptions = report.globalDisruptions.slice(0, 3);
+        const topOpps = report.opportunities.slice(0, 2);
+
+        insights.push({
+          id: crypto.randomUUID(),
+          type: 'recommendation',
+          title: `Global Disruption Monitor: ${report.globalDisruptions.length} active signals`,
+          content: `Active disruptions: ${topDisruptions.map(d => d.event).join('; ')}. ` +
+            (topOpps.length > 0
+              ? `Potential arbitrage: ${topOpps.map(o => `${o.sector} (score ${o.score}/100, ${o.timeHorizon})`).join('; ')}.`
+              : 'Monitoring for regional arbitrage opportunities.'),
+          confidence: 0.72,
+          sources: topDisruptions.map(d => d.source),
+          proactive: true,
+          timestamp: new Date(),
+        });
+      }
+    } catch {
+      // Non-blocking — geopolitical analysis is supplementary
+    }
+    return insights;
   }
 
   // Generate risk assessment insights — now engine-powered, not generic
