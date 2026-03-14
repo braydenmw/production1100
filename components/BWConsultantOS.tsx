@@ -3177,7 +3177,7 @@ ${agentRegistry.current.toManifest()}`;
     return tooShort || placeholderPattern.test(combined) || lowConfidence;
   }, []);
 
-  const filterActionableInsights = useCallback((insights: Array<{ title: string; content: string; confidence?: number }>) => {
+  const filterActionableInsights = useCallback((insights: Array<{ title: string; content: string; confidence?: number; sources?: string[] }>) => {
     return insights.filter((insight) => !isLowSignalInsight(insight.title, insight.content, insight.confidence));
   }, [isLowSignalInsight]);
 
@@ -4602,6 +4602,41 @@ ${agentRegistry.current.toManifest()}`;
               );
             }
 
+            // ── INJECT ENGINE RESULTS INTO AGENTIC AI ──────────────────────────
+            // This lets the NSIL panel show intelligence from the 19-engine stack
+            // instead of generic liability warnings
+            try {
+              agenticAIRef.current.setEngineResults({
+                nsilStatus: nsilResult?.status,
+                nsilTrustScore: nsilResult?.trustScore,
+                nsilHeadline: nsilResult?.headline,
+                nsilTopConcerns: nsilResult?.topConcerns,
+                nsilTopOpportunities: nsilResult?.topOpportunities,
+                situationBlindSpots: situationResult?.blindSpots,
+                situationImplicitNeeds: situationResult?.implicitNeeds,
+                situationUnconsideredNeeds: situationResult?.unconsideredNeeds?.map(n => n.need),
+                historicalMatches: historicalResult?.matches?.slice(0, 3).map(m => ({
+                  title: m.title,
+                  country: m.country,
+                  year: m.year,
+                  outcome: m.outcome,
+                  lesson: m.lessonsLearned?.[0] || m.keyFactors?.[0] || ''
+                })),
+                historicalSuccessRate: historicalResult?.successRate,
+                counterfactualLossProbability: counterfactualResult?.monteCarlo?.probabilityOfLoss,
+                counterfactualMedianOutcome: counterfactualResult?.monteCarlo?.distribution?.p50,
+                adversarialRiskLevel: adversarialResult?.adversarialShield?.riskLevel,
+                adversarialConcerns: adversarialResult?.adversarialShield?.concerns,
+                unbiasedRecommendation: unbiasedResult?.prosCons?.overallAssessment?.recommendation,
+                unbiasedConfidence: unbiasedResult?.prosCons?.overallAssessment?.confidence,
+                dataGaps: nsilFullResult?.recommendation?.criticalActions?.filter((a: string) => /gap|missing|unavailable|unknown/i.test(a)),
+                liveSearchResultCount: 0, // updated below after live search
+                locationProfileAvailable: !!locationProfileContextRef.current,
+                multiAgentDataGaps: multiAgentContextRef.current ? [] : ['Multi-agent analysis not yet complete'],
+                userQuery: trimmedUserContent,
+              });
+            } catch { /* non-fatal */ }
+
             if (blocks.length > 0) {
               advancedIntelligenceBlock =
                 `\n\n## ── ADVANCED INTELLIGENCE LAYER (19-engine NSIL stack + agentic location intelligence - not in standard AI advisory) ──\n\n` +
@@ -4662,6 +4697,8 @@ ${agentRegistry.current.toManifest()}`;
                   `**${r.title}** (${r.source || new URL(r.url || 'https://bwga.ai').hostname})\n${r.snippet}`
                 ).join('\n\n') +
                 `\n\nINSTRUCTION: Use the above retrieved facts as your primary source for this response. Synthesise into expert prose - cite the sources naturally. Do not repeat search result formatting.`;
+              // Update the agentic AI's engine results with live search count
+              try { agenticAIRef.current.setEngineResults({ ...(agenticAIRef.current.getEngineResults() || {}), liveSearchResultCount: liveResults.length }); } catch { /* non-fatal */ }
             }
           } catch { /* non-fatal - AI answers from training knowledge if search unavailable */ }
         }
@@ -4675,6 +4712,13 @@ When asked about ANY person, place, topic, or event:
 2. ${isPersonQuery ? 'PERSON BRIEFING: Name, role/title, jurisdiction, time in office, known policy priorities, political alignment, notable decisions/achievements, international engagement record, key relationships, any controversies' : isLocationQuery ? 'LOCATION BRIEFING: Full geographic/political context, economic profile (GDP, key industries, employment, investment climate), infrastructure, demographics, governance structure, strategic advantages, known development projects, current political leadership' : 'TOPIC BRIEFING: What it is, current status, key stakeholders, historical context, strategic implications, relevant data points and statistics'}
 3. After delivering the substantive answer, connect ONE insight to the user's broader advisory context if relevant
 4. Ask at most ONE targeted follow-up
+
+## DATA INTEGRITY RULES
+- When you cannot verify a specific fact (a person's name, a statistic, a date), STATE CLEARLY what you could not confirm. Say "I could not verify the current mayor of X" rather than substituting generic national data.
+- Do NOT pad a city-specific question with country-level GDP data that doesn't answer the question.
+- When the user provides a correction or new fact, acknowledge it as NEW information — do not pretend you already knew it.
+- When asking about the system itself ("why did you show this?"), answer the meta-question directly — explain what triggered the insight panel.
+- If LIVE RETRIEVAL RESULTS are provided above, prefer them over training knowledge. If they contradict each other, flag the discrepancy.
 
 You NEVER say "I need more context before answering" - you answer with what you know, then gather context.`;
 
@@ -4945,12 +4989,15 @@ You MUST write each section in full prose, formatted with ## headers, to the spe
       )));
 
       const agenticInsights = await agenticInsightsPromise;
-      const actionableInsights = filterActionableInsights(agenticInsights).slice(0, 2);
+      const actionableInsights = filterActionableInsights(agenticInsights).slice(0, 5);
 
-      if (actionableInsights.length > 0 && liveReadiness >= 40 && !isGreetingOnly && !shouldPromptForOutputClarification) {
+      if (actionableInsights.length > 0 && liveReadiness >= 25 && !isGreetingOnly && !shouldPromptForOutputClarification) {
         const insightSummary = actionableInsights
           .map((insight) => `• ${insight.title}: ${insight.content}`)
           .join('\n');
+
+        // Collect actual engine sources from insights
+        const insightSources = [...new Set(actionableInsights.flatMap(i => i.sources || []))].slice(0, 4);
 
         responseProvenance = buildMessageProvenance(caseDraft, liveReadiness, [`NSIL insights in this turn: ${actionableInsights.length}`]);
 
@@ -4966,9 +5013,11 @@ You MUST write each section in full prose, formatted with ## headers, to the spe
           timestamp: new Date(),
           phase: inferredPhase,
           provenance: {
-            confidence: Math.min(95, Math.max(60, Math.round(liveReadiness * 0.7 + 20))),
-            confidenceBand: liveReadiness >= 75 ? 'high' : liveReadiness >= 55 ? 'medium' : 'low',
-            sources: ['NSIL Agentic Insight Engine', 'Current case draft signals', `Readiness score: ${liveReadiness}%`]
+            confidence: Math.min(95, Math.max(50, Math.round(
+              actionableInsights.reduce((sum, i) => sum + (i.confidence * 100), 0) / actionableInsights.length
+            ))),
+            confidenceBand: liveReadiness >= 75 ? 'high' : liveReadiness >= 40 ? 'medium' : 'low',
+            sources: insightSources.length > 0 ? insightSources : ['NSIL Agentic Insight Engine', `Readiness score: ${liveReadiness}%`]
           }
         }]);
       } else if (agenticInsights.length > 0 && actionableInsights.length === 0) {

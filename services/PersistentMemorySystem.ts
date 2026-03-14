@@ -120,14 +120,18 @@ export class PersistentMemorySystem {
   }
 
   private matchesRiskPattern(risk: LiabilityRisk, action: string, context: Record<string, unknown>): boolean {
-    // Simple pattern matching - could be enhanced with ML
-    const riskKeywords = risk.description.toLowerCase().split(' ');
+    // Context-aware matching: require meaningful keyword overlap, not stop words
+    const STOP_WORDS = new Set(['potential', 'in', 'the', 'a', 'an', 'of', 'and', 'or', 'without', 'that', 'is', 'for', 'to', 'not', 'all', 'on', 'with', 'this', 'by', 'from']);
+    const riskKeywords = risk.description.toLowerCase().split(/\s+/).filter(w => w.length > 3 && !STOP_WORDS.has(w));
     const actionLower = action.toLowerCase();
     const contextStr = JSON.stringify(context).toLowerCase();
 
-    return riskKeywords.some(keyword =>
+    // Require at least 2 meaningful keywords to match, not just any single word
+    const matchCount = riskKeywords.filter(keyword =>
       actionLower.includes(keyword) || contextStr.includes(keyword)
-    );
+    ).length;
+
+    return matchCount >= 2;
   }
 
   // Self-Improvement
@@ -229,31 +233,31 @@ export class PersistentMemorySystem {
     this.liabilityRisks = [
       {
         id: 'data-privacy',
-        description: 'Potential data privacy violation',
+        description: 'personal data privacy GDPR CCPA collection processing storage',
         severity: 'high',
         mitigation: 'Ensure GDPR/CCPA compliance and data anonymization',
         proactiveAction: 'Audit data handling before processing'
       },
       {
         id: 'financial-advice',
-        description: 'Providing financial advice without license',
+        description: 'financial investment advice securities trading portfolio recommendation',
         severity: 'critical',
         mitigation: 'Disclaim that this is not financial advice',
         proactiveAction: 'Add disclaimer to all financial-related outputs'
       },
       {
         id: 'bias-discrimination',
-        description: 'Potential discriminatory bias in recommendations',
+        description: 'discriminatory bias hiring employment gender racial ethnic',
         severity: 'high',
         mitigation: 'Implement bias detection and fairness checks',
         proactiveAction: 'Review recommendations for bias before output'
       },
       {
-        id: 'security-breach',
-        description: 'Potential security vulnerability',
+        id: 'sanctions-compliance',
+        description: 'sanctions embargo restricted entity OFAC compliance export',
         severity: 'critical',
-        mitigation: 'Implement secure coding practices and regular audits',
-        proactiveAction: 'Run security scan on all code changes'
+        mitigation: 'Screen entities against OFAC and EU sanctions lists',
+        proactiveAction: 'Run entity screening before engagement recommendations'
       }
     ];
   }
