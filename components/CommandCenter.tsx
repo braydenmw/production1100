@@ -38,6 +38,12 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
     const [_activeLayer, _setActiveLayer] = useState<number | null>(null);
     const [expandedPersona, setExpandedPersona] = useState<string | null>(null);
     const [expandedEngine, setExpandedEngine] = useState<string | null>(null);
+    const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
+    const toggleCard = (id: string) => setExpandedCards(prev => {
+        const next = new Set(prev);
+        next.has(id) ? next.delete(id) : next.add(id);
+        return next;
+    });
 
     // Category-level read-more content for Original Developments
     const categoryDetails: Record<string, { title: string; subtitle: string; icon: string; color: string; summary: string; full: React.ReactNode }> = {
@@ -460,9 +466,12 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                                 <span className="flex-shrink-0 w-8 h-8 rounded-full bg-red-100 text-red-700 text-sm font-bold flex items-center justify-center">1</span>
                                 <h3 className="text-base font-bold text-slate-900">No Identity, No Context, No Continuity</h3>
                             </div>
-                            <p className="text-sm text-slate-700 leading-relaxed text-justify">
+                            <p className={`text-sm text-slate-700 leading-relaxed text-justify${expandedCards.has('p1') ? '' : ' line-clamp-3'}`}>
                                 Standard AI doesn&rsquo;t ask who you are. It doesn&rsquo;t know if you&rsquo;re a first-time founder exploring Papua New Guinea or a seasoned infrastructure investor evaluating a $200M port deal in Mozambique. It treats both identically &mdash; a blank prompt box. There&rsquo;s no intake, no case building, no memory of your situation across turns. Every conversation starts at zero.
                             </p>
+                            <button onClick={() => toggleCard('p1')} className="text-blue-600 hover:text-blue-800 text-xs font-semibold mt-2 transition-colors">
+                                {expandedCards.has('p1') ? 'Show less' : 'Read more \u2192'}
+                            </button>
                         </div>
 
                         {/* Problem 2: No Verification */}
@@ -471,9 +480,12 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                                 <span className="flex-shrink-0 w-8 h-8 rounded-full bg-red-100 text-red-700 text-sm font-bold flex items-center justify-center">2</span>
                                 <h3 className="text-base font-bold text-slate-900">No Entity Verification &mdash; Just Confident Guessing</h3>
                             </div>
-                            <p className="text-sm text-slate-700 leading-relaxed text-justify">
+                            <p className={`text-sm text-slate-700 leading-relaxed text-justify${expandedCards.has('p2') ? '' : ' line-clamp-3'}`}>
                                 Ask a standard AI &ldquo;Is Sunrise Holdings Ltd in Fiji a legitimate company?&rdquo; and it will give you a fluent, confident answer &mdash; entirely fabricated from statistical patterns. It cannot check a corporate registry. It cannot screen against sanctions lists. It cannot verify a Legal Entity Identifier. It <em>sounds</em> authoritative. It is not. In advisory work &mdash; where someone might commit capital or brief a minister based on what an AI tells them &mdash; that&rsquo;s dangerous.
                             </p>
+                            <button onClick={() => toggleCard('p2')} className="text-blue-600 hover:text-blue-800 text-xs font-semibold mt-2 transition-colors">
+                                {expandedCards.has('p2') ? 'Show less' : 'Read more \u2192'}
+                            </button>
                         </div>
 
                         {/* Problem 3: Bias */}
@@ -482,9 +494,12 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                                 <span className="flex-shrink-0 w-8 h-8 rounded-full bg-red-100 text-red-700 text-sm font-bold flex items-center justify-center">3</span>
                                 <h3 className="text-base font-bold text-slate-900">The Bias Problem Nobody Talks About</h3>
                             </div>
-                            <p className="text-sm text-slate-700 leading-relaxed text-justify">
+                            <p className={`text-sm text-slate-700 leading-relaxed text-justify${expandedCards.has('p3') ? '' : ' line-clamp-3'}`}>
                                 Every large language model is trained on internet text. The internet has orders of magnitude more content about New York, London, and Singapore than about Suva, Port Moresby, Lusaka, or Tbilisi. When you ask a general AI to evaluate a lesser-known market, it defaults to the nearest well-known comparison, surfaces mainly negative framing, or pads the answer with generic GDP statistics. <strong className="text-slate-900">Well-known places get the benefit of the doubt. Unknown places get the benefit of the stereotype.</strong> That&rsquo;s not advisory &mdash; that&rsquo;s pattern-matching dressed up as analysis.
                             </p>
+                            <button onClick={() => toggleCard('p3')} className="text-blue-600 hover:text-blue-800 text-xs font-semibold mt-2 transition-colors">
+                                {expandedCards.has('p3') ? 'Show less' : 'Read more \u2192'}
+                            </button>
                         </div>
 
                         {/* Problem 4: No Adversarial Check */}
@@ -493,9 +508,12 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                                 <span className="flex-shrink-0 w-8 h-8 rounded-full bg-red-100 text-red-700 text-sm font-bold flex items-center justify-center">4</span>
                                 <h3 className="text-base font-bold text-slate-900">No Adversarial Check on Its Own Output</h3>
                             </div>
-                            <p className="text-sm text-slate-700 leading-relaxed text-justify">
+                            <p className={`text-sm text-slate-700 leading-relaxed text-justify${expandedCards.has('p4') ? '' : ' line-clamp-3'}`}>
                                 When a standard AI gives you an answer, there is no second engine challenging it. No counterfactual analysis asking &ldquo;what if the opposite is true?&rdquo; No unbiased scoring engine running the same formula for Fiji that it runs for Singapore. No Monte Carlo simulation stress-testing the probability of loss. It&rsquo;s one model, one pass, one perspective.
                             </p>
+                            <button onClick={() => toggleCard('p4')} className="text-blue-600 hover:text-blue-800 text-xs font-semibold mt-2 transition-colors">
+                                {expandedCards.has('p4') ? 'Show less' : 'Read more \u2192'}
+                            </button>
                         </div>
                     </div>
 
@@ -539,7 +557,10 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                                 <CheckCircle2 size={18} className="text-blue-600 flex-shrink-0" />
                                 <h4 className="text-sm font-bold text-slate-900">Entity Verification Pipeline</h4>
                             </div>
-                            <p className="text-sm text-slate-600 leading-relaxed">When someone mentions a company, partner, or jurisdiction, the system queries <strong>real registries</strong> &mdash; OpenSanctions screening, OpenCorporates corporate registry, GLEIF Legal Entity Identifiers, V-Dem governance data, Brave independent web search, GDELT news monitoring, and Tavily deep research. It tells you what it verified and what it couldn&rsquo;t.</p>
+                            <p className={`text-sm text-slate-600 leading-relaxed${expandedCards.has('s1') ? '' : ' line-clamp-2'}`}>When someone mentions a company, partner, or jurisdiction, the system queries <strong>real registries</strong> &mdash; OpenSanctions screening, OpenCorporates corporate registry, GLEIF Legal Entity Identifiers, V-Dem governance data, Brave independent web search, GDELT news monitoring, and Tavily deep research. It tells you what it verified and what it couldn&rsquo;t.</p>
+                            <button onClick={() => toggleCard('s1')} className="text-blue-600 hover:text-blue-800 text-xs font-semibold mt-2 transition-colors">
+                                {expandedCards.has('s1') ? 'Show less' : 'Read more \u2192'}
+                            </button>
                         </div>
                         <div className="bg-white border border-blue-200 p-5 shadow-sm">
                             <div className="flex items-center gap-2 mb-2">
@@ -567,7 +588,10 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                                 <FileCheck size={18} className="text-blue-600 flex-shrink-0" />
                                 <h4 className="text-sm font-bold text-slate-900">Source Accountability</h4>
                             </div>
-                            <p className="text-sm text-slate-600 leading-relaxed">When the system makes a claim about an entity, it tells you <strong>which data source</strong> that claim came from &mdash; GLEIF LEI record, OpenSanctions clearance, V-Dem governance band, corporate registry match. When it doesn&rsquo;t have data, it says so &mdash; instead of filling the gap with confident fiction.</p>
+                            <p className={`text-sm text-slate-600 leading-relaxed${expandedCards.has('s5') ? '' : ' line-clamp-2'}`}>When the system makes a claim about an entity, it tells you <strong>which data source</strong> that claim came from &mdash; GLEIF LEI record, OpenSanctions clearance, V-Dem governance band, corporate registry match. When it doesn&rsquo;t have data, it says so &mdash; instead of filling the gap with confident fiction.</p>
+                            <button onClick={() => toggleCard('s5')} className="text-blue-600 hover:text-blue-800 text-xs font-semibold mt-2 transition-colors">
+                                {expandedCards.has('s5') ? 'Show less' : 'Read more \u2192'}
+                            </button>
                         </div>
                         <div className="bg-white border border-blue-200 p-5 shadow-sm">
                             <div className="flex items-center gap-2 mb-2">
