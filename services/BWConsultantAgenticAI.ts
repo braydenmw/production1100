@@ -293,7 +293,7 @@ export class BWConsultantAgenticAI {
     const userOrg = params.organizationName || '';
     const userRole = params.role || '';
     const userCountry = params.country || '';
-    const userSector = params.constraints || params.audience || '';
+    const _userSector = params.constraints || params.audience || '';
     const querySubject = eng?.userQuery || params.problemStatement || '';
 
     // Need to know who the user is AND what they're asking about

@@ -1,14 +1,15 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Building2, Target, ShieldCheck, Shield,
-    Download, Printer, Globe,
-    Check, CheckCircle,
-    Network, History,
-    Users, GitBranch,
-    FileText, BarChart3, Handshake, TrendingUp,
-    Database, Calculator, Search, BarChart, PieChart, Activity, Cpu,
+  Download, Sparkles, Printer, Globe, ArrowRight, Wallet,
+  Info, Check, CheckCircle,
+  Network, History, Briefcase,
+  Zap, MapPin, Users, Scale, GitBranch,
+  FileText, BarChart3, DollarSign, Settings, Presentation, Handshake, TrendingUp,
+  Layers, Database, Calculator, Search, BarChart, PieChart, Activity, Cpu, AlertCircle,
   X, Plus, MessageCircle, Send, User
 } from 'lucide-react';
+import { PieChart as RechartsPieChart, Pie, Cell, BarChart as RechartsBarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { ReportParameters, ReportData, GenerationPhase, CopilotInsight } from '../types';
 
 const toolCategories = {
@@ -18,7 +19,9 @@ const toolCategories = {
         { id: 'scenario-planning', label: 'Scenario Planning', icon: BarChart, description: 'Model best, base, and worst-case scenarios for your strategy.' },
     ],
     marketplace: [
-        { id: 'compatibility-engine', label: 'Partner Compatibility Engine', icon: Handshake, description: 'Evaluate strategic and operational fit with a potential partner.' },
+        { id: 'partner-discovery', label: 'Partner Discovery', icon: Search, description: 'Discover and evaluate potential partners in your target market.' },
+        { id: 'integration-planning', label: 'Integration Planning', icon: GitBranch, description: 'Plan integration strategy with your partner.' },
+        { id: 'deal-structuring', label: 'Deal Structuring', icon: DollarSign, description: 'Structure favorable deal terms and agreements.' },
     ],
 };
 import DocumentGenerationSuite from './DocumentGenerationSuite';
@@ -38,12 +41,6 @@ interface MainCanvasProps {
   params: ReportParameters;
   setParams: (params: ReportParameters) => void;
   onChangeViewMode?: (mode: string) => void;
-    insights?: CopilotInsight[];
-    autonomousMode?: boolean;
-    autonomousSuggestions?: string[];
-    isAutonomousThinking?: boolean;
-    initialConsultantQuery?: string;
-    onInitialConsultantQueryHandled?: () => void;
 }
 
 const CollapsibleSection: React.FC<{
@@ -72,25 +69,13 @@ const CollapsibleSection: React.FC<{
 );
 
 const MainCanvas: React.FC<MainCanvasProps> = ({
-    params,
-    setParams,
-    onGenerate,
-    onChangeViewMode: _onChangeViewMode,
-    reports,
-    onOpenReport: _onOpenReport,
-    onDeleteReport: _onDeleteReport,
-    onNewAnalysis: _onNewAnalysis,
-    reportData,
-    isGenerating: _isGenerating,
-    generationPhase: _generationPhase,
-    generationProgress: _generationProgress,
-    onCopilotMessage: _onCopilotMessage
+    params, setParams, onGenerate, onChangeViewMode, reports, onOpenReport, onDeleteReport, onNewAnalysis, reportData, isGenerating, generationPhase, generationProgress, onCopilotMessage
 }) => {
   const [activeModal, setActiveModal] = useState<string | null>(null);
   const [modalView, setModalView] = useState('main'); // 'main' or a specific tool id
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [expandedSubsections, setExpandedSubsections] = useState<Record<string, boolean>>({});
-    const [_injectedComponents, setInjectedComponents] = useState<Array<{ type: string; config: { title: string; dataSource: string } }>>([]);
+  const [injectedComponents, setInjectedComponents] = useState<any[]>([]);
   const [chartConfig, setChartConfig] = useState({
     title: '',
     dataSource: '',
@@ -101,16 +86,24 @@ const MainCanvas: React.FC<MainCanvasProps> = ({
     revenue: '200000',
     costs: '75000'
   });
-    const [generationConfig, setGenerationConfig] = useState<{ emphasized?: Record<string, boolean>; [key: string]: unknown }>({});
+  const [generationConfig, setGenerationConfig] = useState<any>({});
   const [isDraftFinalized, setIsDraftFinalized] = useState(false);
   const [showFinalizationModal, setShowFinalizationModal] = useState(false);
   const [selectedFinalReports, setSelectedFinalReports] = useState<string[]>([]);
   const [showDocGenSuite, setShowDocGenSuite] = useState(false);
+  const [partnerPersonas, setPartnerPersonas] = useState<string[]>([]);
   const [generatedDocs, setGeneratedDocs] = useState<{id: string, title: string, desc: string, timestamp: Date}[]>([]);
   const [selectedIntelligenceEnhancements, setSelectedIntelligenceEnhancements] = useState<string[]>([]);
 
+  // Apply intelligence enhancements to report data
+  const enhancedReportData = React.useMemo(() =>
+    selectedIntelligenceEnhancements.length > 0 ? applyIntelligenceEnhancements(reportData) : reportData,
+    [reportData, selectedIntelligenceEnhancements]
+  );
+
+
   const [chatMessages, setChatMessages] = useState<Array<{text: string, sender: 'user' | 'bw', timestamp: Date}>>([
-    { text: "Welcome - I'm your BW Consultant, here to help you think clearly and move forward with confidence. Tell me what you're working on - a deal, a market, a partnership - and we'll build your case together.", sender: 'bw', timestamp: new Date() }
+    { text: "Hello! I'm your BW Consultant. How can I help you with your partnership analysis today?", sender: 'bw', timestamp: new Date() }
   ]);
   const [chatInput, setChatInput] = useState('');
 
@@ -189,15 +182,15 @@ const MainCanvas: React.FC<MainCanvasProps> = ({
     );
   };
 
-    const applyIntelligenceEnhancements = useCallback((baseReport: ReportData): ReportData => {
+  const applyIntelligenceEnhancements = (baseReport: ReportData): ReportData => {
     let enhancedReport = { ...baseReport };
-        type WritableSectionKey = 'executiveSummary' | 'marketAnalysis' | 'recommendations' | 'implementation' | 'financials' | 'risks';
 
     selectedIntelligenceEnhancements.forEach(enhancement => {
       // Helper function to safely append content
-            const appendContent = (section: WritableSectionKey, content: string) => {
-        if (enhancedReport[section]) {
-          enhancedReport[section].content = (enhancedReport[section].content || '') + `\n\n${content}`;
+      const appendContent = (section: keyof ReportData, content: string) => {
+        const sectionData = enhancedReport[section];
+        if (sectionData && typeof sectionData === 'object' && 'content' in sectionData) {
+          (sectionData as any).content = ((sectionData as any).content || '') + `\n\n${content}`;
         }
       };
 
@@ -275,12 +268,7 @@ const MainCanvas: React.FC<MainCanvasProps> = ({
     });
 
     return enhancedReport;
-    }, [selectedIntelligenceEnhancements, roiResult, roiInputs, params]);
-
-    const enhancedReportData = React.useMemo(() =>
-        selectedIntelligenceEnhancements.length > 0 ? applyIntelligenceEnhancements(reportData) : reportData,
-        [reportData, selectedIntelligenceEnhancements, applyIntelligenceEnhancements]
-    );
+  };
 
   const handleGenerateFinalDocs = () => {
     const reportsToGenerate = reports.filter(report => selectedFinalReports.includes(report.id));
@@ -344,6 +332,56 @@ const MainCanvas: React.FC<MainCanvasProps> = ({
     setValidationErrors([]);
   };
 
+  const renderActiveModalContent = () => {
+    // This function will return the form content based on the activeModal state.
+    // We will define its content within the modal structure itself for better readability.
+    // This is a placeholder for the concept.
+    return null;
+  }
+
+  const renderInjectedComponent = (component: any, index: number) => {
+    if (component.type === 'chart' && component.config.dataSource) {
+      const COLORS = ['#003f5c', '#58508d', '#bc5090', '#ff6361', '#ffa600'];
+      let data: {name: string, value: number}[] = [];
+
+      if (component.config.dataSource === 'industry' && params.industry.length > 0) {
+        data = params.industry.map(ind => ({ name: ind, value: Math.floor(Math.random() * 100) + 10 }));
+      } else if (component.config.dataSource === 'funding' && params.fundingSource) {
+        data = [{name: params.fundingSource, value: 100}];
+      } else if (component.config.dataSource === 'competitor') {
+        data = [{name: 'Competitor A', value: 40}, {name: 'Competitor B', value: 25}, {name: 'You', value: 20}, {name: 'Other', value: 15}];
+      }
+
+      if (data.length === 0) return null;
+
+      return (
+        <div key={index} className="my-8 p-4 border border-stone-200 rounded-lg bg-stone-50">
+          <h3 className="text-center font-bold text-sm mb-2">{component.config.title}</h3>
+          <ResponsiveContainer width="100%" height={250}>
+            <RechartsPieChart>
+              <Pie
+                data={data}
+                cx="50%"
+                cy="50%"
+                labelLine={false}
+                outerRadius={80}
+                fill="#8884d8"
+                dataKey="value"
+                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+              >
+                {data.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip />
+            </RechartsPieChart>
+          </ResponsiveContainer>
+        </div>
+      );
+    }
+    return null;
+  };
+
   const isStepComplete = (stepId: string) => {
     if (!requiredFields[stepId]) return false;
     return requiredFields[stepId].every(field => {
@@ -396,7 +434,6 @@ const MainCanvas: React.FC<MainCanvasProps> = ({
                             </button>
                         ))}
                     </div>
-                </div>
 
                 <div className="w-full h-px bg-stone-200"></div>
 
@@ -762,7 +799,6 @@ const MainCanvas: React.FC<MainCanvasProps> = ({
                 )}
             </div>
         </div> {/* This closes the left panel's inner padding div */}
-        </div>
 
         {/* --- MODAL FOR FORMS --- */}
         <AnimatePresence>

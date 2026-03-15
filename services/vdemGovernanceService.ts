@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * ═══════════════════════════════════════════════════════════════════
  * V-Dem (Varieties of Democracy) Governance Data Service
@@ -52,7 +51,7 @@ export interface VDemGovernanceProfile {
 // For the client-side service, we use the pre-built country profiles
 // from the V-Dem CSV dumps. The API provides the same data.
 
-const VDEM_API = 'https://v-dem.net/graphapi/v6';
+const _VDEM_API = 'https://v-dem.net/graphapi/v6';
 
 // Embedded baseline data for countries where V-Dem API may timeout
 // These are from the V-Dem v14 dataset (2024 release, data through 2023)
@@ -126,7 +125,7 @@ function resolveCountryCode(countryOrCode: string): string | null {
   return NAME_TO_CODE[input.toLowerCase()] || null;
 }
 
-function classifyGovernanceBand(profile: Partial<VDemGovernanceProfile>): VDemGovernanceProfile['governanceBand'] {
+function _classifyGovernanceBand(profile: Partial<VDemGovernanceProfile>): VDemGovernanceProfile['governanceBand'] {
   const scores = [
     profile.electoralDemocracy, profile.liberalDemocracy, profile.ruleOfLaw,
     profile.corruptionControl, profile.civilLiberties,

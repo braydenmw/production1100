@@ -3019,7 +3019,7 @@ Respond naturally and helpfully. Keep responses focused and actionable.
 ${agentRegistry.current.toManifest()}`;
   }, [caseStudy, resolvePolicyPack, consultantCaseBrief, consultantGateReady, consultantGateMissing, computeReadiness, quickCountryFocus, quickBusinessTarget, activeIssuePack, quickCustomSector, customResearchTopics, preferredOutputMode, enableFullCaseTreeMatching, fullCaseTreeMatchingSummary]);
 
-  const buildNaturalFallbackReply = useCallback((userInput: string) => {
+  const _buildNaturalFallbackReply = useCallback((userInput: string) => {
     const trimmed = userInput.trim();
 
     // ── GREETING ──────────────────────────────────────────────────────────────
