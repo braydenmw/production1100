@@ -355,44 +355,54 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
 
             {/* THE STORY OF REGIONAL CITIES — Why This Matters */}
             <section className="py-20 px-4 bg-white">
-                <div className="max-w-5xl mx-auto">
-                    <h2 className="text-3xl md:text-4xl font-bold text-slate-900 leading-tight text-center mb-10">
-                        The Engine Rooms of Nations &mdash;<br />Overlooked by the Tools Built to Serve Them
-                    </h2>
+                <div className="max-w-6xl mx-auto">
 
-                    <div className="space-y-6 text-lg text-slate-700 leading-relaxed mb-14 max-w-4xl mx-auto">
-                        <p>
-                            Regional cities generate the majority of global GDP. They anchor national supply chains, house the workforce, and hold the infrastructure that keeps economies running. Yet capital still flows to the same handful of megacities &mdash; not because regional markets lack value, but because the world still uses the wrong lens to see them.
-                        </p>
-                        <p>
-                            Investors follow legacy assumptions. Global datasets focus on capitals and tier-one hubs. Regional cities rarely appear in investment dashboards or risk models &mdash; so they never enter the field of vision. If it&rsquo;s not measured, it&rsquo;s not valued. The wealth is there &mdash; human capital, industrial capacity, strategic geography &mdash; but it doesn&rsquo;t fit the frameworks built for tech hubs and financial centers.
-                        </p>
-                        <p>
-                            The missing factor is <strong className="text-slate-900">contextual intelligence</strong>: a way to understand local industry structure, governance capacity, infrastructure readiness, and cross-border linkages &mdash; not through generic metrics designed for megacities, but through analysis built for the places that actually need it.
-                        </p>
-                        <p>
-                            The answers already exist &mdash; they&rsquo;re just scattered across different places, different projects, different decades. What worked in one region can work in another, but until now there was no way to find those patterns, connect them, and apply them at scale. <strong className="text-slate-900">The past is the solution library.</strong> We built the system to unlock it.
-                        </p>
-                    </div>
+                    {/* 2-COLUMN: Header + Why We Built This (left) + Body copy (right) */}
+                    <div className="grid md:grid-cols-5 gap-12 items-start">
 
-                    {/* Why We Built This — Dark CTA Band */}
-                    <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-blue-900 rounded-sm p-8 md:p-10 text-white">
-                        <div className="grid md:grid-cols-5 gap-8 items-center">
-                            <div className="md:col-span-3">
-                                <p className="text-sm font-bold text-blue-400 uppercase tracking-wider mb-3">Why We Built This</p>
-                                <p className="text-xl font-light leading-relaxed mb-4">
-                                    BWGA Ai is a digital boardroom purpose-built for regional decision-making &mdash; combining structured intake, multi-layer analysis, and document-grade output so mayors, agencies, founders, and boards can move from uncertainty to execution-ready direction.
+                        {/* LEFT: Header + Why We Built This */}
+                        <div className="md:col-span-2 md:sticky md:top-24">
+                            <p className="text-xs font-bold text-blue-600 uppercase tracking-widest mb-4">Regional Cities &middot; Global Impact</p>
+                            <h2 className="text-4xl md:text-5xl font-bold text-slate-900 leading-tight mb-5">
+                                The Engine Rooms<br />of Nations
+                            </h2>
+                            <p className="text-lg text-slate-400 font-medium leading-snug mb-8">
+                                Overlooked by the Tools<br />Built to Serve Them
+                            </p>
+                            <div className="w-12 h-1 bg-blue-600 mb-8"></div>
+
+                            {/* Why We Built This — blue panel */}
+                            <div className="bg-blue-700 rounded-sm p-6">
+                                <p className="text-xs font-bold text-blue-200 uppercase tracking-widest mb-4">Why We Built This</p>
+                                <p className="text-base text-white leading-relaxed mb-4">
+                                    A global advisory system purpose-built for regional decision-making &mdash; combining structured intake, multi-layer analysis, and document-grade output so councils, agencies, founders, and boards on every continent can move from uncertainty to execution-ready direction.
                                 </p>
-                                <p className="text-base text-slate-300 leading-relaxed">
-                                    It doesn&rsquo;t copy other places. It extracts transferable principles and applies them to your context, producing evidence-linked recommendations that are easier to defend, fund, and execute.
+                                <p className="text-base text-blue-100 leading-relaxed mb-6">
+                                    It doesn&rsquo;t replicate what worked elsewhere and paste it onto your region. It extracts the transferable principles &mdash; the structural conditions, the sequencing, the stakeholder dynamics &mdash; validates them against your local context, and produces evidence-linked recommendations that are easier to defend, fund, and execute.
                                 </p>
+                                <div className="border-l-2 border-blue-300 pl-4">
+                                    <p className="text-base text-blue-50 leading-relaxed italic mb-2">
+                                        &ldquo;Every region that succeeded left a blueprint. Every region that stalled left a lesson. The system reads both &mdash; so yours doesn&rsquo;t have to start from zero.&rdquo;
+                                    </p>
+                                    <p className="text-blue-200 text-sm font-medium">&mdash; Brayden Walls, Founder</p>
+                                </div>
                             </div>
-                            <div className="md:col-span-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-sm p-6">
-                                <p className="text-lg text-white leading-relaxed italic mb-3">
-                                    &ldquo;The child learns what the parent already knows. The past isn&rsquo;t historical interest &mdash; it&rsquo;s the solution library.&rdquo;
-                                </p>
-                                <p className="text-slate-300 text-sm font-medium">&mdash; Brayden Walls, Founder</p>
-                            </div>
+                        </div>
+
+                        {/* RIGHT: 4 paragraphs — new global copy */}
+                        <div className="md:col-span-3 space-y-6 text-lg text-slate-700 leading-relaxed">
+                            <p>
+                                Regional cities produce the majority of global GDP. They run the supply chains, house the workforce, grow the food, move the freight, and hold the infrastructure that national economies depend on. Penang drives Malaysia&rsquo;s semiconductor exports. Busan handles South Korea&rsquo;s maritime trade. Guadalajara anchors Mexico&rsquo;s aerospace manufacturing corridor. Thessaloniki connects Southeast Europe&rsquo;s logistics networks. These aren&rsquo;t peripheral &mdash; they&rsquo;re foundational.
+                            </p>
+                            <p>
+                                Yet capital still flows to the same handful of cities it always has &mdash; not because regional markets lack returns, but because the tools used to evaluate investment were never designed for them. Global datasets focus on capitals and tier-one hubs. Risk models default to metro assumptions. Regional cities from Cairns to Kigali don&rsquo;t appear in the dashboards that allocate institutional capital, so they never enter the field of vision. If it isn&rsquo;t measured, it isn&rsquo;t funded.
+                            </p>
+                            <p>
+                                The missing factor is <strong className="text-slate-900">contextual intelligence</strong> &mdash; the ability to understand a region&rsquo;s industry structure, governance capacity, workforce readiness, infrastructure gaps, and cross-border linkages on its own terms. Not benchmarked against London or Singapore, but evaluated against the specific conditions that determine whether an investment will succeed in that location, for that sector, at that scale.
+                            </p>
+                            <p>
+                                The knowledge already exists. It&rsquo;s embedded in decades of regional development projects, trade agreements, infrastructure builds, and policy experiments across every continent. What worked in Penang&rsquo;s semiconductor corridor can inform Townsville&rsquo;s critical minerals strategy. Medell&iacute;n&rsquo;s urban transformation holds lessons for Suva&rsquo;s waterfront precinct. Rwanda&rsquo;s digital governance model maps onto emerging Pacific island economies. But until now, there was no system to find those patterns, validate them against current data, and apply them to a live decision. <strong className="text-slate-900">The past is the solution library.</strong> We built the system to unlock it.
+                            </p>
                         </div>
                     </div>
                 </div>
