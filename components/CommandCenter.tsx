@@ -375,37 +375,41 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                 </div>
             </section>
 
-            {/* WHAT WE DO — Prose Value Statement */}
-            <section className="py-16 px-4 bg-white">
-                <div className="max-w-3xl mx-auto">
-                    {/* Flowing Prose Statement */}
+            {/* THE STORY OF REGIONAL CITIES — Why This Matters */}
+            <section className="py-20 px-4 bg-white">
+                <div className="max-w-4xl mx-auto">
+                    <p className="text-sm font-bold text-blue-600 uppercase tracking-wider mb-4 text-center">The Story of Regional Cities</p>
+                    <h2 className="text-3xl md:text-4xl font-bold text-slate-900 leading-tight text-center mb-10">
+                        The Engine Rooms of Nations &mdash;<br />Overlooked by the Tools Built to Serve Them
+                    </h2>
+
                     <div className="space-y-6 text-lg text-slate-700 leading-relaxed mb-14">
                         <p>
-                            Every entity is checked against real registries and live global databases &mdash; not guesses from training data. The intelligence is verified before it reaches you.
+                            Regional cities are not secondary economies. They carry national supply chains, food systems, energy corridors, logistics routes, and workforce growth that keep countries running &mdash; yet capital flows to familiar metros while regional opportunities are under-scored, under-financed, or evaluated with models built for entirely different contexts.
                         </p>
                         <p>
-                            The same scoring formula runs for Papua New Guinea that runs for the United States. Regional markets are evaluated on merit, not internet popularity.
+                            For years, there has been no single system dedicated to regional investment, development, and growth across jurisdictions. Teams assemble fragmented reports, hire disconnected consultants, and work under time pressure with tools that were never designed for the decisions they are actually making.
                         </p>
                         <p>
-                            You walk away with boardroom-ready documents &mdash; LOIs, MOUs, strategy briefs &mdash; formatted for investors, governments, and partners. Not summaries. Documents.
+                            The pattern is consistent: every &ldquo;new idea&rdquo; is old somewhere. Across SEZs, PPPs, growth corridors, and sector strategies, the underlying principles repeat. <strong className="text-slate-900">The past is the solution library.</strong> But no system existed to extract those principles and apply them at scale &mdash; until now.
                         </p>
                     </div>
 
-                    {/* The Thesis — Why This Exists */}
-                    <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-blue-900 rounded-sm p-8 md:p-10 text-white mb-10">
-                        <div className="grid md:grid-cols-2 gap-8 items-center">
-                            <div>
-                                <p className="text-sm font-bold text-blue-400 uppercase tracking-wider mb-3">The Thesis</p>
+                    {/* Why We Built This — Dark CTA Band */}
+                    <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-blue-900 rounded-sm p-8 md:p-10 text-white">
+                        <div className="grid md:grid-cols-5 gap-8 items-center">
+                            <div className="md:col-span-3">
+                                <p className="text-sm font-bold text-blue-400 uppercase tracking-wider mb-3">Why We Built This</p>
                                 <p className="text-xl font-light leading-relaxed mb-4">
-                                    Every &ldquo;new idea&rdquo; is old somewhere. Across SEZs, PPPs, growth corridors, and sector strategies, the underlying principles repeat. <strong className="text-white">The past is the solution library.</strong>
+                                    BWGA Ai is a digital boardroom purpose-built for regional decision-making &mdash; combining structured intake, multi-layer analysis, and document-grade output so mayors, agencies, founders, and boards can move from uncertainty to execution-ready direction.
                                 </p>
                                 <p className="text-base text-slate-300 leading-relaxed">
-                                    No system existed to extract those principles and apply them at scale. So we built one &mdash; a reasoning system that learns from 200+ real cases across 50+ countries to give regional decision-makers the same calibre of analysis that only major metros could afford.
+                                    It doesn&rsquo;t copy other places. It extracts transferable principles and applies them to your context, producing evidence-linked recommendations that are easier to defend, fund, and execute.
                                 </p>
                             </div>
-                            <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-sm p-6">
+                            <div className="md:col-span-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-sm p-6">
                                 <p className="text-lg text-white leading-relaxed italic mb-3">
-                                    &ldquo;The child learns what the parent already knows. The past isn&rsquo;t historical interest. The past is the solution library.&rdquo;
+                                    &ldquo;The child learns what the parent already knows. The past isn&rsquo;t historical interest &mdash; it&rsquo;s the solution library.&rdquo;
                                 </p>
                                 <p className="text-slate-300 text-sm font-medium">&mdash; Brayden Walls, Founder</p>
                             </div>
@@ -415,19 +419,19 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
             </section>
 
             {/* ═══════════════════════════════════════════════════════════════
-                TIER 1: HERO HOOK - The Trust Gap (Full-Width Narrative)
+                TIER 1: THE DIFFERENCE — Built Different
             ═══════════════════════════════════════════════════════════════ */}
-            <section id="platform" className="relative py-12 px-4 bg-white overflow-hidden">
+            <section id="platform" className="relative py-16 px-4 bg-slate-50 overflow-hidden">
                 {/* Subtle background texture */}
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-50/40 via-transparent to-transparent" />
                 <div className="relative max-w-5xl mx-auto">
+                    <p className="text-sm font-bold text-blue-600 uppercase tracking-wider mb-3 text-center">Built Different</p>
                     <h2 className="text-3xl md:text-4xl font-bold text-center leading-tight mb-4 text-slate-900">
-                        What Every AI Advisory System Currently Lacks
+                        One System. Zero Compromise.
                     </h2>
-                    <p className="text-center text-base md:text-lg font-light mb-10 max-w-3xl mx-auto text-slate-600">
-                        They don&rsquo;t know who they&rsquo;re talking to. They don&rsquo;t verify what they&rsquo;re talking about.
-                        Every general-purpose AI follows the same architecture: one model, one pass, one perspective.
-                        This system was built from scratch to address every gap that model creates.
+                    <p className="text-center text-base md:text-lg font-light mb-12 max-w-3xl mx-auto text-slate-600">
+                        General-purpose AI gives you one model, one pass, one perspective. It doesn&rsquo;t know who you are. It doesn&rsquo;t verify what it tells you. It treats every region the same way it treats silence &mdash; with a guess.
+                        <span className="block mt-3 font-medium text-slate-800">This system was engineered from scratch to fix every one of those gaps.</span>
                     </p>
                     <div id="brain" className="relative -top-28" />
 
@@ -439,23 +443,23 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                                 <img src="https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=800&h=500&fit=crop&q=80" alt="A single laptop — the limits of current AI" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent" />
                                 <div className="absolute bottom-5 left-6 right-6">
-                                    <span className="inline-block px-2.5 py-1 bg-red-500/90 text-white text-[10px] font-bold uppercase tracking-wider mb-2">Every Other AI</span>
+                                    <span className="inline-block px-2.5 py-1 bg-red-500/90 text-white text-[10px] font-bold uppercase tracking-wider mb-2">The Status Quo</span>
                                     <h4 className="text-lg font-bold text-white leading-snug">Answer Machines</h4>
                                 </div>
                             </div>
                             <div className="p-6">
                                 <p className="text-sm text-slate-600 leading-relaxed text-justify mb-4">
-                                    One model generates one response from memorised internet text. It doesn&rsquo;t ask who you are. It cannot check a corporate registry, screen sanctions lists, or verify an LEI number.
-                                    Well-known places get the benefit of the doubt. Unknown places get the benefit of the stereotype.
+                                    One model generates one response from memorised internet text. It doesn&rsquo;t ask who you are. It cannot check a registry, screen a sanctions list, or verify an entity.
+                                    Familiar places get the benefit of the doubt. Everywhere else gets the benefit of the stereotype.
                                 </p>
                                 <div className="space-y-2.5">
                                     {[
-                                        'It doesn\u2019t ask who you are before it starts advising you',
-                                        'It cannot verify whether a company, partner, or entity actually exists',
-                                        'It knows far more about major cities than the places that actually need the tools',
-                                        'Nothing challenges the answer it gives you — there is no second opinion built in',
-                                        'It forgets everything the moment you close the window',
-                                        'You walk away with paragraphs of text, not something a board or investor can act on',
+                                        'Doesn\u2019t ask who you are before advising you',
+                                        'Cannot verify whether a company or entity actually exists',
+                                        'Knows far more about metros than the places that need these tools',
+                                        'No second opinion — nothing challenges its own answer',
+                                        'Forgets everything the moment you close the window',
+                                        'Gives you paragraphs, not documents a board can act on',
                                     ].map((item, i) => (
                                         <div key={i} className="flex items-start gap-2">
                                             <span className="mt-0.5 w-4 h-4 rounded-full bg-red-100 text-red-500 flex items-center justify-center flex-shrink-0 text-[9px] font-bold">&times;</span>
@@ -483,12 +487,12 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                                 </p>
                                 <div className="space-y-2.5">
                                     {[
-                                        'It learns who you are, what you\u2019re working on, and what you need before it says a word',
-                                        'It checks real registries and real data sources — not training-data guesses',
-                                        'It runs the same scoring formula for Papua New Guinea that it runs for the United States',
-                                        'Multiple engines challenge every answer before it reaches you — nothing goes unchecked',
-                                        'It remembers your case across sessions and gets sharper the more you use it',
-                                        'You walk away with documents ready for a boardroom, an investor, or a government brief',
+                                        'Learns who you are and what you need before it says a word',
+                                        'Checks real registries and live data sources — not guesses',
+                                        'Same scoring formula for PNG that runs for the United States',
+                                        'Multiple engines challenge every answer before it reaches you',
+                                        'Remembers your case and gets sharper the more you use it',
+                                        'Delivers documents ready for a boardroom or government brief',
                                     ].map((item, i) => (
                                         <div key={i} className="flex items-start gap-2">
                                             <span className="mt-0.5 w-4 h-4 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0 text-[9px] font-bold">&#10003;</span>
