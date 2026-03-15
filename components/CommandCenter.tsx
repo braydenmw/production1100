@@ -377,20 +377,17 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
 
             {/* THE STORY OF REGIONAL CITIES — Why This Matters */}
             <section className="py-20 px-4 bg-white">
-                <div className="max-w-4xl mx-auto">
+                <div className="max-w-5xl mx-auto">
                     <h2 className="text-3xl md:text-4xl font-bold text-slate-900 leading-tight text-center mb-10">
                         The Engine Rooms of Nations &mdash;<br />Overlooked by the Tools Built to Serve Them
                     </h2>
 
                     <div className="space-y-6 text-lg text-slate-700 leading-relaxed mb-14">
                         <p>
-                            Regional cities are not secondary economies. They carry national supply chains, food systems, energy corridors, logistics routes, and workforce growth that keep countries running &mdash; yet capital flows to familiar metros while regional opportunities are under-scored, under-financed, or evaluated with models built for entirely different contexts.
+                            Capital flows to familiar places. If you&rsquo;re building, investing, or governing outside a major metro, the tools weren&rsquo;t made for you &mdash; and the consultants who were cost six figures and take six months. The same decisions that get institutional-grade support in London or New York get fragmented reports, disconnected advice, and guesswork everywhere else.
                         </p>
                         <p>
-                            For years, there has been no single system dedicated to regional investment, development, and growth across jurisdictions. Teams assemble fragmented reports, hire disconnected consultants, and work under time pressure with tools that were never designed for the decisions they are actually making.
-                        </p>
-                        <p>
-                            The pattern is consistent: every &ldquo;new idea&rdquo; is old somewhere. Across SEZs, PPPs, growth corridors, and sector strategies, the underlying principles repeat. <strong className="text-slate-900">The past is the solution library.</strong> But no system existed to extract those principles and apply them at scale &mdash; until now.
+                            Every &ldquo;new idea&rdquo; is old somewhere. SEZs, PPPs, growth corridors, sector strategies &mdash; the underlying principles repeat across jurisdictions. <strong className="text-slate-900">The past is the solution library.</strong> But no system existed to extract those principles and apply them at scale &mdash; until now.
                         </p>
                     </div>
 
@@ -427,13 +424,14 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                     <h2 className="text-3xl md:text-4xl font-bold text-center leading-tight mb-4 text-slate-900">
                         One System. Zero Compromise.
                     </h2>
-                    <p className="text-center text-base md:text-lg font-light mb-6 max-w-3xl mx-auto text-slate-600">
-                        Regional investment intelligence is broken. Fund managers, trade agencies, and development banks still assemble fragmented reports from disconnected consultants &mdash; each working with different data, different frameworks, and no shared memory of what was learned last time. ChatGPT gives fluent guesses. Bloomberg covers major markets. Consulting firms charge six figures and take six months. None of them verify entities against live registries. None of them score Papua New Guinea with the same formula they use for the United States. None of them remember what you told them yesterday.
-                    </p>
-                    <p className="text-center text-base md:text-lg font-light mb-12 max-w-3xl mx-auto text-slate-600">
-                        General-purpose AI gives you one model, one pass, one perspective. It doesn&rsquo;t know who you are. It doesn&rsquo;t verify what it tells you. It treats every region the same way it treats silence &mdash; with a guess.
-                        <span className="block mt-3 font-medium text-slate-800">This system was engineered from scratch to fix every one of those gaps.</span>
-                    </p>
+                    <div className="grid md:grid-cols-2 gap-8 mb-12">
+                        <p className="text-base md:text-lg font-light text-slate-600 text-justify">
+                            The tools weren&rsquo;t built for you. Fund managers, trade agencies, and development banks still assemble fragmented reports from disconnected consultants &mdash; each working with different data, different frameworks, and no shared memory of what was learned last time. ChatGPT gives fluent guesses. Bloomberg covers major markets. Consulting firms charge six figures and take six months. None of them verify entities against live registries. None of them score Papua New Guinea with the same formula they use for the United States.
+                        </p>
+                        <p className="text-base md:text-lg font-light text-slate-600 text-justify">
+                            General-purpose AI gives you one model, one pass, one perspective. It doesn&rsquo;t know who you are. It doesn&rsquo;t verify what it tells you. It treats every region the same way it treats silence &mdash; with a guess. None of them remember what you told them yesterday. <strong className="text-slate-800">This system was engineered from scratch to fix every one of those gaps.</strong>
+                        </p>
+                    </div>
                     <div id="brain" className="relative -top-28" />
 
                     {/* Two Photo Cards — Direct Comparison */}
