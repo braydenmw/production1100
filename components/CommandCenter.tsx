@@ -367,10 +367,10 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                         Strong nations are built<br />on strong regions.
                     </h1>
                     <p className="text-lg md:text-xl text-slate-300 max-w-3xl mx-auto leading-relaxed mb-4">
-                        Every nation depends on its regions &mdash; for food, resources, industry, and resilience. But for too long, opportunity has been decided by proximity to capital, not by fundamentals.
+                        Institutional-grade advisory for regional investment, trade, and development &mdash; verified intelligence, unbiased methodology, execution-ready output.
                     </p>
                     <p className="text-base md:text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed">
-                        The capability is there. The potential is real. What has been missing are the tools. We built those tools.
+                        A digital boardroom built for the decisions that shape regional economies.
                     </p>
                 </div>
             </section>
