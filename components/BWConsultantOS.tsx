@@ -7959,7 +7959,7 @@ SOURCE ATTRIBUTION: End the document with a "Sources & Methodology" section that
             isMobile
               ? `fixed top-0 right-0 z-30 h-full w-[85vw] max-w-[384px] shadow-2xl transition-transform duration-300 ${showMobileSidebar ? 'translate-x-0' : 'translate-x-full'}`
               : 'w-96'
-          } border-l border-stone-200 bg-white flex flex-col`}>
+          } border-l border-stone-200 bg-white flex flex-col overflow-y-auto`}>
             {isMobile && (
               <button onClick={() => setShowMobileSidebar(false)} className="absolute top-3 right-3 z-10 p-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600">
                 <X size={16} />
