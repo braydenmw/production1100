@@ -167,8 +167,10 @@ export class BWConsultantAgenticAI {
 
     // ── GEOPOLITICAL ARBITRAGE ENGINE ──
     // Scan live global news for disruptions that create opportunities for regional/alternative markets
-    const geoArbInsights = await this.runGeopoliticalArbitrage(params);
-    insights.push(...geoArbInsights);
+    if (this.shouldRunGeopoliticalArbitrage(params, context)) {
+      const geoArbInsights = await this.runGeopoliticalArbitrage(params);
+      insights.push(...geoArbInsights);
+    }
 
     // Risk assessment insights (now context-aware, not generic)
     const riskInsights = await this.generateRiskInsights(params);
@@ -182,6 +184,23 @@ export class BWConsultantAgenticAI {
     this.state.insights.push(...insights);
 
     return insights;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private shouldRunGeopoliticalArbitrage(params: any, context: string): boolean {
+    const query = [params?.userQuery, params?.problemStatement, params?.strategicObjective, context]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase();
+
+    if (!query.trim()) return false;
+
+    const personBioOnly = /^(who is|tell me about|background on|background about|what do you know about)\b/.test(query)
+      && !/\b(invest|investment|market|trade|tariff|supply\s*chain|logistics|risk|strategy|disruption|sanction|geopolitical|arbitrage|opportunity|partnership|finance|funding)\b/.test(query);
+
+    if (personBioOnly) return false;
+
+    return /\b(invest|investment|market|trade|tariff|supply\s*chain|logistics|risk|strategy|disruption|sanction|geopolitical|arbitrage|opportunity|partnership|finance|funding|export|import|corridor)\b/.test(query);
   }
 
   // Generate location intelligence insights

@@ -3184,8 +3184,39 @@ ${agentRegistry.current.toManifest()}`;
     return tooShort || placeholderPattern.test(combined) || lowConfidence;
   }, []);
 
-  const filterActionableInsights = useCallback((insights: Array<{ title: string; content: string; confidence?: number; sources?: string[] }>) => {
-    return insights.filter((insight) => !isLowSignalInsight(insight.title, insight.content, insight.confidence));
+  const filterActionableInsights = useCallback((
+    insights: Array<{ title: string; content: string; confidence?: number; sources?: string[] }>,
+    userQuery: string,
+    countryHint?: string
+  ) => {
+    const query = (userQuery || '').toLowerCase();
+    const country = (countryHint || '').toLowerCase();
+    const investmentOrDisruptionIntent = /\b(invest|investment|market|trade|tariff|supply\s*chain|logistics|partnership|opportunity|risk|strategy|finance|funding|regulatory|compliance|disruption|sanction|geopolitical|arbitrage)\b/i.test(query);
+
+    return insights.filter((insight) => {
+      if (isLowSignalInsight(insight.title, insight.content, insight.confidence)) {
+        return false;
+      }
+
+      const title = insight.title.toLowerCase();
+      const content = insight.content.toLowerCase();
+      const combined = `${title} ${content}`;
+
+      // Suppress meta/noise cards that do not add user-facing value.
+      if (title.includes('research & background intelligence') && /general information query detected/i.test(content)) {
+        return false;
+      }
+
+      // Show global disruption only when the user intent is relevant OR the disruption mentions the current country.
+      if (title.includes('global disruption monitor')) {
+        const mentionsCountry = country.length > 1 && combined.includes(country);
+        if (!investmentOrDisruptionIntent && !mentionsCountry) {
+          return false;
+        }
+      }
+
+      return true;
+    });
   }, [isLowSignalInsight]);
 
   // Process user input through real AI
@@ -4181,11 +4212,12 @@ ${agentRegistry.current.toManifest()}`;
       const isGreetingOnly = inputSignal.greetingOnly || inputSignal.smallTalkOnly;
       const deliverableIntent = classifyDeliverableIntent(trimmedUserContent);
       const shouldPromptForOutputClarification = shouldAskOutputClarification(caseDraft, trimmedUserContent, deliverableIntent);
-      const shouldRunInsights = liveReadiness >= 25 && !isGreetingOnly && !shouldPromptForOutputClarification;
+      const isFastFactQuery = isInfoQueryTurn && !isComplexAnalysis && !isLetterRequest && !isCaseStudyRequest && !isComparisonRequest && !isHistoricalRequest;
+      const shouldRunInsights = liveReadiness >= 25 && !isGreetingOnly && !shouldPromptForOutputClarification && !isFastFactQuery;
       // ── BACKGROUND BRAIN ENRICHMENT (runs in parallel) ──
       // Fire brain on ANY substantive query - even with zero readiness on first turn.
       // The brain can still contribute country data, governance indices, sanctions checks, etc.
-      const shouldFireBrain = !isGreetingOnly && !shouldPromptForOutputClarification && (liveReadiness >= 15 || trimmedUserContent.length > 20);
+      const shouldFireBrain = !isGreetingOnly && !shouldPromptForOutputClarification && !isFastFactQuery && (liveReadiness >= 15 || trimmedUserContent.length > 20);
       const brainEnrichmentPromise = shouldFireBrain
         ? BrainIntegrationService.enrich(
             { country: caseDraft.country, organizationName: caseDraft.organizationName, organizationType: caseDraft.organizationType || undefined },
@@ -5101,7 +5133,7 @@ SOURCE ATTRIBUTION: End the document with a "Sources & Methodology" section that
       )));
 
       const agenticInsights = await agenticInsightsPromise;
-      const actionableInsights = filterActionableInsights(agenticInsights).slice(0, 5);
+      const actionableInsights = filterActionableInsights(agenticInsights, trimmedUserContent, caseDraft.country).slice(0, 5);
 
       if (actionableInsights.length > 0 && liveReadiness >= 25 && !isGreetingOnly && !shouldPromptForOutputClarification) {
         const insightSummary = actionableInsights
