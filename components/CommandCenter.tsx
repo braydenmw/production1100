@@ -357,10 +357,10 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
             <section className="py-20 px-4 bg-white">
                 <div className="max-w-6xl mx-auto">
 
-                    {/* 2-COLUMN: Header + Why We Built This (left) + Body copy (right) */}
+                    {/* 2-COLUMN: Header (left) + Body copy (right) */}
                     <div className="grid md:grid-cols-5 gap-12 items-start">
 
-                        {/* LEFT: Header + Why We Built This */}
+                        {/* LEFT: Header */}
                         <div className="md:col-span-2 md:sticky md:top-24">
                             <p className="text-xs font-bold text-blue-600 uppercase tracking-widest mb-4">Regional Cities &middot; Global Impact</p>
                             <h2 className="text-4xl md:text-5xl font-bold text-slate-900 leading-tight mb-5">
@@ -369,24 +369,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                             <p className="text-lg text-slate-400 font-medium leading-snug mb-8">
                                 Overlooked by the Tools<br />Built to Serve Them
                             </p>
-                            <div className="w-12 h-1 bg-blue-600 mb-8"></div>
-
-                            {/* Why We Built This — blue panel */}
-                            <div className="bg-blue-700 rounded-sm p-6">
-                                <p className="text-xs font-bold text-blue-200 uppercase tracking-widest mb-4">Why We Built This</p>
-                                <p className="text-base text-white leading-relaxed mb-4">
-                                    A global advisory system purpose-built for regional decision-making &mdash; combining structured intake, multi-layer analysis, and document-grade output so councils, agencies, founders, and boards on every continent can move from uncertainty to execution-ready direction.
-                                </p>
-                                <p className="text-base text-blue-100 leading-relaxed mb-6">
-                                    It doesn&rsquo;t replicate what worked elsewhere and paste it onto your region. It extracts the transferable principles &mdash; the structural conditions, the sequencing, the stakeholder dynamics &mdash; validates them against your local context, and produces evidence-linked recommendations that are easier to defend, fund, and execute.
-                                </p>
-                                <div className="border-l-2 border-blue-300 pl-4">
-                                    <p className="text-base text-blue-50 leading-relaxed italic mb-2">
-                                        &ldquo;Every region that succeeded left a blueprint. Every region that stalled left a lesson. The system reads both &mdash; so yours doesn&rsquo;t have to start from zero.&rdquo;
-                                    </p>
-                                    <p className="text-blue-200 text-sm font-medium">&mdash; Brayden Walls, Founder</p>
-                                </div>
-                            </div>
+                            <div className="w-12 h-1 bg-blue-600"></div>
                         </div>
 
                         {/* RIGHT: 4 paragraphs — new global copy */}
@@ -555,6 +538,49 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                             </div>
                         </div>
 
+                    </div>
+                </div>
+            </section>
+
+            {/* WHO THIS IS FOR */}
+            <section className="py-20 px-4 bg-white">
+                <div className="max-w-6xl mx-auto">
+                    <div className="group bg-white border border-slate-200 overflow-hidden shadow-sm hover:shadow-lg transition-shadow flex flex-col md:flex-row">
+                        {/* Text Content (Left) */}
+                        <div className="p-6 md:p-8 flex-1 flex flex-col justify-center">
+                            <span className="inline-block px-2.5 py-1 bg-blue-600/90 text-white text-[10px] font-bold uppercase tracking-wider mb-3 w-fit">Who This Is For</span>
+                            <h4 className="text-xl font-bold text-slate-900 leading-snug mb-4">You Don&rsquo;t Need to Be an Expert. The System Already Is.</h4>
+                            <p className="text-sm text-slate-600 leading-relaxed mb-5">
+                                The people who need this most are the ones who&rsquo;ve never had access to it. That&rsquo;s the point.
+                            </p>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+                                <div className="border-l-2 border-blue-500 pl-3">
+                                    <h5 className="text-sm font-bold text-slate-900 mb-1">Regional Councils &amp; Development Agencies</h5>
+                                    <p className="text-xs text-slate-600">You know your region has potential. When the investment board asks for a risk-adjusted ROI model, the budget doesn&rsquo;t stretch. This system gives you the same analytical depth &mdash; without the consulting invoice.</p>
+                                </div>
+                                <div className="border-l-2 border-emerald-500 pl-3">
+                                    <h5 className="text-sm font-bold text-slate-900 mb-1">Government Agencies &amp; Investment Boards</h5>
+                                    <p className="text-xs text-slate-600">Every decision needs a defensible trail. This system stress-tests assumptions, surfaces deal-killers early, runs adversarial debate from five perspectives, and produces documented rationale you can stand behind.</p>
+                                </div>
+                                <div className="border-l-2 border-amber-500 pl-3">
+                                    <h5 className="text-sm font-bold text-slate-900 mb-1">Businesses Expanding Into New Regions</h5>
+                                    <p className="text-xs text-slate-600">You don&rsquo;t know the regulatory landscape, the real cost of entry, or which local partners are credible. This system researches any location in seconds and flags what will go wrong before you commit capital.</p>
+                                </div>
+                                <div className="border-l-2 border-purple-500 pl-3">
+                                    <h5 className="text-sm font-bold text-slate-900 mb-1">First-Time Exporters &amp; Regional Entrepreneurs</h5>
+                                    <p className="text-xs text-slate-600">You&rsquo;ve never written an investment prospectus. That&rsquo;s fine &mdash; the system walks you through a guided 10-step intake, asks the right questions, and produces the documents that open doors.</p>
+                                </div>
+                            </div>
+                            <div className="pt-4 border-t border-slate-200">
+                                <p className="text-xs text-slate-600 leading-relaxed">
+                                    <strong className="text-slate-900">The system adapts to you.</strong> First-time users get full walkthroughs and guided intake. Teams review scores together with shared workspaces. Experts get direct formula access, full audit trail export, and adjustable Monte Carlo parameters. Same engine &mdash; different depth based on who&rsquo;s driving.
+                                </p>
+                            </div>
+                        </div>
+                        {/* Photo (Right) */}
+                        <div className="h-64 md:h-auto md:w-1/3 flex-shrink-0 relative overflow-hidden">
+                            <img src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=800&h=600&fit=crop&q=80" alt="Regional council meeting" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        </div>
                     </div>
                 </div>
             </section>
@@ -767,63 +793,6 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                 </div>
             </section>
 
-
-            {/* Photo Banner  -  Document Intelligence */}
-
-            {/* WHO THIS IS FOR */}
-            <section className="py-20 px-4 bg-white">
-                <div className="max-w-6xl mx-auto">
-                    <div className="grid md:grid-cols-1 gap-8">
-
-                        {/* SINGLE CONSOLIDATED "WHO THIS IS FOR" CARD */}
-                        <div className="group bg-white border border-slate-200 overflow-hidden shadow-sm hover:shadow-lg transition-shadow flex flex-col md:flex-row">
-                            {/* Text Content (Left) */}
-                            <div className="p-6 md:p-8 flex-1 flex flex-col justify-center">
-                                <div className="mb-4">
-                                    <span className="inline-block px-2.5 py-1 bg-blue-600/90 text-white text-[10px] font-bold uppercase tracking-wider mb-3">Who This Is For</span>
-                                    <h4 className="text-xl font-bold text-slate-900 leading-snug mb-4">You Don't Need to Be an Expert. The System Already Is.</h4>
-                                </div>
-                                <p className="text-sm text-slate-600 leading-relaxed text-justify mb-4">
-                                    The people who need this most are the ones who've never had access to it. That's the point.
-                                </p>
-
-                                {/* Four User Types */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-                                    <div className="border-l-2 border-blue-500 pl-3">
-                                        <h5 className="text-sm font-bold text-slate-900 mb-1">Regional Councils & Development Agencies</h5>
-                                        <p className="text-xs text-slate-600">You know your region has potential. When the investment board asks for a risk-adjusted ROI model, the budget doesn't stretch. This system gives you the same analytical depth — without the consulting invoice.</p>
-                                    </div>
-                                    <div className="border-l-2 border-emerald-500 pl-3">
-                                        <h5 className="text-sm font-bold text-slate-900 mb-1">Government Agencies & Investment Boards</h5>
-                                        <p className="text-xs text-slate-600">Every decision needs a defensible trail. This system stress-tests assumptions, surfaces deal-killers early, runs adversarial debate from five perspectives, and produces documented rationale you can stand behind.</p>
-                                    </div>
-                                    <div className="border-l-2 border-amber-500 pl-3">
-                                        <h5 className="text-sm font-bold text-slate-900 mb-1">Businesses Expanding Into New Regions</h5>
-                                        <p className="text-xs text-slate-600">You don't know the regulatory landscape, the real cost of entry, or which local partners are credible. This system researches any location in seconds and flags what will go wrong before you commit capital.</p>
-                                    </div>
-                                    <div className="border-l-2 border-purple-500 pl-3">
-                                        <h5 className="text-sm font-bold text-slate-900 mb-1">First-Time Exporters & Regional Entrepreneurs</h5>
-                                        <p className="text-xs text-slate-600">You've never written an investment prospectus. That's fine — the system walks you through a guided 10-step intake, asks the right questions, and produces the documents that open doors.</p>
-                                    </div>
-                                </div>
-
-                                {/* Adaptive System Note */}
-                                <div className="mt-4 pt-4 border-t border-slate-200">
-                                    <p className="text-xs text-slate-600 leading-relaxed">
-                                        <strong className="text-slate-900">The system adapts to you.</strong> First-time users get full walkthroughs and guided intake. Teams review scores together with shared workspaces. Experts get direct formula access, full audit trail export, and adjustable Monte Carlo parameters. Same engine — different depth based on who's driving.
-                                    </p>
-                                </div>
-                            </div>
-                            
-                            {/* Photo (Right) */}
-                            <div className="h-64 md:h-auto md:w-1/3 flex-shrink-0 relative overflow-hidden">
-                                <img src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=800&h=600&fit=crop&q=80" alt="Regional council meeting" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-            </section>
 
             {/* GLOBAL STANDARDS & ETHICS */}
             <section className="py-20 px-4 bg-slate-50">
