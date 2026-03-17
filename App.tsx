@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, lazy, Suspense } from 'react';
 import { 
   ReportParameters, 
   CopilotInsight, 
@@ -8,18 +8,18 @@ import {
   ReportPayload
 } from './types';
 import { INITIAL_PARAMETERS } from './constants';
-import NSILWorkspace from './components/NSILWorkspace';
-import UserManual from './components/UserManual';
-import CommandCenter from './components/CommandCenter';
-import BWConsultantOS from './components/BWConsultantOS.tsx';
-import GlobalLocationIntelligence from './components/GlobalLocationIntelligence.tsx';
-import AdminDashboard from './components/AdminDashboard';
-import { Gateway } from './components/Gateway';
-import MatchmakingEngine from './components/MatchmakingEngine';
-import DocumentGenerationSuite from './components/DocumentGenerationSuite';
-import AdvancedReportGenerator from './components/AdvancedReportGenerator';
-import ExecutiveSummaryGenerator from './components/ExecutiveSummaryGenerator';
-import LettersCatalogModal from './components/LettersCatalogModal';
+const NSILWorkspace = lazy(() => import('./components/NSILWorkspace'));
+const UserManual = lazy(() => import('./components/UserManual'));
+const CommandCenter = lazy(() => import('./components/CommandCenter'));
+const BWConsultantOS = lazy(() => import('./components/BWConsultantOS'));
+const GlobalLocationIntelligence = lazy(() => import('./components/GlobalLocationIntelligence'));
+const AdminDashboard = lazy(() => import('./components/AdminDashboard'));
+const Gateway = lazy(() => import('./components/Gateway').then(module => ({ default: module.Gateway })));
+const MatchmakingEngine = lazy(() => import('./components/MatchmakingEngine'));
+const DocumentGenerationSuite = lazy(() => import('./components/DocumentGenerationSuite'));
+const AdvancedReportGenerator = lazy(() => import('./components/AdvancedReportGenerator'));
+const ExecutiveSummaryGenerator = lazy(() => import('./components/ExecutiveSummaryGenerator'));
+const LettersCatalogModal = lazy(() => import('./components/LettersCatalogModal'));
 import useEscapeKey from './hooks/useEscapeKey';
 import { generateCopilotInsights, generateReportSectionStream } from './services/geminiService';
 import { config } from './services/config';
@@ -805,7 +805,9 @@ const App: React.FC = () => {
 
     return (
         <div className="h-screen w-full bg-stone-50 font-sans text-stone-900 flex flex-col overflow-hidden">
-            {renderContent()}
+            <Suspense fallback={<div className="w-full h-full flex items-center justify-center text-sm text-stone-500">Loading workspace...</div>}>
+                {renderContent()}
+            </Suspense>
         </div>
     );
 };
