@@ -29,6 +29,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
     const [showBlock3More, setShowBlock3More] = useState(false);
     const [showBlock4More, setShowBlock4More] = useState(false);
     const [showBlock5Popup, setShowBlock5Popup] = useState(false);
+    const [showBreakthroughPopup, setShowBreakthroughPopup] = useState(false);
     const [showProofPopup, setShowProofPopup] = useState(false);
     const [activeWorkflowStage, setActiveWorkflowStage] = useState<'intake' | 'analysis' | 'output' | null>(null);
     const [showProtocolLetters, setShowProtocolLetters] = useState(false);
@@ -497,20 +498,25 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                     </div>
                                 {/* The Actual Breakthrough — Blue Feature Block */}
                                 <div className="bg-blue-700 rounded-sm p-6 md:p-10">
-                                    <p className="text-xs font-bold text-blue-300 uppercase tracking-widest mb-4">The Actual Breakthrough</p>
-                                    <h3 className="text-4xl md:text-5xl font-bold text-white leading-tight mb-8">
-                                        Applying the Failure Model<br className="hidden md:block" /> to Regional City<br className="hidden md:block" /> Economic Perception
-                                    </h3>
-                                    <div className="grid md:grid-cols-3 gap-6">
-                                        <p className="text-sm text-blue-100 leading-relaxed text-justify">
-                                            The decision to overlook a regional city is rarely made on evidence. It is made on perception — shaped by incomplete data, inherited assumptions about where value exists, a search process that never reaches the right geography, and an objective that quietly prioritises career safety over return. These are not rational risk assessments. They are cognitive failure modes that repeat across every institution, every cycle, without correction.
-                                        </p>
-                                        <p className="text-sm text-blue-100 leading-relaxed text-justify">
-                                            This system was built as a direct countermeasure to each one. It replaces CBD-biased data gaps with live regional intelligence: governance scores, trade flows, sanctions registries, infrastructure capacity, and ecosystem readiness — the signals that never appear in a national aggregate. It pressure-tests causal assumptions through five independent reasoning engines because the inherited model of how regional economies work has rarely been subjected to structured adversarial challenge.
-                                        </p>
-                                        <p className="text-sm text-blue-100 leading-relaxed text-justify">
-                                            What the system returns is not a report. It is a position — built in the language of institutional legitimacy, structured to satisfy fiduciary guardrails, with every claim marked proven, assumed, or unknown, and every gap explicitly flagged. A regional thesis that can be presented to a board, an investment committee, or a minister and withstand scrutiny. Not because the region was made to look like something it is not, but because the analysis was finally done properly.
-                                        </p>
+                                    <div className="grid md:grid-cols-5 gap-8 items-start">
+                                        <div className="md:col-span-2">
+                                            <p className="text-xs font-bold text-blue-300 uppercase tracking-widest mb-4">The Actual Breakthrough</p>
+                                            <h3 className="text-4xl md:text-5xl font-bold text-white leading-tight mb-6">
+                                                Applying the Failure Model<br className="hidden md:block" /> to Regional City<br className="hidden md:block" /> Economic Perception
+                                            </h3>
+                                            <button
+                                                onClick={() => setShowBreakthroughPopup(true)}
+                                                className="inline-flex items-center gap-2 px-4 py-2 border border-blue-300 text-blue-100 text-xs font-bold uppercase tracking-wider hover:bg-blue-600 transition-colors"
+                                            >
+                                                Read More
+                                                <ArrowRight size={14} />
+                                            </button>
+                                        </div>
+                                        <div className="md:col-span-3">
+                                            <p className="text-sm md:text-base text-blue-100 leading-relaxed text-justify">
+                                                The decision to overlook a regional city is rarely made on evidence. It is made on perception — shaped by incomplete data, inherited assumptions about where value exists, a search process that never reaches the right geography, and an objective that quietly prioritises career safety over return. These are not rational risk assessments. They are cognitive failure modes that repeat across every institution, every cycle, without correction.
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -3723,6 +3729,45 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                             <button 
                                 onClick={() => setShowFormulas(false)}
                                 className="px-8 py-3 bg-slate-900 text-white rounded-sm text-sm font-bold hover:bg-slate-800 transition-all"
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {showBreakthroughPopup && (
+                <div className="fixed inset-0 z-[10000] bg-black/60 backdrop-blur-sm" onClick={() => setShowBreakthroughPopup(false)}>
+                    <div
+                        className="absolute inset-y-0 right-0 w-full max-w-2xl bg-slate-950 shadow-2xl border-l border-blue-900 overflow-y-auto"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="sticky top-0 z-10 flex items-start justify-between gap-4 px-6 md:px-8 py-6 border-b border-slate-800 bg-slate-950/95 backdrop-blur-sm">
+                            <div>
+                                <p className="text-xs font-bold text-blue-400 uppercase tracking-widest mb-3">The Actual Breakthrough</p>
+                                <h3 className="text-2xl md:text-3xl font-bold text-white leading-tight">
+                                    Applying the Failure Model to Regional City Economic Perception
+                                </h3>
+                            </div>
+                            <button onClick={() => setShowBreakthroughPopup(false)} className="text-slate-400 hover:text-white transition-colors p-2">
+                                <X size={22} />
+                            </button>
+                        </div>
+
+                        <div className="px-6 md:px-8 py-8 space-y-6">
+                            <p className="text-base text-slate-300 leading-relaxed">
+                                This system was built as a direct countermeasure to each one. It replaces CBD-biased data gaps with live regional intelligence: governance scores, trade flows, sanctions registries, infrastructure capacity, and ecosystem readiness — the signals that never appear in a national aggregate. It pressure-tests causal assumptions through five independent reasoning engines because the inherited model of how regional economies work has rarely been subjected to structured adversarial challenge. It forces the search beyond the obvious, surfacing pathways that peer conformity and existing networks would never reach.
+                            </p>
+                            <p className="text-base text-slate-300 leading-relaxed">
+                                What the system returns is not a report. It is a position — built in the language of institutional legitimacy, structured to satisfy fiduciary guardrails, with every claim marked proven, assumed, or unknown, and every gap explicitly flagged. A regional thesis that can be presented to a board, an investment committee, or a minister and withstand scrutiny. Not because the region was made to look like something it is not, but because the analysis was finally done properly.
+                            </p>
+                        </div>
+
+                        <div className="px-6 md:px-8 py-6 border-t border-slate-800 bg-slate-900 flex justify-end">
+                            <button
+                                onClick={() => setShowBreakthroughPopup(false)}
+                                className="px-6 py-2 bg-blue-600 text-white rounded-sm text-sm font-bold hover:bg-blue-500 transition-colors"
                             >
                                 Close
                             </button>
