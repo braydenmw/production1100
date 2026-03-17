@@ -70,6 +70,10 @@ import {
   ResearchEcosystemScoringService,
   type ResearchEcosystemAssessment,
 } from './ResearchEcosystemScoringService';
+import {
+  FailureModeGovernanceService,
+  type FailureModeGovernanceAssessment,
+} from './FailureModeGovernanceService';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -165,6 +169,8 @@ export interface BrainContext {
   qualityGate: IntelligenceQualityAssessment;
   /** Research ecosystem readiness: talent attraction + innovation conversion */
   researchEcosystem: ResearchEcosystemAssessment | null;
+  /** Failure mode governance: delusion/model/search/objective/guardrail risk */
+  failureModeGovernance: FailureModeGovernanceAssessment | null;
 }
 
 // ─── Simple in-process cache (keyed by country + objectives + org) ────────────
@@ -715,6 +721,27 @@ export class BrainIntegrationService {
       marketAccessIndex: (params as any).marketAccessIndex,
     });
 
+    const freeformParams: any = params;
+
+    const failureModeGovernance = FailureModeGovernanceService.assess({
+      gateReady: gateStatus?.isReady,
+      gateMissingCount: gateStatus?.missing?.length,
+      hasExternalData: Object.values(externalData).some(v => v !== undefined && v !== null),
+      hasHistorical: Boolean(historicalPatterns.length || historicalParallels?.matches?.length),
+      contradictionIndex: adversarial?.contradictionIndex,
+      escalationCount: adversarial?.escalations?.length,
+      hasReactiveRisks: Boolean((reactiveRisks?.length || 0) > 0),
+      hasReactiveOpportunities: Boolean((reactiveOpportunities?.length || 0) > 0),
+      hasCompliance: Boolean(compliance),
+      hasPartners: Boolean((rankedPartners?.length || 0) > 0),
+      motivationRedFlags: motivationAnalysis?.redFlags?.length,
+      objectiveText: freeformParams.strategicObjective || freeformParams.projectObjective || '',
+      currentMatterText: freeformParams.currentMatter || '',
+      constraintsText: freeformParams.constraints || '',
+      ecosystemScore: researchEcosystem?.ecosystemReadinessScore,
+      ecosystemConfidence: researchEcosystem?.confidence,
+    });
+
     // ── Build the combined prompt block ───────────────────────────────────────
     const promptParts: string[] = [
       `\n\n${'═'.repeat(70)}`,
@@ -1140,6 +1167,11 @@ export class BrainIntegrationService {
       promptParts.push(ResearchEcosystemScoringService.formatForPrompt(researchEcosystem));
     }
 
+    if (failureModeGovernance) {
+      promptParts.push('');
+      promptParts.push(FailureModeGovernanceService.formatForPrompt(failureModeGovernance));
+    }
+
     const provisionalResult = {
       indices,
       adversarial,
@@ -1178,6 +1210,7 @@ export class BrainIntegrationService {
       reactiveOpportunities,
       reactiveRisks,
       researchEcosystem,
+      failureModeGovernance,
     };
 
     const qualityGate = IntelligenceQualityGate.assess(provisionalResult);
@@ -1224,6 +1257,7 @@ export class BrainIntegrationService {
       reactiveOpportunities,
       reactiveRisks,
       researchEcosystem,
+      failureModeGovernance,
       qualityGate,
     };
 
@@ -1258,6 +1292,12 @@ export class BrainIntegrationService {
     }
     if (ctx.qualityGate) {
       lines.push(`Quality Gate: ${ctx.qualityGate.score}/100 (${ctx.qualityGate.decision})`);
+    }
+    if (ctx.failureModeGovernance) {
+      lines.push(
+        `Failure Governance: ${ctx.failureModeGovernance.overallRisk}/100 risk ` +
+        `| anti-influence ${ctx.failureModeGovernance.antiInfluenceScore}/100 (${ctx.failureModeGovernance.decision})`
+      );
     }
     return lines.join(' · ');
   }

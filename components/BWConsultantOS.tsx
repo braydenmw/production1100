@@ -79,6 +79,7 @@ import { monitoringService } from '../services/MonitoringService';
 import { persistentVectorStore } from '../services/PersistentVectorStore';
 import { securityService } from '../services/SecurityHardeningService';
 import { gradientRankingEngine } from '../services/algorithms/GradientRankingEngine';
+import { FailureModeGovernanceService } from '../services/FailureModeGovernanceService';
 import type { ReportParameters } from '../types';
 
 // ============================================================================
@@ -1292,6 +1293,8 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, onNavi
       reportId: msgId,
       outcome: { success: signal === 'up', notes: `User feedback: ${signal}` }
     });
+
+    FailureModeGovernanceService.recordOutcomeFeedback(signal === 'up' ? 'positive' : 'negative');
   }, [caseStudy.country, caseStudy.currentMatter, caseStudy.jurisdiction, caseStudy.objectives, caseStudy.organizationMandate, caseStudy.organizationType, messages]);
 
   const queueAction = useCallback((action: Omit<PendingAction, 'status'>) => {
@@ -7201,6 +7204,8 @@ SOURCE ATTRIBUTION: End the document with a "Sources & Methodology" section that
       timestamp: new Date(),
       phase: 'recommendations'
     }]);
+
+    FailureModeGovernanceService.recordOutcomeFeedback(feedbackSignal, feedbackNote);
 
     setFeedbackSubmitted(true);
     generateRecommendations();

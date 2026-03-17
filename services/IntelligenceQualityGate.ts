@@ -1,3 +1,5 @@
+import type { FailureModeGovernanceAssessment } from './FailureModeGovernanceService';
+
 export interface IntelligenceQualityAssessment {
   score: number;
   decision: 'publish' | 'degrade' | 'needs-review';
@@ -36,6 +38,7 @@ export interface IntelligenceQualityInput {
   reactiveOpportunities?: unknown[] | null;
   reactiveRisks?: unknown[] | null;
   researchEcosystem?: { ecosystemReadinessScore?: number; confidence?: number } | null;
+  failureModeGovernance?: FailureModeGovernanceAssessment | null;
 }
 
 export class IntelligenceQualityGate {
@@ -131,6 +134,37 @@ export class IntelligenceQualityGate {
       if (ecosystemConfidence < 40) {
         score -= 4;
         reasons.push(`Research ecosystem score confidence is low (${ecosystemConfidence}/100).`);
+      }
+    }
+
+    const failureGovernance = input.failureModeGovernance;
+    if (failureGovernance) {
+      if (failureGovernance.overallRisk >= 75) {
+        score -= 18;
+        reasons.push(`Failure-mode governance flagged high systemic risk (${failureGovernance.overallRisk}/100).`);
+      } else if (failureGovernance.overallRisk >= 55) {
+        score -= 10;
+        reasons.push(`Failure-mode governance flagged moderate systemic risk (${failureGovernance.overallRisk}/100).`);
+      } else {
+        strengths.push(`Failure-mode governance risk is controlled (${failureGovernance.overallRisk}/100).`);
+      }
+
+      if (failureGovernance.antiInfluenceScore < 45) {
+        score -= 10;
+        reasons.push(`Anti-influence resilience is weak (${failureGovernance.antiInfluenceScore}/100).`);
+      } else if (failureGovernance.antiInfluenceScore >= 70) {
+        strengths.push(`Anti-influence resilience is strong (${failureGovernance.antiInfluenceScore}/100).`);
+      }
+
+      const objectiveRisk = failureGovernance.signals.objectiveMisalignment.score;
+      const guardrailRisk = failureGovernance.signals.guardrailFailure.score;
+      if (objectiveRisk >= 70) {
+        score -= 12;
+        reasons.push(`Objective misalignment risk is high (${objectiveRisk}/100).`);
+      }
+      if (guardrailRisk >= 70) {
+        score -= 10;
+        reasons.push(`Guardrail failure risk is high (${guardrailRisk}/100).`);
       }
     }
 
