@@ -188,6 +188,10 @@ export class BWConsultantAgenticAI {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private shouldRunGeopoliticalArbitrage(params: any, context: string): boolean {
+    if (params?.forceFullSpectrum) {
+      return true;
+    }
+
     const query = [params?.userQuery, params?.problemStatement, params?.strategicObjective, context]
       .filter(Boolean)
       .join(' ')

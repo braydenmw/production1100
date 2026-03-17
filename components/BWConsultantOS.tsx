@@ -1130,6 +1130,7 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, onNavi
   const [generationScope, setGenerationScope] = useState<'selected' | 'letters-only' | 'reports-only' | 'case-study-only' | 'full-pack'>('selected');
   const [preferredOutputMode, setPreferredOutputMode] = useState<'auto' | 'letter' | 'document' | 'case-study' | 'full-pack'>('auto');
   const [enableFullCaseTreeMatching, setEnableFullCaseTreeMatching] = useState(true);
+  const [fullSpectrumReasoningMode, setFullSpectrumReasoningMode] = useState(true);
   const [generatedContent, setGeneratedContent] = useState<string | null>(null);
   const [generatedDocuments, setGeneratedDocuments] = useState<Array<{id: string; title: string; content: string; category: 'report'|'letter'; htmlContent: string}>>([]);
   const [generatingProgress, setGeneratingProgress] = useState<{current: number; total: number} | null>(null);
@@ -1463,7 +1464,7 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, onNavi
     return Math.min(100, baseScore + evidenceBoost + contextBoost);
   }, []);
 
-  const toAgenticParams = useCallback((draft: CaseStudy) => ({
+  const toAgenticParams = useCallback((draft: CaseStudy, userQuery?: string) => ({
     organizationName: draft.organizationName,
     organizationType: draft.organizationType,
     role: draft.contactRole,
@@ -1475,8 +1476,10 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, onNavi
     constraints: draft.constraints,
     mandate: draft.organizationMandate,
     timeline: draft.decisionDeadline,
-    context: draft.additionalContext
-  }), []);
+    context: draft.additionalContext,
+    userQuery: userQuery || '',
+    forceFullSpectrum: fullSpectrumReasoningMode
+  }), [fullSpectrumReasoningMode]);
 
   const consultantCaseProfile = useMemo(() => {
     const hasIdentity = Boolean(caseStudy.userName.trim() || caseStudy.contactRole.trim() || caseStudy.organizationName.trim());
@@ -4212,12 +4215,13 @@ ${agentRegistry.current.toManifest()}`;
       const isGreetingOnly = inputSignal.greetingOnly || inputSignal.smallTalkOnly;
       const deliverableIntent = classifyDeliverableIntent(trimmedUserContent);
       const shouldPromptForOutputClarification = shouldAskOutputClarification(caseDraft, trimmedUserContent, deliverableIntent);
-      const isFastFactQuery = isInfoQueryTurn && !isComplexAnalysis && !isLetterRequest && !isCaseStudyRequest && !isComparisonRequest && !isHistoricalRequest;
-      const shouldRunInsights = liveReadiness >= 25 && !isGreetingOnly && !shouldPromptForOutputClarification && !isFastFactQuery;
+      const isFastFactQuery = /^(tell me about|tell me more about|more about|what is|what are|who is|explain|describe|give me info|can you tell me|i want to know about|i want to know more about|what do you know about|research|find out about|background on|background about|i want to learn|what can you tell me)\b/i.test(trimmedUserContent)
+        && !/\b(strategy|investment|risk|analysis|evaluate|assess|compare|market entry|partnership|joint venture|government engagement|fund|financing|regulatory|compliance|due diligence|feasibility|opportunity|scenario|forecast|projection|letter|report|case study)\b/i.test(trimmedUserContent);
+      const shouldRunInsights = !isGreetingOnly && !shouldPromptForOutputClarification && (fullSpectrumReasoningMode || liveReadiness >= 25) && (fullSpectrumReasoningMode || !isFastFactQuery);
       // ── BACKGROUND BRAIN ENRICHMENT (runs in parallel) ──
       // Fire brain on ANY substantive query - even with zero readiness on first turn.
       // The brain can still contribute country data, governance indices, sanctions checks, etc.
-      const shouldFireBrain = !isGreetingOnly && !shouldPromptForOutputClarification && !isFastFactQuery && (liveReadiness >= 15 || trimmedUserContent.length > 20);
+      const shouldFireBrain = !isGreetingOnly && !shouldPromptForOutputClarification && (fullSpectrumReasoningMode || !isFastFactQuery) && (fullSpectrumReasoningMode || liveReadiness >= 15 || trimmedUserContent.length > 20);
       const brainEnrichmentPromise = shouldFireBrain
         ? BrainIntegrationService.enrich(
             { country: caseDraft.country, organizationName: caseDraft.organizationName, organizationType: caseDraft.organizationType || undefined },
@@ -4229,7 +4233,7 @@ ${agentRegistry.current.toManifest()}`;
         ? (async () => {
             setExecutionTaskStatus('insight', 'running', 'Running NSIL signal extraction in parallel');
             try {
-              const insights = await agenticAIRef.current.consult(toAgenticParams(caseDraft), 'case_discovery');
+              const insights = await agenticAIRef.current.consult(toAgenticParams(caseDraft, trimmedUserContent), 'case_discovery');
               setExecutionTaskStatus('insight', 'completed', `${insights.length} insight${insights.length === 1 ? '' : 's'} generated`);
               return insights;
             } catch (agenticError) {
@@ -5356,6 +5360,7 @@ SOURCE ATTRIBUTION: End the document with a "Sources & Methodology" section that
     fetchLiveIntelForCountry,
     processWithAI,
     enableFullCaseTreeMatching,
+    fullSpectrumReasoningMode,
     activeIssuePack.label,
     queueAction,
     reportOptionsDocTitle,
@@ -8299,6 +8304,17 @@ SOURCE ATTRIBUTION: End the document with a "Sources & Methodology" section that
                 </div>
 
                 <div className="mb-3 border border-stone-200 bg-slate-50 p-2">
+                  <label className="mb-2 flex items-start gap-2 text-[11px] text-slate-700">
+                    <input
+                      type="checkbox"
+                      checked={fullSpectrumReasoningMode}
+                      onChange={(e) => setFullSpectrumReasoningMode(e.target.checked)}
+                      className="mt-0.5"
+                    />
+                    <span>
+                      Full OS filtration mode (run all substantive requests through all core brains, then surface only relevant signals)
+                    </span>
+                  </label>
                   <label className="flex items-start gap-2 text-[11px] text-slate-700">
                     <input
                       type="checkbox"
