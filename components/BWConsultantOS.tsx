@@ -78,6 +78,8 @@ import { evaluationFramework } from '../services/EvaluationFramework';
 import { monitoringService } from '../services/MonitoringService';
 import { persistentVectorStore } from '../services/PersistentVectorStore';
 import { securityService } from '../services/SecurityHardeningService';
+import { gradientRankingEngine } from '../services/algorithms/GradientRankingEngine';
+import type { ReportParameters } from '../types';
 
 // ============================================================================
 // TYPES
@@ -1222,7 +1224,60 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, onNavi
   }, []);
 
   const handleMessageFeedback = useCallback((msgId: string, signal: 'up' | 'down') => {
+    const message = messages.find((entry) => entry.id === msgId);
     setFeedbackMap((prev) => ({ ...prev, [msgId]: signal }));
+
+    const rankingQuery: ReportParameters = {
+      country: caseStudy.country,
+      region: caseStudy.jurisdiction || caseStudy.country,
+      industry: [],
+      strategicIntent: [caseStudy.objectives, caseStudy.organizationMandate, caseStudy.currentMatter].filter(Boolean),
+      organizationType: caseStudy.organizationType,
+      problemStatement: caseStudy.currentMatter,
+    } as ReportParameters;
+
+    const learnedFeatures = gradientRankingEngine.recordRelevanceSignal(
+      msgId,
+      rankingQuery,
+      {
+        id: msgId,
+        country: caseStudy.country,
+        region: caseStudy.jurisdiction || caseStudy.country,
+        strategicIntent: rankingQuery.strategicIntent,
+        organizationType: caseStudy.organizationType,
+        problemStatement: caseStudy.currentMatter,
+        outcome: signal === 'up' ? 'success' : 'failure',
+        accessCount: signal === 'up' ? 5 : 0,
+        userRating: signal === 'up' ? 1 : 0,
+        timestamp: message?.timestamp?.toISOString() || new Date().toISOString(),
+      },
+      signal,
+    );
+
+    void memoryRef.current.remember('consultant_feedback', {
+      action: `Consultant response marked ${signal === 'up' ? 'helpful' : 'unhelpful'}`,
+      context: {
+        messageId: msgId,
+        country: caseStudy.country,
+        jurisdiction: caseStudy.jurisdiction,
+        objectives: caseStudy.objectives,
+        organizationType: caseStudy.organizationType,
+        currentMatter: caseStudy.currentMatter,
+        responsePreview: message?.content?.slice(0, 400) || '',
+        rankingFeatures: learnedFeatures,
+      },
+      outcome: {
+        success: signal === 'up',
+        signal,
+      },
+      lessonsLearned: [
+        signal === 'up'
+          ? 'Similar response patterns should rank higher for comparable advisory contexts.'
+          : 'Similar response patterns should be deprioritized or challenged before surfacing again.'
+      ],
+      confidence: message?.provenance?.confidence ? Math.max(0.2, Math.min(0.95, message.provenance.confidence / 100)) : 0.6,
+    });
+
     OutcomeLearningService.recordOutcome({
       caseId: msgId,
       timestamp: new Date().toISOString(),
@@ -1237,7 +1292,7 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, onNavi
       reportId: msgId,
       outcome: { success: signal === 'up', notes: `User feedback: ${signal}` }
     });
-  }, []);
+  }, [caseStudy.country, caseStudy.currentMatter, caseStudy.jurisdiction, caseStudy.objectives, caseStudy.organizationMandate, caseStudy.organizationType, messages]);
 
   const queueAction = useCallback((action: Omit<PendingAction, 'status'>) => {
     setPendingActions((prev) => [

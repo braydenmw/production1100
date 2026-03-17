@@ -69,6 +69,8 @@ export interface RankingResult {
   confidenceScore: number;
 }
 
+export type RankingSignal = 'up' | 'down';
+
 // ============================================================================
 // DEFAULT MODEL WEIGHTS (learned from historical patterns)
 // ============================================================================
@@ -299,6 +301,49 @@ export class GradientRankingEngine {
     if (this.trainingBuffer.length >= 5) {
       this.trainOnBuffer();
     }
+  }
+
+  /**
+   * Record explicit helpful / unhelpful feedback for a retrieved case or generated response.
+   * This lets UI feedback immediately shape the ranking model without waiting for a full pairwise UI.
+   */
+  recordRelevanceSignal(
+    queryId: string,
+    query: ReportParameters,
+    caseData: Record<string, unknown>,
+    signal: RankingSignal
+  ): RankingFeatures {
+    const enrichedCaseData = {
+      ...caseData,
+      accessCount: signal === 'up' ? Math.max(Number(caseData.accessCount || 0), 5) : Number(caseData.accessCount || 0),
+      userRating: signal === 'up' ? 1 : 0,
+      outcome: signal === 'up' ? 'success' : (caseData.outcome || 'failure'),
+      timestamp: caseData.timestamp || new Date().toISOString(),
+    };
+
+    const candidateFeatures = this.extractFeatures(query, enrichedCaseData);
+    const baselineFeatures: RankingFeatures = {
+      countryMatch: 0,
+      regionMatch: 0,
+      industryOverlap: 0,
+      intentOverlap: 0,
+      hasOutcome: 0,
+      outcomePositive: 0,
+      dataCompleteness: 0.2,
+      recency: 0.2,
+      timesAccessed: 0,
+      userRating: 0.5,
+    };
+
+    const candidateId = String(caseData.id || queryId);
+    if (signal === 'up') {
+      this.recordFeedback(queryId, candidateId, `${candidateId}-baseline`, candidateFeatures, baselineFeatures);
+    } else {
+      this.recordFeedback(queryId, `${candidateId}-baseline`, candidateId, baselineFeatures, candidateFeatures);
+    }
+
+    this.flushTraining();
+    return candidateFeatures;
   }
 
   /**

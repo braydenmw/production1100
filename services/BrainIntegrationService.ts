@@ -64,6 +64,8 @@ import { screenEntitySanctions } from './openSanctionsService';
 import { fetchComtradeData } from './unComtradeService';
 import { tavilyResearchQuestion } from './tavilySearchService';
 import { ReportParameters } from '../types';
+import IntelligenceQualityGate, { type IntelligenceQualityAssessment } from './IntelligenceQualityGate';
+import { resolveCountryCode as resolveGovernanceCountryCode } from './vdemGovernanceService';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -155,6 +157,8 @@ export interface BrainContext {
   reactiveOpportunities: Array<{ id: string; type: string; description?: string; signal?: string }> | null;
   /** Reactive intelligence - live risk signals */
   reactiveRisks: Array<{ id: string; type: string; description?: string; signal?: string }> | null;
+  /** Intelligence quality adjudication for this brain snapshot */
+  qualityGate: IntelligenceQualityAssessment;
 }
 
 // ─── Simple in-process cache (keyed by country + objectives + org) ────────────
@@ -174,6 +178,8 @@ function cacheKey(params: Partial<ReportParameters & { readiness: number }>): st
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function countryToISO(country: string): string {
+  const governanceResolved = resolveGovernanceCountryCode(country);
+  if (governanceResolved) return governanceResolved;
   const map: Record<string, string> = {
     'philippines': 'PH', 'vietnam': 'VN', 'indonesia': 'ID', 'thailand': 'TH',
     'malaysia': 'MY', 'singapore': 'SG', 'australia': 'AU', 'india': 'IN',
@@ -1101,6 +1107,48 @@ export class BrainIntegrationService {
       promptParts.push(`**Who:** ${gateStatus.summary.who}  |  **Where:** ${gateStatus.summary.where}  |  **Deadline:** ${gateStatus.summary.deadline}`);
     }
 
+    const provisionalResult = {
+      indices,
+      adversarial,
+      agentConsensus,
+      historicalPatterns,
+      externalData,
+      nsilAssessment,
+      compositeScore,
+      compliance,
+      caseGraph,
+      regionalKernel,
+      decisionPacket,
+      computedAt: new Date().toISOString(),
+      readiness,
+      recommendedDocumentIds,
+      recommendedLetterIds,
+      methodologyKB,
+      ifcAssessment,
+      patternAssessment,
+      maturityScores,
+      problemGraph,
+      dataFabric,
+      motivationAnalysis,
+      counterfactualAnalysis,
+      domainAnalysis,
+      historicalParallels,
+      rankedPartners,
+      derivedIndices: derivedIndices ?? null,
+      situationAnalysis,
+      selfLearningInsights,
+      unbiasedAnalysis,
+      personaAnalysis,
+      referenceEngagements,
+      osintResults,
+      gateStatus,
+      reactiveOpportunities,
+      reactiveRisks,
+    };
+
+    const qualityGate = IntelligenceQualityGate.assess(provisionalResult);
+    promptParts.push('');
+    promptParts.push(IntelligenceQualityGate.formatForPrompt(qualityGate));
     promptParts.push(`${'═'.repeat(70)}\n`);
 
     const result: BrainContext = {
@@ -1141,6 +1189,7 @@ export class BrainIntegrationService {
       gateStatus,
       reactiveOpportunities,
       reactiveRisks,
+      qualityGate,
     };
 
     cache.set(key, { result, expiresAt: Date.now() + CACHE_TTL_MS });

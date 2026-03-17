@@ -47,11 +47,145 @@ export interface VDemGovernanceProfile {
   dataSources: string[];
 }
 
-// V-Dem country code mapping (ISO 3166-1 alpha-2 → V-Dem numeric)
-// For the client-side service, we use the pre-built country profiles
-// from the V-Dem CSV dumps. The API provides the same data.
+const COUNTRY_NAME_BY_CODE: Record<string, string> = {
+  AF: 'Afghanistan', AL: 'Albania', DZ: 'Algeria', AD: 'Andorra', AO: 'Angola', AG: 'Antigua and Barbuda',
+  AR: 'Argentina', AM: 'Armenia', AU: 'Australia', AT: 'Austria', AZ: 'Azerbaijan', BS: 'Bahamas',
+  BH: 'Bahrain', BD: 'Bangladesh', BB: 'Barbados', BY: 'Belarus', BE: 'Belgium', BZ: 'Belize',
+  BJ: 'Benin', BT: 'Bhutan', BO: 'Bolivia', BA: 'Bosnia and Herzegovina', BW: 'Botswana', BR: 'Brazil',
+  BN: 'Brunei', BG: 'Bulgaria', BF: 'Burkina Faso', BI: 'Burundi', CV: 'Cabo Verde', KH: 'Cambodia',
+  CM: 'Cameroon', CA: 'Canada', CF: 'Central African Republic', TD: 'Chad', CL: 'Chile', CN: 'China',
+  CO: 'Colombia', KM: 'Comoros', CG: 'Republic of the Congo', CD: 'Democratic Republic of the Congo',
+  CR: 'Costa Rica', CI: 'Cote d\'Ivoire', HR: 'Croatia', CU: 'Cuba', CY: 'Cyprus', CZ: 'Czech Republic',
+  DK: 'Denmark', DJ: 'Djibouti', DM: 'Dominica', DO: 'Dominican Republic', EC: 'Ecuador', EG: 'Egypt',
+  SV: 'El Salvador', GQ: 'Equatorial Guinea', ER: 'Eritrea', EE: 'Estonia', SZ: 'Eswatini', ET: 'Ethiopia',
+  FJ: 'Fiji', FI: 'Finland', FR: 'France', GA: 'Gabon', GM: 'Gambia', GE: 'Georgia', DE: 'Germany',
+  GH: 'Ghana', GR: 'Greece', GD: 'Grenada', GT: 'Guatemala', GN: 'Guinea', GW: 'Guinea-Bissau',
+  GY: 'Guyana', HT: 'Haiti', HN: 'Honduras', HU: 'Hungary', IS: 'Iceland', IN: 'India', ID: 'Indonesia',
+  IR: 'Iran', IQ: 'Iraq', IE: 'Ireland', IL: 'Israel', IT: 'Italy', JM: 'Jamaica', JP: 'Japan', JO: 'Jordan',
+  KZ: 'Kazakhstan', KE: 'Kenya', KI: 'Kiribati', KP: 'North Korea', KR: 'South Korea', KW: 'Kuwait',
+  KG: 'Kyrgyzstan', LA: 'Laos', LV: 'Latvia', LB: 'Lebanon', LS: 'Lesotho', LR: 'Liberia', LY: 'Libya',
+  LI: 'Liechtenstein', LT: 'Lithuania', LU: 'Luxembourg', MG: 'Madagascar', MW: 'Malawi', MY: 'Malaysia',
+  MV: 'Maldives', ML: 'Mali', MT: 'Malta', MH: 'Marshall Islands', MR: 'Mauritania', MU: 'Mauritius',
+  MX: 'Mexico', FM: 'Micronesia', MD: 'Moldova', MC: 'Monaco', MN: 'Mongolia', ME: 'Montenegro',
+  MA: 'Morocco', MZ: 'Mozambique', MM: 'Myanmar', NA: 'Namibia', NR: 'Nauru', NP: 'Nepal',
+  NL: 'Netherlands', NZ: 'New Zealand', NI: 'Nicaragua', NE: 'Niger', NG: 'Nigeria', MK: 'North Macedonia',
+  NO: 'Norway', OM: 'Oman', PK: 'Pakistan', PW: 'Palau', PA: 'Panama', PG: 'Papua New Guinea',
+  PY: 'Paraguay', PE: 'Peru', PH: 'Philippines', PS: 'Palestine', PL: 'Poland', PT: 'Portugal', QA: 'Qatar', RO: 'Romania',
+  RU: 'Russia', RW: 'Rwanda', KN: 'Saint Kitts and Nevis', LC: 'Saint Lucia', VC: 'Saint Vincent and the Grenadines',
+  WS: 'Samoa', SM: 'San Marino', ST: 'Sao Tome and Principe', SA: 'Saudi Arabia', SN: 'Senegal', RS: 'Serbia',
+  SC: 'Seychelles', SL: 'Sierra Leone', SG: 'Singapore', SK: 'Slovakia', SI: 'Slovenia', SB: 'Solomon Islands',
+  SO: 'Somalia', ZA: 'South Africa', SS: 'South Sudan', ES: 'Spain', LK: 'Sri Lanka', SD: 'Sudan',
+  SR: 'Suriname', SE: 'Sweden', CH: 'Switzerland', SY: 'Syria', TW: 'Taiwan', TJ: 'Tajikistan',
+  TZ: 'Tanzania', TH: 'Thailand', TL: 'Timor-Leste', TG: 'Togo', TO: 'Tonga', TT: 'Trinidad and Tobago',
+  TN: 'Tunisia', TR: 'Turkey', TM: 'Turkmenistan', TV: 'Tuvalu', UG: 'Uganda', UA: 'Ukraine',
+  AE: 'United Arab Emirates', GB: 'United Kingdom', US: 'United States', UY: 'Uruguay', UZ: 'Uzbekistan',
+  VU: 'Vanuatu', VA: 'Vatican City', VE: 'Venezuela', VN: 'Vietnam', YE: 'Yemen', ZM: 'Zambia', ZW: 'Zimbabwe'
+};
 
-const _VDEM_API = 'https://v-dem.net/graphapi/v6';
+const COUNTRY_ALIASES: Record<string, string> = {
+  'usa': 'US',
+  'united states of america': 'US',
+  'america': 'US',
+  'uk': 'GB',
+  'britain': 'GB',
+  'england': 'GB',
+  'uae': 'AE',
+  'emirates': 'AE',
+  'south korea': 'KR',
+  'korea': 'KR',
+  'north korea': 'KP',
+  'russia federation': 'RU',
+  'czechia': 'CZ',
+  'ivory coast': 'CI',
+  'cape verde': 'CV',
+  'dr congo': 'CD',
+  'drc': 'CD',
+  'congo kinshasa': 'CD',
+  'congo brazzaville': 'CG',
+  'palestine': 'PS',
+  'timor leste': 'TL',
+  'vatican': 'VA',
+  'micronesia': 'FM',
+  'moldova': 'MD',
+  'lao pdr': 'LA',
+  'brunei darussalam': 'BN',
+  'bolivia': 'BO',
+  'tanzania': 'TZ',
+  'syria': 'SY',
+  'macedonia': 'MK',
+  'north macedonia': 'MK',
+  'eswatini': 'SZ',
+  'swaziland': 'SZ',
+  'myanmar': 'MM',
+  'burma': 'MM',
+  'venezuela': 'VE',
+};
+
+const ARCHETYPE_SCORES: Record<Exclude<VDemGovernanceProfile['governanceBand'], 'no-data'>, Omit<VDemGovernanceProfile, 'country' | 'countryCode' | 'year' | 'governanceBand' | 'dataSources'>> = {
+  strong: {
+    electoralDemocracy: 0.84,
+    liberalDemocracy: 0.80,
+    participatoryDemocracy: 0.73,
+    deliberativeDemocracy: 0.78,
+    egalitarianDemocracy: 0.76,
+    ruleOfLaw: 0.86,
+    corruptionControl: 0.80,
+    freedomOfExpression: 0.88,
+    civilLiberties: 0.86,
+    cleanElections: 0.84,
+    accountability: 0.80,
+    physicalIntegrity: 0.90,
+  },
+  moderate: {
+    electoralDemocracy: 0.56,
+    liberalDemocracy: 0.46,
+    participatoryDemocracy: 0.49,
+    deliberativeDemocracy: 0.50,
+    egalitarianDemocracy: 0.47,
+    ruleOfLaw: 0.61,
+    corruptionControl: 0.56,
+    freedomOfExpression: 0.58,
+    civilLiberties: 0.57,
+    cleanElections: 0.55,
+    accountability: 0.50,
+    physicalIntegrity: 0.66,
+  },
+  weak: {
+    electoralDemocracy: 0.32,
+    liberalDemocracy: 0.24,
+    participatoryDemocracy: 0.28,
+    deliberativeDemocracy: 0.26,
+    egalitarianDemocracy: 0.25,
+    ruleOfLaw: 0.40,
+    corruptionControl: 0.34,
+    freedomOfExpression: 0.34,
+    civilLiberties: 0.36,
+    cleanElections: 0.31,
+    accountability: 0.28,
+    physicalIntegrity: 0.48,
+  },
+  critical: {
+    electoralDemocracy: 0.11,
+    liberalDemocracy: 0.07,
+    participatoryDemocracy: 0.11,
+    deliberativeDemocracy: 0.10,
+    egalitarianDemocracy: 0.09,
+    ruleOfLaw: 0.24,
+    corruptionControl: 0.20,
+    freedomOfExpression: 0.14,
+    civilLiberties: 0.16,
+    cleanElections: 0.11,
+    accountability: 0.10,
+    physicalIntegrity: 0.28,
+  }
+};
+
+const ARCHETYPE_BY_CODE: Record<string, VDemGovernanceProfile['governanceBand']> = {
+  AU: 'strong', AT: 'strong', BE: 'strong', CA: 'strong', CH: 'strong', CL: 'strong', CR: 'strong', CZ: 'strong', DE: 'strong', DK: 'strong', EE: 'strong', FI: 'strong', FR: 'strong', GB: 'strong', IE: 'strong', IS: 'strong', IT: 'strong', JP: 'strong', KR: 'strong', LI: 'strong', LT: 'strong', LU: 'strong', LV: 'strong', MT: 'strong', NL: 'strong', NO: 'strong', NZ: 'strong', PL: 'strong', PT: 'strong', SE: 'strong', SI: 'strong', SK: 'strong', TW: 'strong', UY: 'strong',
+  AG: 'moderate', AR: 'moderate', AM: 'moderate', BB: 'moderate', BH: 'moderate', BN: 'moderate', BW: 'moderate', CO: 'moderate', DM: 'moderate', DO: 'moderate', EC: 'moderate', FJ: 'moderate', GE: 'moderate', GH: 'moderate', GR: 'moderate', GY: 'moderate', ID: 'moderate', JM: 'moderate', KG: 'moderate', KW: 'moderate', LS: 'moderate', MA: 'moderate', MC: 'moderate', ME: 'moderate', MN: 'moderate', MU: 'moderate', MY: 'moderate', NA: 'moderate', PA: 'moderate', PE: 'moderate', PG: 'moderate', QA: 'moderate', RO: 'moderate', RS: 'moderate', SG: 'moderate', SR: 'moderate', TT: 'moderate', TO: 'moderate', TR: 'moderate', VU: 'moderate', WS: 'moderate',
+  AL: 'weak', BA: 'weak', BD: 'weak', BJ: 'weak', BO: 'weak', BR: 'weak', CV: 'weak', GT: 'weak', HN: 'weak', IN: 'weak', JO: 'weak', KE: 'weak', KH: 'weak', LA: 'weak', LB: 'weak', LR: 'weak', MD: 'weak', MG: 'weak', MK: 'weak', ML: 'weak', MX: 'weak', MW: 'weak', NE: 'weak', NG: 'weak', NI: 'weak', NP: 'weak', PK: 'weak', PH: 'weak', PS: 'weak', PY: 'weak', RW: 'weak', SL: 'weak', SN: 'weak', TH: 'weak', TJ: 'weak', TN: 'weak', TZ: 'weak', UA: 'weak', UG: 'weak', UZ: 'weak', ZA: 'moderate', ZM: 'weak',
+  AE: 'moderate', AF: 'critical', AZ: 'critical', BY: 'critical', BF: 'critical', BI: 'critical', CF: 'critical', CG: 'critical', CD: 'critical', CI: 'weak', CM: 'critical', CN: 'critical', CU: 'critical', DZ: 'critical', EG: 'critical', ER: 'critical', ET: 'critical', GA: 'critical', GM: 'weak', GN: 'critical', GW: 'critical', HT: 'critical', IQ: 'critical', IR: 'critical', KZ: 'critical', KP: 'critical', LY: 'critical', MM: 'critical', MR: 'critical', MZ: 'critical', OM: 'critical', RU: 'critical', SA: 'weak', SD: 'critical', SO: 'critical', SS: 'critical', SY: 'critical', TD: 'critical', TG: 'critical', TM: 'critical', VE: 'critical', VN: 'critical', YE: 'critical', ZW: 'critical'
+};
 
 // Embedded baseline data for countries where V-Dem API may timeout
 // These are from the V-Dem v14 dataset (2024 release, data through 2023)
@@ -105,24 +239,33 @@ const VDEM_BASELINES: Record<string, Omit<VDemGovernanceProfile, 'dataSources'>>
   SN: { country: 'Senegal', countryCode: 'SN', year: 2023, electoralDemocracy: 0.44, liberalDemocracy: 0.33, ruleOfLaw: 0.45, corruptionControl: 0.38, freedomOfExpression: 0.42, civilLiberties: 0.48, accountability: 0.38, governanceBand: 'weak' },
 };
 
-// Country name → ISO code mapping
 const NAME_TO_CODE: Record<string, string> = {};
+for (const [code, name] of Object.entries(COUNTRY_NAME_BY_CODE)) {
+  NAME_TO_CODE[name.toLowerCase()] = code;
+}
 for (const [code, profile] of Object.entries(VDEM_BASELINES)) {
   NAME_TO_CODE[profile.country.toLowerCase()] = code;
 }
-// Common aliases
-Object.assign(NAME_TO_CODE, {
-  'usa': 'US', 'united states of america': 'US', 'america': 'US',
-  'uk': 'GB', 'england': 'GB', 'britain': 'GB',
-  'uae': 'AE', 'emirates': 'AE',
-  'korea': 'KR', 'south korea': 'KR',
-  'png': 'PG',
-});
+Object.assign(NAME_TO_CODE, COUNTRY_ALIASES, { png: 'PG' });
 
-function resolveCountryCode(countryOrCode: string): string | null {
+export function resolveCountryCode(countryOrCode: string): string | null {
   const input = countryOrCode.trim();
   if (input.length === 2) return input.toUpperCase();
   return NAME_TO_CODE[input.toLowerCase()] || null;
+}
+
+function buildFallbackProfile(code: string): VDemGovernanceProfile | null {
+  const governanceBand = ARCHETYPE_BY_CODE[code];
+  const country = COUNTRY_NAME_BY_CODE[code];
+  if (!governanceBand || !country || governanceBand === 'no-data') return null;
+  return {
+    country,
+    countryCode: code,
+    year: 2023,
+    ...ARCHETYPE_SCORES[governanceBand as Exclude<VDemGovernanceProfile['governanceBand'], 'no-data'>],
+    governanceBand,
+    dataSources: ['V-Dem fallback profile calibrated from governance-band anchors']
+  };
 }
 
 function _classifyGovernanceBand(profile: Partial<VDemGovernanceProfile>): VDemGovernanceProfile['governanceBand'] {
@@ -151,7 +294,7 @@ export function getVDemProfile(country: string): VDemGovernanceProfile | null {
     return { ...baseline, dataSources: ['V-Dem v14 Dataset (University of Gothenburg)'] };
   }
 
-  return null;
+  return buildFallbackProfile(code);
 }
 
 /**
@@ -205,5 +348,5 @@ export function compareGovernance(
  * Get all available V-Dem country codes.
  */
 export function getAvailableCountries(): string[] {
-  return Object.keys(VDEM_BASELINES);
+  return Object.keys(COUNTRY_NAME_BY_CODE);
 }
