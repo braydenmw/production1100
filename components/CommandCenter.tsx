@@ -467,62 +467,54 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                         </div>
 
                         {/* CARD 2: What We Built + How It Works + What You Get (MERGED) */}
-                        <div className="group bg-white border border-slate-200 overflow-hidden shadow-sm hover:shadow-lg transition-shadow flex flex-col md:flex-row">
-                            {/* Text Content (LEFT) */}
-                            <div className="p-6 md:p-8 flex-1 flex flex-col justify-center">
-                                <span className="inline-block px-2.5 py-1 bg-blue-600/90 text-white text-[10px] font-bold uppercase tracking-wider mb-3 w-fit">What We Built</span>
-                                <h4 className="text-xl font-bold text-slate-900 leading-snug mb-4">The First Regional-First Investment Intelligence System</h4>
-                                <p className="text-sm text-slate-600 leading-relaxed text-justify mb-3">
-                                    Most AI systems were built for general conversation and later adapted for enterprise workflows. Regional development was never their design center. As a result, they perform best where data is dense and standardized, and worst where decisions are most consequential: secondary cities, border economies, and undercapitalized regions.
-                                </p>
-                                <p className="text-sm text-slate-600 leading-relaxed text-justify mb-3">
-                                    BWGA AI was built in the opposite direction. The platform is purpose-built for regional development and investment intelligence worldwide. It does not treat regional locations as exceptions. It treats them as the mission. Every workflow, model, and recommendation is designed to answer one practical question: what will unlock investment, jobs, and long-term economic resilience in this place, under these constraints, right now?
-                                </p>
-                                <p className="text-sm text-slate-600 leading-relaxed text-justify mb-4">
-                                    Each engagement becomes a structured, persistent case file including location, sector, constraints, stakeholders, timeline, and evidence. Five independent reasoning engines, Skeptic, Advocate, Accountant, Regulator, and Operator, challenge assumptions before recommendations are issued. Claims are tested against live authoritative sources, and anything unverifiable is explicitly marked as unknown with confidence scoring. The result is not generic AI output. It is a defensible operating package with full traceability to evidence and reasoning.
-                                </p>
-                                
-                                {/* Core Capabilities */}
-                                <div className="space-y-2 mb-5">
-                                    {[
-                                        'Built for regional development first, not adapted to it later',
-                                        'Place-based investment intelligence, not generic prompt responses',
-                                        'Jurisdiction-specific constraints surfaced before capital is committed',
-                                        'Decision-ready documents with traceable evidence and logic',
-                                    ].map((item, i) => (
-                                        <div key={i} className="flex items-start gap-2">
-                                            <span className="mt-0.5 w-4 h-4 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0 text-[9px] font-bold">✓</span>
-                                            <p className="text-sm text-slate-600 leading-snug">{item}</p>
-                                        </div>
-                                    ))}
-                                </div>
-                                
-                                {/* The Actual Breakthrough */}
-                                <div className="bg-slate-50 rounded-lg p-5 border border-slate-200">
-                                    <p className="text-xs font-bold text-blue-700 uppercase tracking-wider mb-3">The Actual Breakthrough — Applying the Failure Model to Regional City Economic Perception</p>
-                                    <p className="text-sm text-slate-600 leading-relaxed text-justify mb-3">
-                                        The decision to overlook a regional city is rarely made on evidence. It is made on perception — shaped by incomplete data, inherited assumptions about where value exists, a search process that never reaches the right geography, and an objective that quietly prioritises career safety over return. These are not rational risk assessments. They are cognitive failure modes that repeat across every institution, every cycle, without correction.
-                                    </p>
-                                    <p className="text-sm text-slate-600 leading-relaxed text-justify mb-3">
-                                        This system was built as a direct countermeasure to each one. It replaces CBD-biased data gaps with live regional intelligence: governance scores, trade flows, sanctions registries, infrastructure capacity, and ecosystem readiness — the signals that never appear in a national aggregate. It pressure-tests causal assumptions through five independent reasoning engines — Skeptic, Advocate, Accountant, Regulator, Operator — because the inherited model of how regional economies work has rarely been subjected to structured adversarial challenge. It forces the search beyond the obvious, surfacing pathways that peer conformity and existing networks would never reach.
-                                    </p>
-                                    <p className="text-sm text-slate-600 leading-relaxed text-justify">
-                                        What the system returns is not a report. It is a position — built in the language of institutional legitimacy, structured to satisfy fiduciary guardrails, with every claim marked proven, assumed, or unknown, and every gap explicitly flagged. A regional thesis that can be presented to a board, an investment committee, or a minister and withstand scrutiny. Not because the region was made to look like something it is not, but because the analysis was finally done properly.
-                                    </p>
-                                </div>
-                            </div>
-                            
-                            {/* Photo (RIGHT) */}
-                            <div className="h-64 md:h-auto md:w-1/3 flex-shrink-0 relative overflow-hidden">
+                        {/* CARD 2: What We Built + Breakthrough Feature */}
+                        <div className="group bg-white border border-slate-200 overflow-hidden shadow-sm hover:shadow-lg transition-shadow flex flex-col">
+                            {/* Short banner photo at top */}
+                            <div className="h-48 w-full relative overflow-hidden flex-shrink-0">
                                 <img
-                                    src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&h=900&fit=crop&q=80"
+                                    src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1600&h=400&fit=crop&q=80"
                                     alt="Regional city infrastructure and economic corridor"
                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                 />
+                                <div className="absolute inset-0 bg-gradient-to-t from-white/60 to-transparent" />
+                            </div>
+
+                            {/* Text Content — full width */}
+                            <div className="p-6 md:p-10 flex flex-col">
+                                <span className="inline-block px-2.5 py-1 bg-blue-600/90 text-white text-[10px] font-bold uppercase tracking-wider mb-3 w-fit">What We Built</span>
+                                <h4 className="text-xl font-bold text-slate-900 leading-snug mb-4">The First Regional-First Investment Intelligence System</h4>
+                                <div className="grid md:grid-cols-3 gap-6 mb-5">
+                                    <p className="text-sm text-slate-600 leading-relaxed text-justify">
+                                        Most AI systems were built for general conversation and later adapted for enterprise workflows. Regional development was never their design center. As a result, they perform best where data is dense and standardized, and worst where decisions are most consequential: secondary cities, border economies, and undercapitalized regions.
+                                    </p>
+                                    <p className="text-sm text-slate-600 leading-relaxed text-justify">
+                                        BWGA AI was built in the opposite direction. The platform is purpose-built for regional development and investment intelligence worldwide. It does not treat regional locations as exceptions. It treats them as the mission. Every workflow, model, and recommendation is designed to answer one practical question: what will unlock investment, jobs, and long-term economic resilience in this place, under these constraints, right now?
+                                    </p>
+                                    <p className="text-sm text-slate-600 leading-relaxed text-justify">
+                                        Each engagement becomes a structured, persistent case file. Five independent reasoning engines — Skeptic, Advocate, Accountant, Regulator, and Operator — challenge every assumption before a recommendation is issued. Claims are tested against live authoritative sources. Anything unverifiable is explicitly marked unknown. The result is a defensible operating package with full traceability to evidence and reasoning.
+                                    </p>
+                                </div>
+                    </div>
+                                {/* The Actual Breakthrough — Blue Feature Block */}
+                                <div className="bg-blue-700 rounded-sm p-6 md:p-10">
+                                    <p className="text-xs font-bold text-blue-300 uppercase tracking-widest mb-4">The Actual Breakthrough</p>
+                                    <h3 className="text-4xl md:text-5xl font-bold text-white leading-tight mb-8">
+                                        Applying the Failure Model<br className="hidden md:block" /> to Regional City<br className="hidden md:block" /> Economic Perception
+                                    </h3>
+                                    <div className="grid md:grid-cols-3 gap-6">
+                                        <p className="text-sm text-blue-100 leading-relaxed text-justify">
+                                            The decision to overlook a regional city is rarely made on evidence. It is made on perception — shaped by incomplete data, inherited assumptions about where value exists, a search process that never reaches the right geography, and an objective that quietly prioritises career safety over return. These are not rational risk assessments. They are cognitive failure modes that repeat across every institution, every cycle, without correction.
+                                        </p>
+                                        <p className="text-sm text-blue-100 leading-relaxed text-justify">
+                                            This system was built as a direct countermeasure to each one. It replaces CBD-biased data gaps with live regional intelligence: governance scores, trade flows, sanctions registries, infrastructure capacity, and ecosystem readiness — the signals that never appear in a national aggregate. It pressure-tests causal assumptions through five independent reasoning engines because the inherited model of how regional economies work has rarely been subjected to structured adversarial challenge.
+                                        </p>
+                                        <p className="text-sm text-blue-100 leading-relaxed text-justify">
+                                            What the system returns is not a report. It is a position — built in the language of institutional legitimacy, structured to satisfy fiduciary guardrails, with every claim marked proven, assumed, or unknown, and every gap explicitly flagged. A regional thesis that can be presented to a board, an investment committee, or a minister and withstand scrutiny. Not because the region was made to look like something it is not, but because the analysis was finally done properly.
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-
-                    </div>
                 </div>
             </section>
 
