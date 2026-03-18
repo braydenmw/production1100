@@ -45,16 +45,47 @@ const getGroqKey        = () => String(process.env.GROQ_API_KEY || '').trim().re
 const GROQ_API_URL      = 'https://api.groq.com/openai/v1/chat/completions';
 const GROQ_MODEL_ID     = process.env.GROQ_MODEL || 'llama-3.3-70b-versatile';
 
-// ─── Unified AI helper: Together.ai primary → Gemini fallback ─────────────────
+// ─── Unified AI helper: Groq primary → Together → Gemini fallback ─────────────
 const isAIAvailable = (): boolean => {
-  if (getTogetherKey()) return true;
   if (getGroqKey()) return true;
+  if (getTogetherKey()) return true;
   if (getGenAI()) return true;
   return false;
 };
 
 const generateWithAI = async (prompt: string, systemInstruction?: string): Promise<string> => {
-  // 1. Together.ai (primary — single API key, no AWS SDK needed)
+  // 1. Groq (primary — fastest, free tier)
+  const groqKey = getGroqKey();
+  if (groqKey) {
+    try {
+      const res = await fetch(GROQ_API_URL, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${groqKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: GROQ_MODEL_ID,
+          messages: [
+            ...(systemInstruction ? [{ role: 'system', content: systemInstruction }] : []),
+            { role: 'user', content: prompt },
+          ],
+          max_completion_tokens: 4096,
+          temperature: 0.4,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const text = (data.choices?.[0]?.message?.content || '').trim();
+        if (text) return text;
+      } else {
+        console.warn('[AI Routes] Groq error:', res.status);
+      }
+    } catch (groqErr) {
+      console.warn('[AI Routes] Groq failed, trying Together:', groqErr instanceof Error ? groqErr.message : groqErr);
+    }
+  }
+  // 2. Together.ai fallback
   const togetherKey = getTogetherKey();
   if (togetherKey) {
     try {
@@ -83,37 +114,6 @@ const generateWithAI = async (prompt: string, systemInstruction?: string): Promi
       }
     } catch (togetherErr) {
       console.warn('[AI Routes] Together.ai failed, trying Gemini:', togetherErr instanceof Error ? togetherErr.message : togetherErr);
-    }
-  }
-  // 2. Groq fallback
-  const groqKey = getGroqKey();
-  if (groqKey) {
-    try {
-      const res = await fetch(GROQ_API_URL, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${groqKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: GROQ_MODEL_ID,
-          messages: [
-            ...(systemInstruction ? [{ role: 'system', content: systemInstruction }] : []),
-            { role: 'user', content: prompt },
-          ],
-          max_completion_tokens: 4096,
-          temperature: 0.4,
-        }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        const text = (data.choices?.[0]?.message?.content || '').trim();
-        if (text) return text;
-      } else {
-        console.warn('[AI Routes] Groq error:', res.status);
-      }
-    } catch (groqErr) {
-      console.warn('[AI Routes] Groq failed, trying Gemini:', groqErr instanceof Error ? groqErr.message : groqErr);
     }
   }
   // 3. Gemini fallback
@@ -539,7 +539,7 @@ const logConsultantAuditEvent = async (event: Record<string, unknown>) => {
 };
 
 const parseProviderOrder = (input: unknown): ConsultantProvider[] => {
-  const defaultOrder: ConsultantProvider[] = ['together', 'groq', 'gemini', 'bedrock', 'openai'];
+  const defaultOrder: ConsultantProvider[] = ['groq', 'together', 'gemini', 'bedrock', 'openai'];
   if (!Array.isArray(input)) return defaultOrder;
 
   const VALID_PROVIDERS = new Set<ConsultantProvider>(['together', 'groq', 'bedrock', 'gemini', 'openai']);
