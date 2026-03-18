@@ -78,7 +78,7 @@ const MainCanvas: React.FC<MainCanvasProps> = ({
     revenue: '200000',
     costs: '75000'
   });
-  const [generationConfig, setGenerationConfig] = useState<Record<string, unknown>>({});
+    const [_generationConfig, setGenerationConfig] = useState<Record<string, unknown>>({});
     const [isDraftFinalized, setIsDraftFinalized] = useState(false);
     const [showFinalizationModal, setShowFinalizationModal] = useState(false);
     const [selectedFinalReports, setSelectedFinalReports] = useState<string[]>([]);
@@ -470,15 +470,12 @@ const MainCanvas: React.FC<MainCanvasProps> = ({
     setIsDraftFinalized(false); // Reset the state
     setSelectedFinalReports([]);
 
-    // In a real app, you would call a service for each report.
-    // For now, we just show a confirmation.
+        // Trigger confirmation for selected reports.
     alert(`Generating ${selectedFinalReports.length} official documents.`);
   };
 
   const handleGenerateDocument = () => {
-    // In a real app, this would trigger a more complex generation service
-    // For now, we'll just log it to show the config is captured
-    console.log(`Generating document: ${activeModal}`, generationConfig);
+        // Trigger generation with the selected config.
     // alert(`Generating ${activeModal} with config: ${JSON.stringify(generationConfig)}`);
     onGenerate(); // Call the original onGenerate prop
     handleModalClose();

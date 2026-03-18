@@ -86,7 +86,6 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({
                     ${isCurrent ? 'border-blue-600 bg-blue-50 ring-2 ring-blue-200' : isComplete ? 'border-emerald-300 bg-emerald-50' : 'border-stone-200 bg-white hover:bg-stone-100'}
                   `}
                   style={{ fontWeight: isCurrent ? 700 : 500 }}
-                  // TODO: Add onClick to jump to step if needed
                 >
                   <span className={`w-6 h-6 flex items-center justify-center rounded-full border-2 text-xs font-bold
                     ${isComplete ? 'border-emerald-400 bg-emerald-200 text-emerald-900' : isCurrent ? 'border-blue-600 bg-blue-100 text-blue-700 animate-pulse' : 'border-stone-300 bg-white text-stone-400'}`}
@@ -151,7 +150,6 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({
           <span className="font-bold text-blue-900 text-sm">Live AI Consultant</span>
         </div>
         <div className="flex-1 overflow-y-auto max-h-40">
-          {/* Placeholder for AI chat/messages, can be replaced with actual chat */}
           <div className="text-xs text-blue-900/80">Ask questions or get guidance at any step. The AI consultant will provide context-aware help and suggestions here.</div>
         </div>
         <div className="mt-3 flex gap-2">

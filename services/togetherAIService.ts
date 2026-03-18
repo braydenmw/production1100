@@ -30,6 +30,10 @@ export const TOGETHER_SYSTEM_PROMPT = SYSTEM_INSTRUCTION;
 let _circuitOpen = false;
 let _circuitOpenUntil = 0;
 
+function normalizeApiKey(raw: unknown): string {
+  return String(raw ?? '').trim().replace(/^['"]|['"]$/g, '');
+}
+
 function markCircuitOpen(): void {
   _circuitOpen = true;
   _circuitOpenUntil = Date.now() + 5 * 60 * 1000; // 5 minutes
@@ -61,9 +65,8 @@ export interface TogetherOptions {
 /** Returns true if Together.ai key looks valid AND circuit-breaker is not tripped. */
 export function isTogetherAvailable(): boolean {
   if (isCircuitOpen()) return false;
-  const key = (
-    (typeof process !== 'undefined' && process.env?.TOGETHER_API_KEY) ||
-    ''
+  const key = normalizeApiKey(
+    (typeof process !== 'undefined' && process.env?.TOGETHER_API_KEY) || ''
   );
   if (!key || key.length < 20) return false;
   const lower = key.toLowerCase();
@@ -91,8 +94,7 @@ export async function callTogether(
   }
 
   const key =
-    (typeof process !== 'undefined' && process.env?.TOGETHER_API_KEY) ||
-    '';
+    normalizeApiKey((typeof process !== 'undefined' && process.env?.TOGETHER_API_KEY) || '');
 
   // Reject placeholder keys
   const lower = key.toLowerCase();

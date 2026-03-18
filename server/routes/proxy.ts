@@ -23,7 +23,7 @@ const router = Router();
 
 const TOGETHER_API_URL = 'https://api.together.xyz/v1/chat/completions';
 const TOGETHER_EMBED_URL = 'https://api.together.xyz/v1/embeddings';
-const getKey = () => process.env.TOGETHER_API_KEY || '';
+const getKey = () => String(process.env.TOGETHER_API_KEY || '').trim().replace(/^['"]|['"]$/g, '');
 
 // ─── Chat Completion Proxy ──────────────────────────────────────────────────
 

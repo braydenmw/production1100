@@ -44,8 +44,16 @@ type BedrockImportMeta = ImportMeta & {
 };
 
 const _env = () => {
-  const runtimeEnv = typeof window !== 'undefined' ? (window as BedrockWindowEnv).__ENV__ || {} : {};
-  const viteEnv = ((import.meta as BedrockImportMeta).env || {});
+  const runtimeEnv: Record<string, string | undefined> =
+    typeof window !== 'undefined' ? (window as BedrockWindowEnv).__ENV__ || {} : {};
+  const viteEnv = ((import.meta as BedrockImportMeta).env ?? {}) as Partial<Record<
+    'VITE_AWS_REGION' |
+    'VITE_AWS_ACCESS_KEY_ID' |
+    'VITE_AWS_SECRET_ACCESS_KEY' |
+    'VITE_BEDROCK_AGENT_ID' |
+    'VITE_BEDROCK_AGENT_ALIAS_ID',
+    string | undefined
+  >>;
   return {
     VITE_AWS_REGION: runtimeEnv.VITE_AWS_REGION || viteEnv.VITE_AWS_REGION,
     VITE_AWS_ACCESS_KEY_ID: runtimeEnv.VITE_AWS_ACCESS_KEY_ID || viteEnv.VITE_AWS_ACCESS_KEY_ID,

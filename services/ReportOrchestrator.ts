@@ -32,7 +32,6 @@ const REGIONAL_KERNEL_PARTNERS: PartnerCandidate[] = [
 
 export class ReportOrchestrator {
   static async assembleReportPayload(params: ReportParameters): Promise<ReportPayload> {
-    console.log('DEBUG: Starting ReportOrchestrator assembly for', params.organizationName);
 
     const consultantGate = ConsultantGateService.evaluate(params);
     if (!consultantGate.isReady) {
@@ -104,7 +103,6 @@ export class ReportOrchestrator {
       Promise.resolve(HistoricalParallelMatcher.match(params))
     ]);
 
-    console.log('DEBUG: All engines completed');
 
     // Build the structured payload
     const agenticBrainSnapshot = agenticBrainResult ? this.toAgenticBrainSnapshot(agenticBrainResult) : undefined;
@@ -225,12 +223,10 @@ export class ReportOrchestrator {
       }
     };
 
-    console.log('DEBUG: ReportPayload assembled successfully');
 
     // Run autonomous enhancement steps (always-on full performance)
     try {
-      const masterEnhancements = await masterAutonomousOrchestrator.runEnhancements(params, payload);
-      console.log('Autonomous enhancements applied:', masterEnhancements.confidence);
+      const _masterEnhancements = await masterAutonomousOrchestrator.runEnhancements(params, payload);
     } catch (error) {
       console.warn('Autonomous enhancements skipped (non-blocking):', error);
     }
@@ -587,17 +583,7 @@ export class ReportOrchestrator {
 
   // Method to log payload for debugging
   static logPayload(payload: ReportPayload): void {
-    console.log('=== REPORT PAYLOAD EXTRACTION LOG ===');
-    console.log('Metadata:', payload.metadata);
-    console.log('Problem Definition:', payload.problemDefinition);
-    console.log('Regional Profile:', payload.regionalProfile);
-    console.log('Economic Signals:', payload.economicSignals);
-    console.log('Opportunity Matches:', payload.opportunityMatches);
-    console.log('Risks:', payload.risks);
-    console.log('Recommendations:', payload.recommendations);
-    console.log('Confidence Scores:', payload.confidenceScores);
-    console.log('Computed Intelligence Keys:', Object.keys(payload.computedIntelligence));
-    console.log('=====================================');
+    void payload;
   }
 
   private static toRefinedIntake(params: ReportParameters): RefinedIntake {

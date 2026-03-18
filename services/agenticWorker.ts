@@ -162,7 +162,6 @@ async function loadServerReports(): Promise<Partial<ReportParameters>[]> {
  */
 export async function runOptimizedAgenticWorker(
   params: ReportParameters, 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _opts?: { maxSimilarCases?: number }
 ): Promise<AgenticRun> {
   const startedAt = new Date().toISOString();

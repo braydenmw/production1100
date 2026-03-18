@@ -16,8 +16,12 @@ import { config } from './config';
 type AwsWindowEnv = Window & { __ENV__?: Record<string, string | undefined> };
 type AwsImportMeta = ImportMeta & { env?: { MODE?: string; PROD?: boolean; VITE_AWS_REGION?: string } };
 
-const runtimeEnv = typeof window !== 'undefined' ? (window as AwsWindowEnv).__ENV__ || {} : {};
-const viteEnv = ((import.meta as AwsImportMeta).env || {});
+const runtimeEnv: Record<string, string | undefined> =
+  typeof window !== 'undefined' ? (window as AwsWindowEnv).__ENV__ || {} : {};
+const viteEnv = ((import.meta as AwsImportMeta).env ?? {}) as Partial<Record<
+  'MODE' | 'PROD' | 'VITE_AWS_REGION',
+  string | boolean | undefined
+>>;
 const API_BASE = config.apiBaseUrl.replace(/\/api$/, '');
 
 // ─── Together.ai config ────────────────────────────────────────────────────────

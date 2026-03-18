@@ -55,7 +55,7 @@ Generate 3-5 specific, actionable solutions. Return ONLY valid JSON in this exac
   // Graceful degradation - indicate AI unavailability
   return {
     solutions: [
-      { action: 'Configure AI provider API keys', reasoning: 'Set VITE_TOGETHER_API_KEY or VITE_GROQ_API_KEY for full autonomous capability', confidence: 0 }
+      { action: 'Configure AI provider API keys', reasoning: 'Set server-side provider keys (for example TOGETHER_API_KEY, OPENAI_API_KEY, or GEMINI_API_KEY) for full autonomous capability', confidence: 0 }
     ],
     summary: 'AI providers unavailable - configure API keys for autonomous analysis'
   };

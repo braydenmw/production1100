@@ -299,8 +299,8 @@ Analyze with full depth. Return ONLY valid JSON:
   }
 
   return {
-    findings: [`${agentName} analysis requires AI configuration. Set VITE_TOGETHER_API_KEY or VITE_GROQ_API_KEY.`],
-    recommendations: ['Configure at least one AI provider API key'],
+    findings: [`${agentName} analysis requires AI configuration on the server backend.`],
+    recommendations: ['Configure at least one server-side provider key (for example TOGETHER_API_KEY, OPENAI_API_KEY, or GEMINI_API_KEY) and restart the API server'],
     confidence: 0,
     gaps: ['AI provider unavailable'],
   };

@@ -38,7 +38,9 @@ async function apiPost(path: string, body: object): Promise<any> {
 
 /** Check if a REAL Together.ai API key is present (rejects placeholders) */
 function isTogetherConfigured(): boolean {
-  const key = (typeof process !== 'undefined' && process.env?.TOGETHER_API_KEY) || '';
+  const key = String((typeof process !== 'undefined' && process.env?.TOGETHER_API_KEY) || '')
+    .trim()
+    .replace(/^['"]|['"]$/g, '');
   if (key.length < 20) return false;
   const lower = key.toLowerCase();
   if (lower.includes('your-') || lower.includes('your_') || lower.includes('placeholder') || lower.includes('key-here')) return false;
@@ -209,7 +211,7 @@ export const askCopilot = async (query: string, params: ReportParameters): Promi
     return { id: Date.now().toString(), type: 'strategy', title: 'AI Copilot Response', description: text, content: text, confidence: 85 };
   } catch { /* fall through */ }
 
-  return { id: Date.now().toString(), type: 'insight', title: 'System Status', description: 'Add VITE_TOGETHER_API_KEY to .env to enable AI.', content: 'Together.ai API key required.', confidence: 0 };
+  return { id: Date.now().toString(), type: 'insight', title: 'System Status', description: 'Backend AI is not configured. Set TOGETHER_API_KEY (or OPENAI_API_KEY / GEMINI_API_KEY) in server .env and restart the API server.', content: 'AI provider key required on server backend.', confidence: 0 };
 };
 
 // ─── generateReportSectionStream ──────────────────────────────────────────────
@@ -252,7 +254,7 @@ export const generateReportSectionStream = async (
     console.warn('generateReportSectionStream failed:', err);
   }
 
-  onChunk('AI not configured. Add VITE_TOGETHER_API_KEY to .env and restart.');
+  onChunk('AI backend not configured. Set TOGETHER_API_KEY (or OPENAI_API_KEY / GEMINI_API_KEY) in server .env and restart the API server.');
 };
 
 // ─── generateAnalysisStream ───────────────────────────────────────────────────
@@ -265,7 +267,7 @@ export const generateAnalysisStream = async (item: LiveOpportunityItem, region: 
   if (data?.text) {
     text = data.text;
   } else {
-    try { text = await ai(prompt); } catch { text = 'AI not configured. Add VITE_TOGETHER_API_KEY to .env.'; }
+    try { text = await ai(prompt); } catch { text = 'AI backend not configured. Set TOGETHER_API_KEY (or OPENAI_API_KEY / GEMINI_API_KEY) in server .env.'; }
   }
 
   return new ReadableStream({
@@ -323,7 +325,7 @@ export const generateSearchGroundedContent = async (query: string): Promise<{ te
     return { text, sources: [] };
   } catch { /* fall through */ }
 
-  return { text: 'AI not configured. Add VITE_TOGETHER_API_KEY to .env.', sources: [] };
+  return { text: 'AI backend not configured. Set TOGETHER_API_KEY (or OPENAI_API_KEY / GEMINI_API_KEY) in server .env.', sources: [] };
 };
 
 // ─── runAI_Agent ─────────────────────────────────────────────────────────────
@@ -348,7 +350,7 @@ export const runAI_Agent = async (
     console.warn('runAI_Agent Together.ai failed:', err);
   }
 
-  return 'AI agent requires VITE_TOGETHER_API_KEY in .env.';
+  return 'AI agent requires a server-side provider key (TOGETHER_API_KEY, OPENAI_API_KEY, or GEMINI_API_KEY).';
 };
 
 // ─── runGeopoliticalAnalysis ──────────────────────────────────────────────────
@@ -382,7 +384,7 @@ export const runGovernanceAudit = async (params: ReportParameters): Promise<Gove
     if (m) return JSON.parse(m[0]) as GovernanceAuditResult;
   } catch { /* fall through */ }
 
-  return { overallScore: 0, auditSummary: 'Governance audit requires VITE_TOGETHER_API_KEY in .env.' } as unknown as GovernanceAuditResult;
+  return { overallScore: 0, auditSummary: 'Governance audit requires server-side provider keys (TOGETHER_API_KEY, OPENAI_API_KEY, or GEMINI_API_KEY).' } as unknown as GovernanceAuditResult;
 };
 
 // ─── runCopilotAnalysis ───────────────────────────────────────────────────────
@@ -399,7 +401,7 @@ export const runCopilotAnalysis = async (query: string, context: string): Promis
     return { summary: raw, options: [], followUp: '' };
   } catch { /* fall through */ }
 
-  return { summary: 'Copilot analysis requires VITE_TOGETHER_API_KEY in .env.', options: [], followUp: '' };
+  return { summary: 'Copilot analysis requires server-side provider keys (TOGETHER_API_KEY, OPENAI_API_KEY, or GEMINI_API_KEY).', options: [], followUp: '' };
 };
 
 // ─── extractFileTextViaAI ─────────────────────────────────────────────────────

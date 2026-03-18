@@ -29,6 +29,9 @@ for (const envPath of envPaths) {
 
 // Debug: Check if API key is loaded (never log key length in production)
 console.log('GEMINI_API_KEY loaded:', process.env.GEMINI_API_KEY ? 'Yes' : 'No');
+console.log('TOGETHER_API_KEY loaded:', process.env.TOGETHER_API_KEY ? 'Yes' : 'No');
+console.log('OPENAI_API_KEY loaded:', process.env.OPENAI_API_KEY ? 'Yes' : 'No');
+console.log('GROQ_API_KEY loaded:', process.env.GROQ_API_KEY ? 'Yes' : 'No');
 
 // Import routes
 import aiRoutes from './routes/ai.js';

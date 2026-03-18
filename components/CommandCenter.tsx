@@ -95,13 +95,13 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
         },
         'b': {
             title: 'Agentic & Autonomous Systems',
-            subtitle: 'Self-directed agents that plan research, spawn specialists, evolve their own models, query live global data, and simulate cascading futures.',
+            subtitle: 'Agent-assisted systems that plan research, run parallel analysis, and query external data sources when configured.',
             icon: 'B',
             color: 'from-emerald-600 to-emerald-800',
-            summary: 'A 22-engine parallel brain fires on every query &mdash; multi-model consensus, goal-directed agents, self-modifying formulas, 15+ live global APIs, entity verification across 7 sources, geopolitical arbitrage detection, and forward-looking system dynamics simulation.',
+            summary: 'A multi-engine analysis pipeline runs across each query, combining model outputs, risk scoring, external-source lookups, and scenario analysis where data providers are available.',
             full: (
                 <div className="space-y-6">
-                    <p className="text-sm text-slate-700 leading-relaxed">These systems give the OS the ability to act on its own &mdash; not just respond to prompts. They plan research, spawn specialist agents, evolve their own scoring models based on outcomes, query live global data sources in real time, and simulate futures with cascading feedback loops. Every autonomous action is governed by gates that control what happens without human approval.</p>
+                    <p className="text-sm text-slate-700 leading-relaxed">These systems provide guided autonomy for research and synthesis. They can plan analysis tasks, run parallel engines, and pull from configured external data providers. Output quality and freshness depend on provider availability, API configuration, and governance gates.</p>
 
                     <div className="border-l-2 border-emerald-600 pl-4">
                         <h4 className="font-semibold text-slate-900 text-sm mb-1">Multi-Agent Brain System</h4>
@@ -141,8 +141,8 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
 
                     <div className="border-l-2 border-emerald-600 pl-4">
                         <h4 className="font-semibold text-slate-900 text-sm mb-1">Live External Intelligence Layer &mdash; 15+ Global Data APIs</h4>
-                        <p className="text-sm text-slate-600 leading-relaxed">The system now queries live external sources on every analysis: <strong>ACLED</strong> (real-time conflict &amp; political violence events), <strong>OpenSanctions</strong> (OFAC, UN, EU, UK, INTERPOL sanctions &amp; PEP screening), <strong>OpenCorporates</strong> (corporate registry verification), <strong>GLEIF</strong> (Legal Entity Identifier lookups), <strong>V-Dem v14</strong> (academic governance scores from the University of Gothenburg), <strong>Brave Search</strong> (independent non-Google web index), <strong>UN Comtrade</strong> (bilateral trade statistics), <strong>GDELT</strong> (global news event monitoring), <strong>World Bank</strong> (GDP, inflation, governance indicators), <strong>Wikidata</strong> (structured knowledge graph via SPARQL), <strong>Wikipedia</strong> (encyclopedic context), <strong>REST Countries</strong> (country profiles, population, currencies), <strong>DuckDuckGo</strong> (live web search), and <strong>Tavily</strong> (deep AI-synthesised research). Every data point carries a freshness timestamp and confidence score.</p>
-                        <p className="text-xs text-slate-500 mt-1 italic">Role in the OS: Feeds into the Brain Integration Service, Entity Intelligence Pipeline, Location Intelligence, and GlobalIssueResolver. Replaces all simulated data with real-world signals.</p>
+                        <p className="text-sm text-slate-600 leading-relaxed">The platform integrates with multiple external sources including <strong>ACLED</strong>, <strong>OpenSanctions</strong>, <strong>OpenCorporates</strong>, <strong>GLEIF</strong>, <strong>V-Dem</strong>, <strong>Brave Search</strong>, <strong>UN Comtrade</strong>, <strong>GDELT</strong>, <strong>World Bank</strong>, <strong>Wikidata</strong>, <strong>Wikipedia</strong>, <strong>REST Countries</strong>, <strong>DuckDuckGo</strong>, and <strong>Tavily</strong>. Availability varies by configuration, provider uptime, and credential setup.</p>
+                        <p className="text-xs text-slate-500 mt-1 italic">Role in the OS: Feeds the Brain Integration Service, Entity Intelligence Pipeline, and Location Intelligence with live signals when providers are reachable.</p>
                     </div>
 
                     <div className="border-l-2 border-emerald-600 pl-4">

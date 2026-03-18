@@ -11,8 +11,8 @@ const GlobalPartnerSearch: React.FC = () => {
     const [showResults, setShowResults] = useState(false);
     const [searchId] = useState(() => 'search-' + Date.now());
 
-    // Mock minimal params for the engine
-    const mockParams: ReportParameters = useMemo(() => ({
+    // Build minimal search context for the matchmaking engine.
+    const searchParams: ReportParameters = useMemo(() => ({
         reportName: 'Quick Search',
         userName: 'Guest',
         userDepartment: '',
@@ -79,7 +79,7 @@ const GlobalPartnerSearch: React.FC = () => {
                     Global Partner Discovery
                 </h2>
                 <p className="text-sm text-stone-500 mt-1">
-                    Instant access to the Nexus Partner Database. Find collaborators by region and sector.
+                    Find potential collaborators by region and sector using the current search configuration.
                 </p>
             </div>
             
@@ -123,7 +123,7 @@ const GlobalPartnerSearch: React.FC = () => {
                 {showResults && (
                     <div className="animate-in fade-in border-t border-stone-100 pt-6">
                         <MatchmakingEngine 
-                            params={mockParams} 
+                            params={searchParams} 
                             autoRun={true}
                             compact={true}
                         />

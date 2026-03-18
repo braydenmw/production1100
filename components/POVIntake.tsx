@@ -34,27 +34,21 @@ export default function POVIntake({ onCaseCreated, onMatches } : { onCaseCreated
   async function runIntake() {
     if (!ensureEssentialFields()) return;
     setLoading(true);
-    // In a real implementation this would call backend or geminiService
-    // Simulating response for UI completeness
-    setTimeout(() => {
-        const mockMatches = [
-            { match: { title: "Strategic Partner Alpha", entityType: "Distributor", location: targetRegion, incentives: "Tax Holiday", score: 92 } },
-            { match: { title: "Regional Hub Beta", entityType: "Logistics", location: targetRegion, incentives: "Free Trade Zone", score: 88 } }
-        ];
-        setMatches(mockMatches);
-        if (onMatches) onMatches(mockMatches);
-        setLoading(false);
-    }, 1500);
+    try {
+      // This view no longer fabricates partner matches.
+      setMatches([]);
+      if (onMatches) onMatches([]);
+    } catch (e) {
+      console.error('Partner intake failed:', e);
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function createCase() {
     if (!ensureEssentialFields()) return;
-    // Simulation
-    setTimeout(() => {
-        const caseId = "CASE-" + Math.random().toString(36).substr(2, 9).toUpperCase();
-        alert('Case created: ' + caseId);
-        if (onCaseCreated) onCaseCreated(caseId);
-    }, 1000);
+    const caseId = 'CASE-' + crypto.randomUUID().replace(/-/g, '').slice(0, 9).toUpperCase();
+    if (onCaseCreated) onCaseCreated(caseId);
   }
 
   return (

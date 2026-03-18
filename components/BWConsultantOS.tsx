@@ -1083,6 +1083,7 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, onNavi
   const learningProfileInputRef = useRef<HTMLInputElement>(null);
   const quickSyncSignatureRef = useRef('');
   const strategicApplySignatureRef = useRef('');
+  const matterFingerprintRef = useRef('');
   
   // Workspace modal
   const [showWorkspaceModal, setShowWorkspaceModal] = useState(false);
@@ -1092,8 +1093,8 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, onNavi
   const [showAboutBWGA, setShowAboutBWGA] = useState(false);
   const [showFinalReport, setShowFinalReport] = useState(false);
   const [showFullCatalog, setShowFullCatalog] = useState(false);
-  const [pilotFocus, setPilotFocus] = useState<PilotModeFocus>('new-markets');
-  const [pilotFocusSelections, setPilotFocusSelections] = useState<PilotModeFocus[]>(['new-markets']);
+  const [_pilotFocus, setPilotFocus] = useState<PilotModeFocus>('new-markets');
+  const [pilotFocusSelections, setPilotFocusSelections] = useState<PilotModeFocus[]>([]);
   const [pilotSelectedAddOns, setPilotSelectedAddOns] = useState<string[]>([]);
   const [pilotOptionPreferences, setPilotOptionPreferences] = useState<Record<string, PilotOptionPreference>>({});
   const [customPilotOptionInput, setCustomPilotOptionInput] = useState('');
@@ -1208,6 +1209,68 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, onNavi
     return r;
   })());
   const agentMemory = useRef(new AgentMemoryStore());
+
+  useEffect(() => {
+    const normalizeMatter = (value: string) => value
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    const tokenizeMatter = (value: string) => normalizeMatter(value)
+      .split(' ')
+      .filter((token) => token.length >= 4);
+
+    const previousFingerprint = matterFingerprintRef.current;
+    const currentMatter = caseStudy.currentMatter.trim();
+    const currentFingerprint = normalizeMatter(currentMatter);
+
+    if (!currentFingerprint) {
+      matterFingerprintRef.current = '';
+      return;
+    }
+
+    if (!previousFingerprint) {
+      matterFingerprintRef.current = currentFingerprint;
+      return;
+    }
+
+    if (previousFingerprint === currentFingerprint) {
+      return;
+    }
+
+    const previousTokens = new Set(tokenizeMatter(previousFingerprint));
+    const currentTokens = tokenizeMatter(currentFingerprint);
+    const overlapCount = currentTokens.filter((token) => previousTokens.has(token)).length;
+    const overlapRatio = currentTokens.length > 0 ? overlapCount / currentTokens.length : 0;
+    const isMaterialMatterShift = currentMatter.length >= 40 && overlapRatio < 0.35;
+
+    matterFingerprintRef.current = currentFingerprint;
+
+    if (!isMaterialMatterShift) {
+      return;
+    }
+
+    brainCtxRef.current = null;
+    quickSyncSignatureRef.current = '';
+    strategicApplySignatureRef.current = '';
+    setQuickDraftLines('');
+    setStrategicApplyError('');
+    setLiveInsightError('');
+    setLiveInsightQuery('');
+    setLiveInsightResults([]);
+    setLiveInsightsRequested(false);
+    setLastLiveInsightSearchSignature('');
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: crypto.randomUUID(),
+        role: 'system',
+        content: 'New matter detected. NSIL context and strategic carry-over have been reset. Please provide the new problem details to continue.',
+        timestamp: new Date(),
+        phase: 'discovery'
+      }
+    ]);
+  }, [caseStudy.currentMatter]);
 
   const initializeExecutionTimeline = useCallback(() => {
     setExecutionTimeline([
@@ -1909,13 +1972,13 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, onNavi
   }, [caseStudy]);
 
   const activeIssuePack = useMemo(
-    () => GLOBAL_ISSUE_PACKS.find((pack) => pack.id === activeGlobalIssuePack) || GLOBAL_ISSUE_PACKS[0],
+    () => GLOBAL_ISSUE_PACKS.find((pack) => pack.id === activeGlobalIssuePack) || null,
     [activeGlobalIssuePack]
   );
 
-  const normalizedPilotFocusSelections = useMemo(() => (
-    pilotFocusSelections.length > 0 ? pilotFocusSelections : [pilotFocus]
-  ), [pilotFocusSelections, pilotFocus]);
+  const activeIssuePackLabel = activeIssuePack?.label || '';
+
+  const normalizedPilotFocusSelections = useMemo(() => pilotFocusSelections, [pilotFocusSelections]);
 
   const selectedPilotFocusLabel = useMemo(() => (
     normalizedPilotFocusSelections.map((focus) => focus.replace(/-/g, ' ')).join(' • ')
@@ -1924,19 +1987,19 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, onNavi
   const effectivePilotFocusText = useMemo(() => {
     const custom = quickCustomFocus.trim();
     if (custom) return custom;
-    return selectedPilotFocusLabel || pilotFocus.replace(/-/g, ' ');
-  }, [quickCustomFocus, selectedPilotFocusLabel, pilotFocus]);
+    return selectedPilotFocusLabel;
+  }, [quickCustomFocus, selectedPilotFocusLabel]);
 
   const liveInsightBaseQuery = useMemo(() => {
     const focus = effectivePilotFocusText.trim();
-    const sector = (quickCustomSector.trim() || activeIssuePack.label).trim();
+    const sector = quickCustomSector.trim();
     const parts = [focus, sector];
 
     if (quickCountryFocus.trim()) parts.push(quickCountryFocus.trim());
     if (quickBusinessTarget.trim()) parts.push(quickBusinessTarget.trim());
 
     return parts.filter(Boolean).join(' - ');
-  }, [effectivePilotFocusText, quickCustomSector, activeIssuePack.label, quickCountryFocus, quickBusinessTarget]);
+  }, [effectivePilotFocusText, quickCustomSector, quickCountryFocus, quickBusinessTarget]);
 
   const currentLiveInsightInputSignature = useMemo(() => {
     return JSON.stringify({
@@ -1944,9 +2007,9 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, onNavi
       country: quickCountryFocus.trim(),
       target: quickBusinessTarget.trim(),
       focus: effectivePilotFocusText,
-      sector: quickCustomSector.trim() || activeIssuePack.label
+      sector: quickCustomSector.trim()
     });
-  }, [liveInsightQuery, liveInsightBaseQuery, quickCountryFocus, quickBusinessTarget, effectivePilotFocusText, quickCustomSector, activeIssuePack.label]);
+  }, [liveInsightQuery, liveInsightBaseQuery, quickCountryFocus, quickBusinessTarget, effectivePilotFocusText, quickCustomSector]);
 
   const _liveInsightInputsChanged = useMemo(() => {
     if (!liveInsightsRequested || !lastLiveInsightSearchSignature) return false;
@@ -2013,7 +2076,7 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, onNavi
   const regionalKernel = useMemo(() => {
     return RegionalDevelopmentOrchestrator.run({
       regionProfile: caseStudy.organizationMandate || caseStudy.currentMatter,
-      sector: caseStudy.situationType || activeIssuePack.label,
+      sector: caseStudy.situationType || caseStudy.organizationType,
       constraints: caseStudy.constraints,
       fundingEnvelope: caseStudy.additionalContext.find((item) => /fund|budget|capex|financ/i.test(item)) || 'Not yet defined',
       governanceContext: `${caseStudy.jurisdiction} ${caseStudy.organizationType} ${caseStudy.targetAudience}`,
@@ -2024,7 +2087,7 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, onNavi
       evidenceNotes: caseStudy.additionalContext.slice(0, 10),
       partnerCandidates: REGIONAL_PARTNER_CANDIDATES
     });
-  }, [caseStudy, activeIssuePack]);
+  }, [caseStudy]);
 
   const _pilotFocusIssues = useMemo(
     () => PILOT_GLOBAL_ISSUE_AREAS.filter((issue) => normalizedPilotFocusSelections.includes(issue.focus)),
@@ -2176,12 +2239,12 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, onNavi
       `Constraints: ${caseStudy.constraints || 'Constraints missing'}`,
       `Evidence assets: ${caseStudy.uploadedDocuments.length} uploaded file(s), ${caseStudy.additionalContext.length} context note(s), ${caseStudy.aiInsights.length} AI insight(s)`,
       `Custom research topics: ${customResearchTopics.length > 0 ? customResearchTopics.join(', ') : 'none'}`,
-      `Global issue pack: ${activeIssuePack.label}`,
+      `Global issue pack: ${activeIssuePackLabel || 'none selected'}`,
       `Case method gaps: ${caseMethodGaps.length > 0 ? caseMethodGaps.join(', ') : 'none'}`,
       `Regional kernel readiness: ${regionalKernel.governanceReadiness}%`
     ];
     return lines.join('\n');
-  }, [caseStudy, customResearchTopics, activeIssuePack.label, caseMethodGaps, regionalKernel.governanceReadiness]);
+  }, [caseStudy, customResearchTopics, activeIssuePackLabel, caseMethodGaps, regionalKernel.governanceReadiness]);
 
   const _pilotSelectedAddOnPrompts = useMemo(() => {
     return pilotSelectedAddOns
@@ -2283,7 +2346,7 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, onNavi
     const country = (overrides?.country ?? quickCountryFocus).trim();
     const businessTarget = (overrides?.businessTarget ?? quickBusinessTarget).trim();
     const focus = (overrides?.focus ?? effectivePilotFocusText).trim();
-    const sector = (overrides?.sector ?? (quickCustomSector.trim() || activeIssuePack.label)).trim();
+    const sector = (overrides?.sector ?? quickCustomSector.trim()).trim();
     const topicLabel = (overrides?.topicLabel ?? '').trim();
 
     if (!country && !businessTarget && !focus && !sector && !topicLabel) return;
@@ -2328,7 +2391,7 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, onNavi
         }
       ]);
     }
-  }, [quickCountryFocus, quickBusinessTarget, effectivePilotFocusText, quickCustomSector, activeIssuePack.label]);
+  }, [quickCountryFocus, quickBusinessTarget, effectivePilotFocusText, quickCustomSector]);
 
   const applyStrategicFactors = useCallback(async (
     trigger: 'auto-intake' | 'manual'
@@ -2336,7 +2399,7 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, onNavi
     const country = quickCountryFocus.trim();
     const businessTarget = quickBusinessTarget.trim();
     const focus = effectivePilotFocusText.trim();
-    const sector = (quickCustomSector.trim() || activeIssuePack.label).trim();
+    const sector = quickCustomSector.trim();
 
     if (!country && !businessTarget && focus.length < 4 && sector.length < 3) {
       return;
@@ -2455,7 +2518,7 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, onNavi
     } finally {
       setStrategicApplyLoading(false);
     }
-  }, [quickCountryFocus, quickBusinessTarget, effectivePilotFocusText, quickCustomSector, activeIssuePack.label, caseStudy]);
+  }, [quickCountryFocus, quickBusinessTarget, effectivePilotFocusText, quickCustomSector, caseStudy]);
 
   useEffect(() => {
     if (!strategicAutoApplyEnabled) return;
@@ -2463,7 +2526,7 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, onNavi
     const country = quickCountryFocus.trim();
     const businessTarget = quickBusinessTarget.trim();
     const focus = effectivePilotFocusText.trim();
-    const sector = (quickCustomSector.trim() || activeIssuePack.label).trim();
+    const sector = quickCustomSector.trim();
     const hasStrategicInputs = country.length > 0 || businessTarget.length > 0 || focus.length >= 4 || sector.length >= 4;
 
     if (!hasStrategicInputs) return;
@@ -2482,11 +2545,10 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, onNavi
     quickBusinessTarget,
     effectivePilotFocusText,
     quickCustomSector,
-    activeIssuePack.label,
+    activeIssuePackLabel,
     syncQuickConsultantToCaseStudy,
     applyStrategicFactors
   ]);
-
   const handleTogglePilotFocus = useCallback((focus: PilotModeFocus) => {
     const nextSelections = pilotFocusSelections.includes(focus)
       ? pilotFocusSelections.filter((item) => item !== focus)
@@ -2596,7 +2658,7 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, onNavi
     const contextDerivedQuery = [
       liveInsightBaseQuery,
       effectivePilotFocusText,
-      quickCustomSector.trim() || activeIssuePack.label,
+      quickCustomSector.trim(),
       quickCountryFocus.trim(),
       quickBusinessTarget.trim()
     ].filter(Boolean).join(' ').trim();
@@ -2715,7 +2777,7 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, onNavi
         country: quickCountryFocus.trim(),
         target: quickBusinessTarget.trim(),
         focus: effectivePilotFocusText,
-        sector: quickCustomSector.trim() || activeIssuePack.label
+        sector: quickCustomSector.trim()
       }));
 
       if (merged.length === 0) {
@@ -2780,7 +2842,7 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, onNavi
     } finally {
       setLiveInsightLoading(false);
     }
-  }, [liveInsightQuery, liveInsightBaseQuery, quickCountryFocus, quickBusinessTarget, effectivePilotFocusText, quickCustomSector, activeIssuePack.label]);
+  }, [liveInsightQuery, liveInsightBaseQuery, quickCountryFocus, quickBusinessTarget, effectivePilotFocusText, quickCustomSector]);
 
   const _handleResearchTopicFromIssue = useCallback((issue: PilotIssueArea) => {
     const topicTitle = issue.title.trim();
@@ -2791,7 +2853,7 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, onNavi
       effectivePilotFocusText,
       quickCountryFocus.trim(),
       quickBusinessTarget.trim(),
-      quickCustomSector.trim() || activeIssuePack.label
+      quickCustomSector.trim()
     ].filter(Boolean).join(' ').trim();
 
     syncQuickConsultantToCaseStudy('issue-topic', { topicLabel: topicTitle });
@@ -2823,11 +2885,9 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, onNavi
     quickCountryFocus,
     quickBusinessTarget,
     quickCustomSector,
-    activeIssuePack.label,
     syncQuickConsultantToCaseStudy,
     fetchLiveWorldInsights
   ]);
-
   const handlePinLiveInsightToDraft = useCallback((item: LiveInsightResult) => {
     const evidenceLine = `Pinned live source (${item.bucket}): ${item.title} - ${item.source} | ${item.link}`;
 
@@ -3073,7 +3133,7 @@ Consultant operating rules:
 ${(quickCountryFocus || quickBusinessTarget || quickCustomSector || customResearchTopics.length > 0) ? `Live Research context (user-configured in Pilot panel):
 ${quickCountryFocus ? `- Country/region of focus: ${quickCountryFocus}` : ''}
 ${quickBusinessTarget ? `- Business target: ${quickBusinessTarget}` : ''}
-${quickCustomSector ? `- Custom sector: ${quickCustomSector}` : (activeIssuePack.id ? `- Issue pack selected: ${activeIssuePack.label}` : '')}
+${quickCustomSector ? `- Custom sector: ${quickCustomSector}` : (activeIssuePackLabel ? `- Issue pack selected: ${activeIssuePackLabel}` : '')}
 ${customResearchTopics.length > 0 ? `- Custom research topics: ${customResearchTopics.join(', ')}` : ''}` : '(Pilot panel not configured - operating from conversation context only)'}
 
 Output intent and matching mode:
@@ -3090,7 +3150,7 @@ When the user has specified a country or region, proactively reference:
 Respond naturally and helpfully. Keep responses focused and actionable.
 
 ${agentRegistry.current.toManifest()}`;
-  }, [caseStudy, resolvePolicyPack, consultantCaseBrief, consultantGateReady, consultantGateMissing, computeReadiness, quickCountryFocus, quickBusinessTarget, activeIssuePack, quickCustomSector, customResearchTopics, preferredOutputMode, enableFullCaseTreeMatching, fullCaseTreeMatchingSummary]);
+  }, [caseStudy, resolvePolicyPack, consultantCaseBrief, consultantGateReady, consultantGateMissing, computeReadiness, quickCountryFocus, quickBusinessTarget, activeIssuePackLabel, quickCustomSector, customResearchTopics, preferredOutputMode, enableFullCaseTreeMatching, fullCaseTreeMatchingSummary]);
 
   const _buildNaturalFallbackReply = useCallback((userInput: string) => {
     const trimmed = userInput.trim();
@@ -3356,7 +3416,7 @@ ${agentRegistry.current.toManifest()}`;
 
       if (reasoningResult.answer?.trim()) return reasoningResult.answer.trim();
       // All AI providers failed to return content - surface clear error
-      return 'I was unable to generate a response right now. Please check that your AI API keys are configured in the `.env` file and try again.';
+      return 'I was unable to generate a response right now. Confirm the backend API is running and server-side AI keys (for example TOGETHER_API_KEY, OPENAI_API_KEY, or GEMINI_API_KEY) are configured, then try again.';
     } catch (error) {
       console.error('AI processing error:', error);
       return 'I encountered an error processing your request. Please try again in a moment.';
@@ -5091,7 +5151,7 @@ SOURCE ATTRIBUTION: End the document with a "Sources & Methodology" section that
               ? { name: 'get_country_intelligence', params: { country: caseDraft.country } }
               : null,
             caseDraft.country.trim()
-              ? { name: 'calculate_composite_scores', params: { country: caseDraft.country, sector: caseDraft.organizationType || activeIssuePack.label } }
+              ? { name: 'calculate_composite_scores', params: { country: caseDraft.country, sector: caseDraft.organizationType || undefined } }
               : null,
             (caseDraft.country.trim() && caseDraft.jurisdiction.trim() && caseDraft.objectives.trim())
               ? {
@@ -5099,7 +5159,7 @@ SOURCE ATTRIBUTION: End the document with a "Sources & Methodology" section that
                   params: {
                     country: caseDraft.country,
                     jurisdiction: caseDraft.jurisdiction,
-                    sector: caseDraft.organizationType || activeIssuePack.label,
+                    sector: caseDraft.organizationType || undefined,
                     objective: caseDraft.objectives,
                     currentMatter: caseDraft.currentMatter,
                     constraints: caseDraft.constraints
@@ -5431,7 +5491,6 @@ SOURCE ATTRIBUTION: End the document with a "Sources & Methodology" section that
     processWithAI,
     enableFullCaseTreeMatching,
     fullSpectrumReasoningMode,
-    activeIssuePack.label,
     queueAction,
     reportOptionsDocTitle,
     messages,
@@ -6213,7 +6272,7 @@ SOURCE ATTRIBUTION: End the document with a "Sources & Methodology" section that
         setMessages(prev => [...prev, {
           id: `agent-err-${Date.now()}`,
           role: 'assistant' as const,
-          content: `Autonomous Run encountered an issue: ${result.error || 'Unknown error'}. Check that VITE_TOGETHER_API_KEY is set in .env.`,
+          content: `Autonomous Run encountered an issue: ${result.error || 'Unknown error'}. Confirm the backend API is running and server-side provider keys (for example TOGETHER_API_KEY, OPENAI_API_KEY, or GEMINI_API_KEY) are set in .env.`,
           timestamp: new Date(),
           phase: 'generation' as const,
         }]);
@@ -6434,10 +6493,10 @@ SOURCE ATTRIBUTION: End the document with a "Sources & Methodology" section that
 
     const env = (() => {
       try {
-        const runtimeEnv = typeof window !== 'undefined'
+        const runtimeEnv: Record<string, unknown> = typeof window !== 'undefined'
           ? ((window as unknown as Window & { __ENV__?: Record<string, unknown> }).__ENV__ || {})
           : {};
-        const viteEnv = ((import.meta as ImportMeta & {
+        const viteEnv: {
           env?: {
             VITE_CONSULTANT_HEALTHY_MIN_SUCCESS?: unknown;
             VITE_CONSULTANT_WARNING_MIN_SUCCESS?: unknown;
@@ -6445,7 +6504,15 @@ SOURCE ATTRIBUTION: End the document with a "Sources & Methodology" section that
             VITE_CONSULTANT_ERROR_HIGH_RATIO?: unknown;
             VITE_CONSULTANT_WARNING_MAX_ERROR_RATIO?: unknown;
           };
-        }).env || {});
+        }['env'] = (import.meta as ImportMeta & {
+          env?: {
+            VITE_CONSULTANT_HEALTHY_MIN_SUCCESS?: unknown;
+            VITE_CONSULTANT_WARNING_MIN_SUCCESS?: unknown;
+            VITE_CONSULTANT_FALLBACK_HIGH_RATIO?: unknown;
+            VITE_CONSULTANT_ERROR_HIGH_RATIO?: unknown;
+            VITE_CONSULTANT_WARNING_MAX_ERROR_RATIO?: unknown;
+          };
+        }).env ?? {};
         return {
           VITE_CONSULTANT_HEALTHY_MIN_SUCCESS: runtimeEnv.VITE_CONSULTANT_HEALTHY_MIN_SUCCESS ?? viteEnv.VITE_CONSULTANT_HEALTHY_MIN_SUCCESS,
           VITE_CONSULTANT_WARNING_MIN_SUCCESS: runtimeEnv.VITE_CONSULTANT_WARNING_MIN_SUCCESS ?? viteEnv.VITE_CONSULTANT_WARNING_MIN_SUCCESS,
@@ -6454,7 +6521,13 @@ SOURCE ATTRIBUTION: End the document with a "Sources & Methodology" section that
           VITE_CONSULTANT_WARNING_MAX_ERROR_RATIO: runtimeEnv.VITE_CONSULTANT_WARNING_MAX_ERROR_RATIO ?? viteEnv.VITE_CONSULTANT_WARNING_MAX_ERROR_RATIO,
         };
       } catch {
-        return {} as Record<string, unknown>;
+        return {
+          VITE_CONSULTANT_HEALTHY_MIN_SUCCESS: undefined,
+          VITE_CONSULTANT_WARNING_MIN_SUCCESS: undefined,
+          VITE_CONSULTANT_FALLBACK_HIGH_RATIO: undefined,
+          VITE_CONSULTANT_ERROR_HIGH_RATIO: undefined,
+          VITE_CONSULTANT_WARNING_MAX_ERROR_RATIO: undefined,
+        } as Record<string, unknown>;
       }
     })() as Record<string, unknown>;
 

@@ -40,7 +40,7 @@ const getGenAI = () => {
 // ─── Together.ai config ────────────────────────────────────────────────────────
 const TOGETHER_API_URL  = 'https://api.together.xyz/v1/chat/completions';
 const TOGETHER_MODEL_ID = process.env.TOGETHER_MODEL || 'meta-llama/Llama-3.1-70B-Instruct-Turbo';
-const getTogetherKey    = () => process.env.TOGETHER_API_KEY || '';
+const getTogetherKey    = () => String(process.env.TOGETHER_API_KEY || '').trim().replace(/^['"]|['"]$/g, '');
 
 // ─── Unified AI helper: Together.ai primary → Gemini fallback ─────────────────
 const isAIAvailable = (): boolean => {

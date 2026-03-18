@@ -8,6 +8,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, '.', '');
+  const apiProxyTarget = env.VITE_API_PROXY_TARGET || env.VITE_API_BASE_URL?.replace(/\/api$/, '') || 'http://localhost:3001';
     return {
       base: process.env.VITE_BASE_PATH || '/',
       server: {
@@ -16,7 +17,7 @@ export default defineConfig(({ mode }) => {
         proxy: {
           // Proxy API requests to backend server during development
           '/api': {
-            target: 'http://localhost:3004',
+            target: apiProxyTarget,
             changeOrigin: true,
             secure: false,
           }

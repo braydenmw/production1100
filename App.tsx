@@ -119,7 +119,6 @@ const App: React.FC = () => {
     useEffect(() => {
         // Subscribe to insights from anywhere in the system
         const unsubInsights = EventBus.subscribe('insightsGenerated', (event) => {
-            console.log('[App] EventBus  insightsGenerated', event.reportId);
             // Merge ecosystem insights with existing
             setAutonomousInsights(prev => {
                 const ids = new Set(prev.map(i => i.id));
@@ -130,48 +129,40 @@ const App: React.FC = () => {
 
         // Subscribe to suggestions from anywhere in the system
         const unsubSuggestions = EventBus.subscribe('suggestionsReady', (event) => {
-            console.log('[App] EventBus  suggestionsReady', event.reportId);
             setAutonomousSuggestions(event.actions);
         });
 
         // Subscribe to ecosystem pulse ("meadow" view)
         const unsubPulse = EventBus.subscribe('ecosystemPulse', (event) => {
-            console.log('[App] EventBus  ecosystemPulse', event.signals);
             setEcosystemPulse(event.signals);
         });
 
         // Subscribe to learning updates (self-learning feedback)
-        const unsubLearning = EventBus.subscribe('learningUpdate', (event) => {
-            console.log('[App] EventBus  learningUpdate', event.message);
+        const unsubLearning = EventBus.subscribe('learningUpdate', (_event) => {
             // Could show a toast or update a learning status indicator
         });
 
         // Subscribe to fully autonomous system events
         const unsubFullyAutonomous = EventBus.subscribe('fullyAutonomousRunComplete', (event) => {
-            console.log('[App] EventBus  fullyAutonomousRunComplete', event.runId);
             setAutonomousSystemStatus(event);
             setSelfImprovementSuggestions(event.improvements || []);
             setActiveSubAgents(event.spawnedAgents || []);
         });
 
         const unsubImprovements = EventBus.subscribe('improvementsSuggested', (event) => {
-            console.log('[App] EventBus  improvementsSuggested', event.suggestions.length);
             setSelfImprovementSuggestions(event.suggestions);
         });
 
         const unsubAgentSpawned = EventBus.subscribe('agentSpawned', (event) => {
-            console.log('[App] EventBus  agentSpawned', event.agent.name);
             setActiveSubAgents(prev => [...prev, event.agent]);
         });
 
         // Subscribe to consultant AI events
         const unsubConsultantInsights = EventBus.subscribe('consultantInsightsGenerated', (event) => {
-            console.log('[App] EventBus  consultantInsightsGenerated', event.insights.length);
             setConsultantInsights(event.insights);
         });
 
-        const unsubSearchResult = EventBus.subscribe('searchResultReady', (event) => {
-            console.log('[App] EventBus  searchResultReady', event.query);
+        const unsubSearchResult = EventBus.subscribe('searchResultReady', (_event) => {
             // Note: Do NOT call bwConsultantAI.consult() here.
             // It triggers proactiveSearchForReport  triggerSearch  emit(searchResultReady)  consult  infinite loop.
             // Search results are already stored and available to the consultant when next consulted.
@@ -194,11 +185,9 @@ const App: React.FC = () => {
     // --- EFFECTS ---
     // Copilot Auto-Gen - ONLY runs if valid input exists
     useEffect(() => {
-        console.log("DEBUG: Copilot useEffect triggered", { viewMode, orgName: params.organizationName, country: params.country, insightsLength: insights.length });
         const timer = setTimeout(async () => {
           // STRICT CHECK: Do not run if fields are empty
           if ((viewMode === 'report-generator') && params.organizationName && params.country && params.organizationName.length > 2 && insights.length === 0) {
-            console.log("DEBUG: Starting copilot generation");
             try {
               const [{ generateCopilotInsights }, { config }] = await Promise.all([
                 import('./services/geminiService'),
@@ -208,13 +197,10 @@ const App: React.FC = () => {
                 return;
               }
               const newInsights = await generateCopilotInsights(params);
-              console.log("DEBUG: Copilot insights generated:", newInsights.length);
               setInsights(newInsights);
             } catch (error) {
               console.error("DEBUG: Error in copilot generation:", error);
             }
-          } else {
-            console.log("DEBUG: Copilot conditions not met");
           }
         }, 1500);
         return () => clearTimeout(timer);
@@ -226,7 +212,6 @@ const App: React.FC = () => {
     useEffect(() => {
         if (autonomousMode && params.organizationName && params.country && params.organizationName.length > 2) {
             const timer = setTimeout(async () => {
-                console.log(" AGENTIC WORKER: Starting autonomous digital worker");
                 setIsAutonomousThinking(true);
                 try {
                     const { runSmartAgenticWorker } = await import('./services/agenticWorker');
@@ -238,12 +223,6 @@ const App: React.FC = () => {
 
                     // Proactive suggestions based on next actions
                     setAutonomousSuggestions(agenticResult.executiveBrief.nextActions);
-
-                    console.log(" AGENTIC WORKER: Run complete", {
-                        runId: agenticResult.runId,
-                        signal: agenticResult.executiveBrief.proceedSignal,
-                        memory: agenticResult.memory.similarCases.length
-                    });
                 } catch (error) {
                     console.error(" AGENTIC WORKER: Error running digital worker:", error);
                     // Fallback to legacy autonomous solve
@@ -285,7 +264,6 @@ const App: React.FC = () => {
     useEffect(() => {
         if (isConsultantActive && (params.organizationName || params.country || params.industry)) {
             const timer = setTimeout(async () => {
-                console.log(' BW Consultant: Analyzing current parameters for insights');
                 try {
                     const [{ bwConsultantAI }, { automaticSearchService }] = await Promise.all([
                         import('./services/BWConsultantAgenticAI'),
@@ -309,7 +287,6 @@ const App: React.FC = () => {
     // Self-Learning Data Collection - Records performance after report generation
     useEffect(() => {
         if (genPhase === 'complete' && params.id) {
-            console.log(" SELF-LEARNING: Recording performance data");
             void (async () => {
                 try {
                     const { selfLearningEngine } = await import('./services/selfLearningEngine');
@@ -336,8 +313,6 @@ const App: React.FC = () => {
                         },
                         improvements: ['Enhanced autonomous analysis', 'Improved insight generation']
                     });
-
-                    console.log(" SELF-LEARNING: Performance data recorded");
                 } catch (error) {
                     console.error(" SELF-LEARNING: Error recording data:", error);
                 }
@@ -351,7 +326,6 @@ const App: React.FC = () => {
         if (autonomousMode && params.organizationName) {
             const interval = setInterval(async () => {
                 try {
-                    console.log(" PROACTIVE: Checking for new opportunities");
                     const { ReactiveIntelligenceEngine } = await import('./services/ReactiveIntelligenceEngine');
                     const opportunities = await ReactiveIntelligenceEngine.thinkAndAct(
                         `Monitor for new opportunities related to ${params.organizationName} in ${params.country || 'target markets'}`,
@@ -362,7 +336,6 @@ const App: React.FC = () => {
                     if (opportunities.actions.length > 0) {
                         const newSuggestions = opportunities.actions.map(action => action.action);
                         setAutonomousSuggestions(prev => [...new Set([...prev, ...newSuggestions])]);
-                        console.log(" PROACTIVE: Found", opportunities.actions.length, "new opportunities");
                     }
                 } catch (error) {
                     console.error(" PROACTIVE: Error in monitoring:", error);
@@ -460,7 +433,6 @@ const App: React.FC = () => {
         setGenProgress(5);
 
         // Assemble complete ReportPayload using ReportOrchestrator
-        console.log('DEBUG: Starting report generation with ReportOrchestrator');
         const reportPayload = await ReportOrchestrator.assembleReportPayload(params);
         ReportOrchestrator.logPayload(reportPayload); // Debug logging
 
@@ -516,13 +488,12 @@ const App: React.FC = () => {
             : (reportPayload.confidenceScores?.overall || 50) >= 45 ? 'medium' as const
             : (reportPayload.confidenceScores?.overall || 50) >= 20 ? 'low' as const
             : 'insufficient-data' as const;
-        const integrityHeader = DocumentIntegrityService.generateIntegrityHeader({
+        DocumentIntegrityService.generateIntegrityHeader({
             documentType: 'strategic-report',
             confidence: integrityConfidence,
             country: params.country,
             sector: (params.industry || [])[0],
         });
-        console.log('INTEGRITY HEADER:', DocumentIntegrityService.formatHeaderForDocument(integrityHeader));
 
         setReportData(prev => ({
             ...prev,
@@ -603,7 +574,6 @@ const App: React.FC = () => {
         setIsFullyAutonomous(true);
         try {
             const { runFullyAutonomousAgenticWorker } = await import('./services/agenticWorker');
-            console.log(' FULLY AUTONOMOUS SYSTEM: Starting self-thinking analysis');
 
             const result = await runFullyAutonomousAgenticWorker(params, {
                 generateDocument: true,
@@ -611,13 +581,6 @@ const App: React.FC = () => {
                 executeAutonomousActions: true,
                 enableSelfImprovement: true,
                 spawnSubAgents: true
-            });
-
-            console.log(' FULLY AUTONOMOUS SYSTEM: Analysis complete', {
-                runId: result.runId,
-                improvements: result.improvements?.length || 0,
-                agents: result.spawnedAgents?.length || 0,
-                liabilityRisks: result.liabilityAssessment.length
             });
 
             // Update UI with results

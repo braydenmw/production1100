@@ -11,8 +11,7 @@
  * Free tier: ~30 req/min, 14,400 req/day
  * Get a FREE key at: https://console.groq.com
  *
- * Set VITE_GROQ_API_KEY in .env (browser) and
- *     GROQ_API_KEY in .env (server) to activate.
+ * Set GROQ_API_KEY in server .env to activate.
  * ═══════════════════════════════════════════════════════════════════════════════
  */
 

@@ -42,10 +42,10 @@ export default function CopilotSidebar({ caseId, currentContext }: {
       suggestions.push({
         id: 'market-timing',
         type: 'insight',
-        title: 'Market Timing Opportunity',
-        content: 'Current geopolitical shifts suggest accelerated timelines for your region. Consider expediting initial outreach.',
-        confidence: 87,
-        action: 'Adjust timeline expectations'
+        title: 'Market Timing',
+        content: 'Current geopolitical conditions may affect timelines for your target region. Consider reviewing the latest intelligence before finalising outreach schedules.',
+        confidence: 0,
+        action: 'Review regional intelligence'
       });
     }
 
@@ -53,9 +53,9 @@ export default function CopilotSidebar({ caseId, currentContext }: {
       suggestions.push({
         id: 'stakeholder-mapping',
         type: 'opportunity',
-        title: 'Critical Stakeholder Gap',
-        content: 'Government projects require 3x more stakeholder analysis. Your current approach may miss key influencers.',
-        confidence: 92,
+        title: 'Stakeholder Mapping Recommended',
+        content: 'Government-oriented engagements typically involve a broader set of decision stakeholders. Ensure all relevant influencers are captured in the case brief.',
+        confidence: 0,
         action: 'Expand stakeholder analysis'
       });
     }
@@ -64,10 +64,10 @@ export default function CopilotSidebar({ caseId, currentContext }: {
       suggestions.push({
         id: 'supply-chain-risk',
         type: 'warning',
-        title: 'Supply Chain Vulnerability',
-        content: 'Recent semiconductor shortages indicate potential disruption risks in your supply ecosystem.',
-        confidence: 78,
-        action: 'Add supply chain resilience module'
+        title: 'Supply Chain Considerations',
+        content: 'Asia-Pacific supply chains carry region-specific risk profiles. Review current trade statistics and logistics disruption reports before finalising sourcing strategy.',
+        confidence: 0,
+        action: 'Review supply chain intelligence'
       });
     }
 
@@ -76,10 +76,10 @@ export default function CopilotSidebar({ caseId, currentContext }: {
       suggestions.push({
         id: 'general-insight',
         type: 'insight',
-        title: 'Strategic Flexibility',
-        content: 'Consider maintaining multiple parallel approaches. Your current strategy has 73% success probability but alternatives could improve this to 89%.',
-        confidence: 76,
-        action: 'Explore alternative pathways'
+        title: 'Ready for Analysis',
+        content: 'Provide more context about your organization, target country, and strategic intent to unlock tailored intelligence from the NSIL pipeline.',
+        confidence: 0,
+        action: 'Complete intake fields'
       });
     }
 

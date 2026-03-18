@@ -1,5 +1,5 @@
-// Lightweight external data integrations with rate-limited stubs
-// Purpose: centralize world-bank, numbeo, opencorporates, marine/flight stubs + basic rate limiting
+// Lightweight external data integrations with rate limiting.
+// Purpose: centralize world-bank, numbeo, opencorporates, marine/flight connectors.
 
 export interface WorldBankIndicators {
   gdp?: number;
