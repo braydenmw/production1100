@@ -5374,6 +5374,30 @@ CRITICAL RULES:
         });
       }
 
+      // Auto-save document-builder AI responses (letters, reports) as drafts
+      // so they appear in the Final Report modal even without the tier-selection flow
+      if (!isReportGeneration && isDocBuilderIntent && responseContent.length > 300) {
+        const draftTitle = deliverableIntent === 'letter'
+          ? `Draft Letter${reportOptionsDocTitle ? ` - ${reportOptionsDocTitle}` : ''}`
+          : `Draft Report${reportOptionsDocTitle ? ` - ${reportOptionsDocTitle}` : ''}`;
+        setGeneratedDocuments(prev => {
+          if (prev.some(d => d.title === draftTitle)) return prev;
+          return [...prev, {
+            id: `draft-${Date.now()}`,
+            title: draftTitle,
+            content: responseContent,
+            category: (deliverableIntent === 'letter' ? 'letter' : 'report') as 'letter' | 'report',
+            htmlContent: responseContent
+              .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+              .replace(/## (.+)/g, '<h2>$1</h2>')
+              .replace(/\n\n/g, '</p><p>')
+              .replace(/\n/g, '<br/>')
+              .replace(/^/, '<p>')
+              .replace(/$/, '</p>'),
+          }];
+        });
+      }
+
       // Live Intel: fetch real data for detected country
       if (caseDraft.country) {
         fetchLiveIntelForCountry(caseDraft.country);
@@ -7551,12 +7575,16 @@ CRITICAL RULES:
 
             <button
               onClick={() => setShowFinalReport(true)}
-              className="flex items-center gap-1.5 px-3 md:px-4 py-1.5 rounded-md bg-amber-500/90 hover:bg-amber-400 text-white text-xs font-semibold shadow-lg shadow-amber-900/20 border border-amber-400/50 transition-all"
-              title="Generate or view Final Report"
+              className={`flex items-center gap-1.5 px-3 md:px-4 py-1.5 rounded-md text-white text-xs font-semibold shadow-lg border transition-all ${
+                generatedDocuments.length > 0
+                  ? 'bg-green-600/90 hover:bg-green-500 shadow-green-900/20 border-green-400/50 animate-pulse'
+                  : 'bg-amber-500/90 hover:bg-amber-400 shadow-amber-900/20 border-amber-400/50'
+              }`}
+              title={generatedDocuments.length > 0 ? `${generatedDocuments.length} document(s) ready - click to view` : 'Generate or view Final Report'}
             >
               <FileText size={13} />
-              <span className="hidden sm:inline">Final Report</span>
-              <span className="sm:hidden">Report</span>
+              <span className="hidden sm:inline">{generatedDocuments.length > 0 ? `Draft Report (${generatedDocuments.length})` : 'Final Report'}</span>
+              <span className="sm:hidden">{generatedDocuments.length > 0 ? `Draft (${generatedDocuments.length})` : 'Report'}</span>
             </button>
 
             {/* Mobile phase indicator */}
@@ -8642,6 +8670,13 @@ CRITICAL RULES:
                   <p className="text-sm font-semibold text-slate-900">Documents Ready ({generatedDocuments.length || 1})</p>
                   <div className="flex gap-1">
                     <button
+                      onClick={() => setShowFinalReport(true)}
+                      className="p-2 bg-amber-500 hover:bg-amber-600 text-white border border-amber-600 rounded text-[10px] font-bold"
+                      title="Open in Final Report view"
+                    >
+                      <FileText size={14} />
+                    </button>
+                    <button
                       onClick={copyContent}
                       className="p-2 bg-white hover:bg-stone-100 text-slate-600 border border-stone-200"
                       title="Copy all"
@@ -8660,7 +8695,7 @@ CRITICAL RULES:
                 {generatedDocuments.length > 0 ? (
                   <div className="space-y-1 mb-3">
                     {generatedDocuments.map((doc) => (
-                      <div key={doc.id} className="flex items-center justify-between bg-white border border-stone-200 px-2 py-1.5">
+                      <div key={doc.id} className="flex items-center justify-between bg-white border border-stone-200 px-2 py-1.5 cursor-pointer hover:bg-stone-50" onClick={() => setShowFinalReport(true)}>
                         <div className="flex items-center gap-1.5 min-w-0">
                           {doc.category === 'letter' ? <Mail size={11} className="text-blue-500 shrink-0" /> : <FileText size={11} className="text-slate-500 shrink-0" />}
                           <span className="text-[11px] text-slate-800 truncate">{doc.title}</span>
