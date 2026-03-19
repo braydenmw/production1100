@@ -165,14 +165,18 @@ const allowedOrigins = [
   'https://bw-nexus-ai.onrender.com',
 ].filter(Boolean);
 
+// In production, also allow same-origin requests (AWS serves frontend + API from same host)
+const isAllowedOrigin = (origin: string | undefined): boolean => {
+  if (!origin) return true; // same-origin or non-browser clients
+  if (allowedOrigins.some(allowed => origin.startsWith(allowed || ''))) return true;
+  // Allow any *.amazonaws.com, *.amplifyapp.com, *.elasticbeanstalk.com, *.awsapprunner.com domain
+  if (/\.(amazonaws|amplifyapp|elasticbeanstalk|awsapprunner)\.com$/i.test(new URL(origin).hostname)) return true;
+  return false;
+};
+
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow requests with no origin (mobile apps, curl, etc.)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.some(allowed => origin.startsWith(allowed || ''))) {
-      return callback(null, true);
-    }
-    // In production, only allow the configured frontend URL and known deploys
+    if (isAllowedOrigin(origin)) return callback(null, true);
     console.warn(`CORS blocked origin: ${origin}`);
     callback(new Error('Not allowed by CORS'));
   },
@@ -197,7 +201,14 @@ app.get('/api/health', (_req: Request, res: Response) => {
   res.json({ 
     status: 'ok', 
     timestamp: new Date().toISOString(),
-    version: '1.0.0'
+    version: '1.0.0',
+    ai: {
+      groq: !!process.env.GROQ_API_KEY,
+      together: !!process.env.TOGETHER_API_KEY,
+      gemini: !!process.env.GEMINI_API_KEY,
+      openai: !!process.env.OPENAI_API_KEY,
+      available: !!(process.env.GROQ_API_KEY || process.env.TOGETHER_API_KEY || process.env.GEMINI_API_KEY || process.env.OPENAI_API_KEY),
+    }
   });
 });
 

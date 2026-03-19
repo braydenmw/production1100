@@ -36,14 +36,16 @@ Create an IAM role with this policy:
 Set these on your AWS deployment (EC2, ECS, Lambda, Elastic Beanstalk):
 
 ```bash
-# Required
+# Required — at least one AI provider key must be set
+GROQ_API_KEY=your-groq-key
 AWS_REGION=us-east-1
 NODE_ENV=production
-PORT=3001
+PORT=3000
 
-# Optional (Gemini fallback for hybrid mode)
+# Optional additional AI providers (fallback chain: Groq → Together → Gemini → OpenAI)
+TOGETHER_API_KEY=your-together-key
 GEMINI_API_KEY=your-gemini-key
-VITE_GEMINI_API_KEY=your-gemini-key
+OPENAI_API_KEY=your-openai-key
 
 # App Configuration
 REACT_APP_USE_REAL_AI=true
