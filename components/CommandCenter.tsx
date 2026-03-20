@@ -53,7 +53,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
     const categoryDetails: Record<string, { title: string; subtitle: string; icon: string; color: string; summary: string; full: React.ReactNode }> = {
         'a': {
             title: 'Algorithms & Reasoning Engines',
-            subtitle: 'Five proprietary engines that score, debate, validate, and simulate before any output is produced.',
+            subtitle: 'Five proprietary engines that score, debate, validate, and simulate before any output is produced, with explicit contradiction and release-gate verdicts.',
             icon: 'A',
             color: 'from-blue-600 to-blue-800',
             summary: 'Neuroscience-based cognition modelling, adversarial Bayesian debate, propositional logic validation, cross-domain analogical reasoning, and Monte Carlo simulation &mdash; five engines that run in sequence on every input.',
@@ -95,7 +95,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
         },
         'b': {
             title: 'Agentic & Autonomous Systems',
-            subtitle: 'Agent-assisted systems that plan research, run parallel analysis, and query external data sources when configured.',
+            subtitle: 'Agent-assisted systems that plan research, run parallel analysis, query external data sources, and adapt runtime control modes from live outcomes.',
             icon: 'B',
             color: 'from-emerald-600 to-emerald-800',
             summary: 'A multi-engine analysis pipeline runs across each query, combining model outputs, risk scoring, external-source lookups, and scenario analysis where data providers are available.',
@@ -167,7 +167,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
         },
         'c': {
             title: 'Reflexive Intelligence',
-            subtitle: 'The system analyses the user, not just the market &mdash; detecting what you&rsquo;re not saying and reframing for every audience.',
+            subtitle: 'The system analyses the user, not just the market &mdash; detecting what you&rsquo;re not saying, modelling cognitive intent, and reframing for every audience.',
             icon: 'C',
             color: 'from-amber-600 to-amber-800',
             summary: 'Identity reality-checking using post-structuralist theory, latent advantage mining from casual mentions, audience-adaptive translation, and hidden motivation detection.',
@@ -203,7 +203,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
         },
         'd': {
             title: 'Self-Monitoring & Calibration',
-            subtitle: 'The system audits its own reasoning, learns from every interaction, detects when the world has changed, and can reject recommendations on ethical grounds.',
+            subtitle: 'The system audits its own reasoning, tracks perception drift, learns from every interaction, and can hard-gate or reject recommendations on ethical and control grounds.',
             icon: 'D',
             color: 'from-violet-600 to-violet-800',
             summary: 'Metacognitive bias detection, statistical drift monitoring with automatic recalibration, event-driven continuous learning, runtime weight tuning with rollback, and computational ethics scoring against Rawlsian fairness principles.',
@@ -245,7 +245,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
         },
         'e': {
             title: 'Proprietary Quantitative Architecture',
-            subtitle: '46+ proprietary formulas, 200+ backtested cases, 195-country governance coverage, and Research Ecosystem scoring (TAI/ICI/ERS) &mdash; the knowledge base underneath everything.',
+            subtitle: '46+ proprietary formulas, 200+ backtested cases, 195-country governance coverage, and Research Ecosystem scoring (TAI/ICI/ERS) &mdash; the quantitative substrate beneath every tribunal and control decision.',
             icon: 'E',
             color: 'from-rose-600 to-rose-800',
             summary: 'Purpose-built scoring formulas running as a dependency graph, sixty years of searchable institutional memory, and a 195-country queryable compliance engine.',
@@ -489,7 +489,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                                         BWGA AI was built in the opposite direction. The platform is purpose-built for regional development and investment intelligence worldwide. It does not treat regional locations as exceptions. It treats them as the mission. Every workflow, model, and recommendation is designed to answer one practical question: what will unlock investment, jobs, and long-term economic resilience in this place, under these constraints, right now?
                                     </p>
                                     <p className="text-sm text-slate-600 leading-relaxed text-justify">
-                                        Each engagement becomes a structured, persistent case file. Five independent reasoning engines — Skeptic, Advocate, Accountant, Regulator, and Operator — challenge every assumption before a recommendation is issued. Claims are tested against live authoritative sources. Anything unverifiable is explicitly marked unknown. The result is a defensible operating package with full traceability to evidence and reasoning.
+                                        Each engagement becomes a structured, persistent case file. Five independent reasoning engines &mdash; Skeptic, Advocate, Accountant, Regulator, and Operator &mdash; challenge every assumption before a recommendation is issued. Claims are tested against live authoritative sources. Anything unverifiable is explicitly marked unknown. Perception Delta Index and release-gate verdicts are attached to every recommendation so users can see whether to proceed, proceed with controls, or hold. The result is a defensible operating package with full traceability to evidence and reasoning.
                                     </p>
                                 </div>
                     </div>
@@ -572,7 +572,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                     {/* Section Divider + Header for Architecture Cards */}
                     <div className="max-w-4xl mx-auto mb-12 text-center">
                         <h3 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">The Five Core Engines <span className="text-blue-600">&mdash; With Extra Intelligence</span></h3>
-                        <p className="text-lg text-slate-600 leading-relaxed">Five specialized reasoning engines work in sequence on every analysis. Each brings a different perspective, and each can challenge the others.</p>
+                        <p className="text-lg text-slate-600 leading-relaxed">Five specialized reasoning engines work in sequence on every analysis. Each brings a different perspective, each can challenge the others, and each contributes to explicit verdict, gate, and contradiction telemetry.</p>
                     </div>
 
                     {/* Six Equal Category Cards (A-E + Architecture) */}
@@ -610,7 +610,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                                         <span className="flex-shrink-0 w-7 h-7 rounded-full bg-white/20 text-white text-xs font-bold flex items-center justify-center"><GitBranch size={14} /></span>
                                         <h3 className="text-base font-bold text-white leading-snug">The Intelligence Architecture</h3>
                                     </div>
-                                    <p className="text-xs text-white/80 leading-relaxed">The NSIL pipeline, 22-engine parallel brain, Entity Intelligence Pipeline, live external intelligence layer, and Research Ecosystem Readiness scoring (TAI/ICI/ERS)</p>
+                                    <p className="text-xs text-white/80 leading-relaxed">The NSIL pipeline, 22-engine parallel brain, cognitive control plane, adaptive learning kernel, five-engine tribunal runtime, perception-delta indexing, live external intelligence layer, and Research Ecosystem Readiness scoring (TAI/ICI/ERS).</p>
                                 </div>
                                 <span className="text-white/60 group-hover:text-white transition-colors flex-shrink-0 text-sm font-semibold">→</span>
                             </div>
