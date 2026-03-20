@@ -7,14 +7,10 @@ frontend:
     build:
       commands:
         - npm run build
-        - npm run build:server
   artifacts:
-    baseDirectory: /
+    baseDirectory: dist
     files:
-      - dist/**/*
-      - dist-server/**/*
-      - node_modules/**/*
-      - package.json
+      - '**/*'
   cache:
     paths:
       - node_modules/**/*
