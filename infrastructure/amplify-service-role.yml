@@ -1,0 +1,25 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  IAM Role for AWS Amplify to build and deploy bw-nexus-ai.
+  Deploy this stack ONCE in your AWS account, then select the role
+  in Amplify → App Settings → General → Service role.
+
+Resources:
+  AmplifyServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: amplify-bw-nexus-ai-service-role
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: amplify.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AdministratorAccess-Amplify
+
+Outputs:
+  RoleArn:
+    Description: Attach this role in Amplify App Settings → General → Service role
+    Value: !GetAtt AmplifyServiceRole.Arn
