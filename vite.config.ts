@@ -32,7 +32,7 @@ export default defineConfig(({ mode }) => {
         'process.env.REACT_APP_SHOW_DEMO_INDICATORS':    JSON.stringify(env.VITE_SHOW_DEMO_INDICATORS || 'false'),
         'process.env.REACT_APP_ENABLE_ANALYTICS':        JSON.stringify(env.VITE_ENABLE_ANALYTICS || 'false'),
         'process.env.REACT_APP_ENABLE_AUTH':             JSON.stringify(env.VITE_ENABLE_AUTH || 'false'),
-        'process.env.REACT_APP_API_BASE_URL':            JSON.stringify(env.VITE_API_BASE_URL || ''),
+        'process.env.REACT_APP_API_BASE_URL':            JSON.stringify(env.VITE_API_BASE_URL || '/api'),
         'process.env.NODE_ENV':                          JSON.stringify(env.NODE_ENV || 'development'),
         // Legacy Gemini references (dead but prevents ReferenceError)
         'process.env.API_KEY':        JSON.stringify(''),

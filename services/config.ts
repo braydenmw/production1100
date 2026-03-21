@@ -49,8 +49,8 @@ export const config = {
   enableAnalytics:    _env('VITE_ENABLE_ANALYTICS')     === 'true',
   enableAuth:         _env('VITE_ENABLE_AUTH')           === 'true',
 
-  // API Configuration
-  apiBaseUrl: _env('VITE_API_BASE_URL', 'http://localhost:3001/api'),
+  // API Configuration — empty default = relative paths (same-origin on App Runner)
+  apiBaseUrl: _env('VITE_API_BASE_URL', '/api'),
 
   // Development flags
   isDevelopment: _env('NODE_ENV') === 'development' || Boolean(publicImportMetaEnv.DEV),
