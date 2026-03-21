@@ -476,8 +476,15 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                                     </div>
                                 </div>
                                 <div className="pt-4 border-t border-slate-200">
-                                    <p className="text-sm text-slate-600 leading-relaxed">
-                                        <strong className="text-slate-900">44+ engines run in parallel on every question.</strong> 15 strategic indices, 5,000 Monte Carlo scenarios, a contradiction solver that catches impossible assumptions before analysis begins, a Perception Delta Index that flags when narrative confidence exceeds evidence &mdash; and the entire reasoning chain is preserved as an audit trail. This is the analytical firepower of a multinational institution, built for the people who&rsquo;ve never had access to it.
+                                    <p className="text-base font-semibold text-slate-900 mb-2">This is not a black box. You watch it think.</p>
+                                    <p className="text-sm text-slate-600 leading-relaxed mb-3">
+                                        When you ask a question, 44+ engines fire simultaneously &mdash; and you see every one of them work. Adversarial debate engines argue with each other in real time. A SAT contradiction solver catches impossible assumptions <em>before</em> analysis begins. A Perception Delta Index flags the moment narrative confidence drifts ahead of evidence. 15 strategic indices score in parallel. 5,000 Monte Carlo scenarios generate probabilistic futures. The entire reasoning chain &mdash; every engine, every challenge, every source &mdash; is preserved as an audit trail you can inspect, export, and defend.
+                                    </p>
+                                    <p className="text-sm text-slate-600 leading-relaxed mb-3">
+                                        <strong className="text-slate-900">The NSIL brain is a multi-hybrid intelligence &mdash; not a single model.</strong> It fuses structured algorithmic reasoning (Bayesian inference, propositional logic, system dynamics), adversarial AI debate (five independent personas that challenge each other), live external data (sanctions, registries, governance indices, trade flows, OSINT), and large language models into a single cognitive pipeline that thinks across disciplines simultaneously. No single AI model can do this. No prompt chain can replicate it. The architecture itself is the breakthrough.
+                                    </p>
+                                    <p className="text-sm text-slate-700 leading-relaxed font-medium">
+                                        This is not an ordinary OS. It is a developing intelligence &mdash; a brain that learns from every query, recalibrates its own scoring weights when accuracy drifts, and grows more precise with use. The analytical firepower of a multinational institution, transparent by design, built for the people who&rsquo;ve never had access to it.
                                     </p>
                                 </div>
                             </div>
