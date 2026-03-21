@@ -422,32 +422,12 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                                     Governments are chasing economic resilience. Companies are searching for new markets. Individuals are trying to secure a future that feels less certain every year. The world is changing faster than the systems built to understand it&mdash;and everyone can feel it. So we rely on what we know, what we&rsquo;re told, and what the people around us believe. We follow the same signals to the same destinations, expecting a different outcome. It never comes.
                                 </p>
                                 <p className="text-base text-slate-600 leading-relaxed text-justify mb-5">
-                                    The numbers tell the story. Global foreign direct investment has fallen for two consecutive years&mdash;down 11% in 2024 alone. Infrastructure funding in developing regions dropped 35%. Renewable energy investment fell 31%. Project finance&mdash;the capital that actually builds things&mdash;collapsed 26%. In 2026, trade wars are escalating, geopolitical fragmentation is accelerating, and deal activity has hit record lows. The global economy is getting harder to navigate, not easier.
+                                    The numbers tell the story. Global foreign direct investment has fallen for two consecutive years&mdash;down 11% in 2024 alone. Infrastructure funding in developing regions dropped 35%. Renewable energy investment fell 31%. Project finance collapsed 26%. In 2026, trade wars are escalating, and deal activity has hit record lows. Yet, the capital that does move concentrates in the same handful of cities it always has. Regional cities&mdash;the places that absorb the shocks, grow the food, move the freight, and keep national economies running&mdash;are left out of every model. Ironically, the very places being overlooked are the ones most shielded from the volatility tearing through overexposed global markets.
                                 </p>
-                                <p className="text-base text-slate-600 leading-relaxed text-justify mb-5">
-                                    And the capital that does still move? It concentrates in the same handful of cities it always has&mdash;while regional cities, the places that actually absorb the shocks, grow the food, move the freight, and keep national economies running, are left out of every model. Ironically, the very places being overlooked are the ones most shielded from the volatility tearing through overexposed global markets.
-                                </p>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
-                                    <div className="border-l-2 border-amber-500 pl-3">
-                                        <h5 className="text-base font-bold text-slate-900 mb-1">Advisory Firms</h5>
-                                        <p className="text-sm text-slate-600">Recycle the same public data into six-figure PDFs that take months to arrive. Their models are optimised for the markets they already know&mdash;not the ones that need to be understood.</p>
-                                    </div>
-                                    <div className="border-l-2 border-amber-500 pl-3">
-                                        <h5 className="text-base font-bold text-slate-900 mb-1">AI Platforms</h5>
-                                        <p className="text-sm text-slate-600">Trained on the same concentrated datasets that created the blind spot in the first place. They can summarise what&rsquo;s already known about London or Sydney. They have nothing to say about the regional city that actually holds the opportunity.</p>
-                                    </div>
-                                    <div className="border-l-2 border-amber-500 pl-3">
-                                        <h5 className="text-base font-bold text-slate-900 mb-1">Government Portals</h5>
-                                        <p className="text-sm text-slate-600">List populations and export volumes. They cannot tell you whether the workforce, the regulatory pathway, and the funding timeline actually align&mdash;or whether the opportunity is real.</p>
-                                    </div>
-                                    <div className="border-l-2 border-amber-500 pl-3">
-                                        <h5 className="text-base font-bold text-slate-900 mb-1">The Result</h5>
-                                        <p className="text-sm text-slate-600">Trillions in capital circulate through the same corridors while regional cities&mdash;home to 40% of the world&rsquo;s urban population and the fastest-growing economies on earth&mdash;remain invisible to the systems that decide where money goes.</p>
-                                    </div>
-                                </div>
                                 <div className="pt-4 border-t border-slate-200">
+                                    <h5 className="text-lg font-bold text-slate-900 mb-2">The Way It Works Today is Broken</h5>
                                     <p className="text-sm text-slate-700 leading-relaxed font-medium">
-                                        This will never change by doing more of the same. The tools weren&rsquo;t broken. They were never built. Understanding these markets requires something that doesn&rsquo;t exist yet&mdash;intelligence that is live, verified, stress-tested, and built from the ground up for the places the world depends on but has never learned to see.
+                                        Right now, if you want to validate, fund, or build a regional project, you have to choose between two bad options. You can pay a Big Four advisory firm hundreds of thousands of dollars, wait three months, and receive a generic 100-page PDF that misses the local nuance. Or, you can try to do it yourself&mdash;spending weeks hunting through scattered government portals, stringing together outdated Excel models, and wrestling with general-purpose AI bots that hallucinate regulations and invent math. The burden of proof is entirely on you. You carry all the risk, do all the heavy lifting, and still struggle to get an equal hearing in the board room.
                                     </p>
                                 </div>
                             </div>
@@ -462,9 +442,9 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                             {/* Text Content (Left) */}
                             <div className="p-6 md:p-8 flex-1 flex flex-col justify-center">
                                 <span className="inline-block px-2.5 py-1 bg-blue-600/90 text-white text-[11px] font-bold uppercase tracking-wider mb-3 w-fit">What We Built</span>
-                                <h4 className="text-2xl font-bold text-slate-900 leading-snug mb-4">You Talk. It Thinks. You Get a Verdict.</h4>
+                                <h4 className="text-2xl font-bold text-slate-900 leading-snug mb-4">An Automated Due-Diligence &amp; Intelligence Engine</h4>
                                 <p className="text-base text-slate-600 leading-relaxed text-justify mb-5">
-                                    You describe a regional opportunity in your own words&mdash;an investment, a policy, a development project. The system turns that conversation into a structured case, runs it through five independent AI minds that argue over whether it holds up, stress-tests the numbers across thousands of scenarios, checks it against live global data, and hands you a board-ready verdict with documents you can act on. No forms. No waiting. No guesswork.
+                                    I built a software platform that digitises and replaces the entire advisory supply chain. It isn&rsquo;t just a chatbot wrapper. It is a complex intelligence architecture connected directly to live global data feeds. When you input an idea, the system acts as a computational steering committee. It runs your concept through 46+ proprietary financial formulas, stress-tests it using risk simulations, and assigns specialised AI agents to attack and defend the viability of your project. Instead of just giving you a polite summary, it structurally compiles the winning arguments into institutional-grade, board-ready documents.
                                 </p>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
                                     <div className="border-l-2 border-blue-500 pl-3">
@@ -473,7 +453,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                                     </div>
                                     <div className="border-l-2 border-emerald-500 pl-3">
                                         <h5 className="text-base font-bold text-slate-900 mb-1">It Catches What You Missed</h5>
-                                        <p className="text-sm text-slate-600">The system detects contradictions in your assumptions, spots what you keep avoiding, and surfaces the questions you should have been asking. You mention a small port in passing&mdash;it recognises it as an irreplaceable asset and shows you where ports like that created transformative value worldwide.</p>
+                                        <p className="text-sm text-slate-600">The system detects contradictions in your assumptions, spots what you keep avoiding, and surfaces the questions you should have been asking. You mention a small port in passing&mdash;it recognises it as an irreplaceable asset and values it accordingly.</p>
                                     </div>
                                     <div className="border-l-2 border-amber-500 pl-3">
                                         <h5 className="text-base font-bold text-slate-900 mb-1">Real Math. Not Confident Guesswork.</h5>
@@ -481,15 +461,15 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                                     </div>
                                     <div className="border-l-2 border-purple-500 pl-3">
                                         <h5 className="text-base font-bold text-slate-900 mb-1">Boardroom Documents. Not Chat Transcripts.</h5>
-                                        <p className="text-sm text-slate-600">The output is Letters of Intent, term sheets, policy briefs, board packages&mdash;247+ document types with your actual scores and traceable reasoning. A governance tribunal reviews every output and issues a verdict: proceed, proceed with controls, or hold.</p>
+                                        <p className="text-sm text-slate-600">The output is Letters of Intent, term sheets, policy briefs, board packages&mdash;247+ document types with your actual scores and traceable reasoning. A governance tribunal issues a verdict: proceed, proceed with controls, or hold.</p>
                                     </div>
                                 </div>
                                 <div className="pt-4 border-t border-slate-200">
                                     <p className="text-sm text-slate-700 leading-relaxed font-medium mb-3">
-                                        This system wasn&rsquo;t built in a boardroom. It was built from a regional city&mdash;the kind of place that gets overlooked, underestimated, and left off every shortlist. Advisory firms charge millions. AI platforms give you confident answers that fall apart when it matters. Neither speaks to what directly matters to the person sitting in the room, making the decision, carrying the risk. There is no equal voice across the global economy&mdash;and there never has been.
+                                        This system wasn&rsquo;t built in a boardroom. It was built from a regional city&mdash;the kind of place that gets overlooked, underestimated, and left off every shortlist. Advisory firms charge millions. AI platforms give you confident answers that fall apart when it matters. Neither speaks to what directly matters to the person sitting in the room, making the decision, carrying the risk.
                                     </p>
                                     <p className="text-sm text-slate-700 leading-relaxed font-medium">
-                                        Everyone is chasing the same thing: growth, resilience, a future that holds. So I built this on my own&mdash;to make people rethink the places that decades ago were just small regional cities, and to prove that institutional-grade intelligence doesn&rsquo;t have to come with an institutional price tag. It remembers your context. It learns from outcomes. It runs on live data, not last year&rsquo;s report. This may be over-engineered. But at least it&rsquo;s a start.
+                                        Everyone is chasing the same thing: growth, resilience, a future that holds. So I built this on my own&mdash;to make people rethink the places that decades ago were just small regional cities, and to prove that institutional-grade intelligence doesn&rsquo;t have to come with an institutional price tag.
                                     </p>
                                 </div>
                             </div>
