@@ -23,22 +23,7 @@ frontend:
       headers:
         - key: 'Cache-Control'
           value: 'public, max-age=31536000, immutable'
-
-# ─── DEPLOYMENT OPTIONS ─────────────────────────────────────────────
-#
-# OPTION 1: AWS App Runner (RECOMMENDED — runs both frontend + backend)
-#   - In AWS Console → App Runner → Create Service
-#   - Source: GitHub repository (braydenmw/bwmetadata, branch master)
-#   - Configuration: Use apprunner.yaml in repository
-#   - Environment variables: AWS_REGION, BEDROCK_CONSULTANT_MODEL_ID (and IAM role with bedrock:InvokeModel)
-#   - Port: 3000
-#   - The Express server serves the React frontend AND the API
-#
-# OPTION 2: Amplify (frontend only — backend needs separate deploy)
-#   - Only works for the static frontend
-#   - API calls will fail unless you also deploy the backend elsewhere
-#
-# SPA rewrites (Amplify only) — configure in Amplify Console:
-#   Source: </^[^.]+$|\.(?!(css|gif|ico|jpg|jpeg|js|png|txt|svg|woff|woff2|ttf|map|json|webp)$)([^.]+$)/>
-#   Target: /index.html
-#   Type:   200 (Rewrite)
+    - pattern: '/index.html'
+      headers:
+        - key: 'Cache-Control'
+          value: 'no-cache, no-store, must-revalidate'
