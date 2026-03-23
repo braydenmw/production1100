@@ -11,6 +11,7 @@ import { existsSync, mkdirSync } from 'fs';
 
 async function build() {
   console.log('🔨 Building server for production...');
+  console.log(`📍 Working directory: ${process.cwd()}`);
   
   // Ensure output directory exists
   const outDir = 'dist-server';
@@ -19,6 +20,9 @@ async function build() {
   }
 
   try {
+    console.log('⚙️  Starting esbuild...');
+    console.log('📄 Entry point: server/index.ts');
+    
     await esbuild.build({
       entryPoints: ['server/index.ts'],
       bundle: true,
@@ -35,17 +39,24 @@ async function build() {
         // Dependencies that should not be bundled
         'express', 'cors', 'helmet', 'compression', 'dotenv', 'pg',
         '@google/generative-ai', 'jsonwebtoken', 'axios',
-        '@aws-sdk/client-bedrock-runtime'
+        '@aws-sdk/client-bedrock-runtime', 'serverless-http'
       ],
       sourcemap: true,
       minify: false, // Keep readable for debugging
+      logLevel: 'info',
     });
 
     console.log('✅ Server build complete!');
     console.log('📦 Output: dist-server/server/index.js');
+    process.exit(0);
     
   } catch (error) {
-    console.error('❌ Build failed:', error);
+    console.error('\n❌ BUILD FAILED ❌');
+    console.error('\nError Details:');
+    if (error.message) console.error('Message:', error.message);
+    if (error.errors) console.error('Errors:', error.errors);
+    if (error.warnings) console.error('Warnings:', error.warnings);
+    console.error('\nFull Error:', error);
     process.exit(1);
   }
 }
