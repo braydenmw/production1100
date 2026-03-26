@@ -33,25 +33,21 @@
 // ============================================================================
 
 import fs from 'fs/promises';
-import path from 'path';
 
-const __dirname = (() => {
-  if (typeof window !== 'undefined') return '';
-  try {
-    const pathname = decodeURIComponent(new URL('.', import.meta.url).pathname);
-    if (process.platform === 'win32' && pathname.startsWith('/')) {
-      return path.dirname(pathname.slice(1));
-    }
-    return path.dirname(pathname);
-  } catch {
-    return '';
-  }
-})();
+const isNode = typeof window === 'undefined';
 
-const DATA_DIR = (__dirname && __dirname.length > 0)
-  ? path.join(__dirname, '..', '..', 'data')
-  : path.join('.', 'data');
-const EVOLUTION_STATE_FILE = path.join(DATA_DIR, 'evolution-weights.json');
+const normalizeNodePath = (pathStr: string): string => {
+  if (process.platform !== 'win32') return pathStr;
+  return pathStr.startsWith('/') ? pathStr.slice(1).replace(/\//g, '\\') : pathStr.replace(/\//g, '\\');
+};
+
+const DATA_DIR = isNode
+  ? normalizeNodePath(new URL('../../data', import.meta.url).pathname)
+  : './data';
+
+const EVOLUTION_STATE_FILE = isNode
+  ? normalizeNodePath(new URL('../../data/evolution-weights.json', import.meta.url).pathname)
+  : './data/evolution-weights.json';
 
 export interface FormulaWeight {
   formulaId: string;
