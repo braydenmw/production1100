@@ -45,3 +45,15 @@ build_output.txt
 
 # Deployment zip files
 bw-nexus-ai-deployment.zip
+
+# Backups and quarantine - not part of source
+backups/
+_quarantine/
+
+# PDF and binary documents
+*.pdf
+*.docx
+*.docx.md
+
+# Local env file
+.env.development

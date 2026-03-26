@@ -22,7 +22,6 @@ jobs:
         run: npx tsc --noEmit
       - name: ESLint
         run: npx eslint . --ext .ts,.tsx --max-warnings 50
-        continue-on-error: true
 
   # ─── Security Audit ────────────────────────────────────────────────────────
   security:
@@ -37,7 +36,6 @@ jobs:
       - run: npm ci
       - name: npm audit
         run: npm audit --audit-level=critical
-        continue-on-error: true
 
   # ─── Build ─────────────────────────────────────────────────────────────────
   build:

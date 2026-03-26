@@ -15,12 +15,18 @@ function getDatabaseConfig(): { connectionString?: string; host?: string; port?:
     return null;
   }
 
+  const password = process.env.PGPASSWORD;
+  if (!password) {
+    console.error('[Postgres] PGHOST is set but PGPASSWORD is missing. Refusing to connect with empty password.');
+    return null;
+  }
+
   return {
     host: process.env.PGHOST,
     port: Number(process.env.PGPORT || 5432),
     database: process.env.PGDATABASE || 'bw_nexus_ai',
     user: process.env.PGUSER || 'postgres',
-    password: process.env.PGPASSWORD || 'postgres',
+    password,
     ssl: process.env.PGSSLMODE === 'require' ? { rejectUnauthorized: false } : undefined,
   };
 }

@@ -89,6 +89,24 @@ type WindowWithRuntimeEnv = Window & {
   };
 };
 
+// ── Safe HTML rendering for AI-generated content ──────────────────────────────
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function renderSafeMarkdown(str: string): string {
+  const escaped = escapeHtml(str);
+  return escaped
+    .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold">$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/\n/g, '<br />');
+}
+
 const getExplicitApiBaseUrl = (): string => {
   const runtimeUrl = typeof window !== 'undefined'
     ? (window as WindowWithRuntimeEnv).__ENV__?.VITE_API_BASE_URL
@@ -562,13 +580,9 @@ const TypewriterText: React.FC<{ text: string; speed?: number; onStart?: () => v
     return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
   }, [text, speed]); // ← callbacks intentionally excluded; stable via refs above
 
-  const html = displayed
-    .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold">$1</strong>')
-    .replace(/\n/g, '<br />');
-
   return (
     <span>
-      <span dangerouslySetInnerHTML={{ __html: html }} />
+      <span dangerouslySetInnerHTML={{ __html: renderSafeMarkdown(displayed) }} />
       {!done && <span className="inline-block w-[7px] h-[14px] bg-blue-500 ml-0.5 animate-pulse" aria-hidden="true" />}
     </span>
   );
@@ -7915,9 +7929,7 @@ CRITICAL RULES:
                             />
                           ) : (
                             <span dangerouslySetInnerHTML={{
-                              __html: msg.content
-                                .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold">$1</strong>')
-                                .replace(/\n/g, '<br />')
+                              __html: renderSafeMarkdown(msg.content)
                             }} />
                           )}
                         </div>

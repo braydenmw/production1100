@@ -49,7 +49,9 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+      scriptSrc: isProduction
+        ? ["'self'"]
+        : ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       imgSrc: ["'self'", "data:", "https:", "blob:"],
       connectSrc: ["'self'", "https://api.worldbank.org", "https://restcountries.com", "https://nominatim.openstreetmap.org", "https://en.wikipedia.org", "https://google.serper.dev", "https://api.perplexity.ai", "https://generativelanguage.googleapis.com", "https://*.amazonaws.com", "https://api.together.xyz", "https://api.groq.com"],
@@ -163,6 +165,7 @@ const allowedOrigins = [
   'http://localhost:3003',
   'http://localhost:5173',
   'https://bw-nexus-ai.onrender.com',
+  'https://braydenmw.github.io',
   'https://*.cloudfront.net',
   'https://*.amplifyapp.com',
   'https://*.s3.amazonaws.com',

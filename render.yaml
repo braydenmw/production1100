@@ -16,10 +16,8 @@ services:
       - key: PORT
         value: 10000
       - key: GEMINI_API_KEY
-        sync: false  # Set this manually in Render dashboard
-      - key: VITE_GEMINI_API_KEY
-        sync: false  # Set this manually in Render dashboard
+        sync: false  # Set this manually in Render dashboard (server-side only)
       - key: FRONTEND_URL
-        value: https://bw-nexus-ai.onrender.com
+        value: https://braydenmw.github.io
     healthCheckPath: /api/health
     autoDeploy: true
