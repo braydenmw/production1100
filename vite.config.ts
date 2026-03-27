@@ -43,9 +43,14 @@ export default defineConfig(({ mode }) => {
           '@': path.resolve(__dirname, '.'),
         }
       },
+      css: {
+        // Ensure CSS files at the project root are processed by Vite's CSS pipeline
+        devSourcemap: true,
+      },
       build: {
         chunkSizeWarningLimit: 3000,
         rollupOptions: {
+          input: path.resolve(__dirname, 'index.html'),
           onwarn(warning, warn) {
             const message = warning?.message || '';
             if (
