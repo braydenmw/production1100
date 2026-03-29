@@ -40,10 +40,14 @@ if (!process.env.PORT) {
 
 // Debug: Check which AI providers are configured
 console.log('[Server] Env loaded');
-console.log('[Server] OPENAI_API_KEY present:', Boolean(process.env.OPENAI_API_KEY && String(process.env.OPENAI_API_KEY).trim()));
-console.log('[Server] GROQ_API_KEY present:', Boolean(process.env.GROQ_API_KEY && String(process.env.GROQ_API_KEY).trim()));
-console.log('[Server] TOGETHER_API_KEY present:', Boolean(process.env.TOGETHER_API_KEY && String(process.env.TOGETHER_API_KEY).trim()));
-console.log('[Server] ANTHROPIC_API_KEY present:', Boolean(process.env.ANTHROPIC_API_KEY && String(process.env.ANTHROPIC_API_KEY).trim()));
+if (process.env.NODE_ENV !== 'production') {
+  console.log('[Server] AI providers configured:', [
+    process.env.OPENAI_API_KEY ? 'OpenAI' : null,
+    process.env.GROQ_API_KEY ? 'Groq' : null,
+    process.env.TOGETHER_API_KEY ? 'Together' : null,
+    process.env.ANTHROPIC_API_KEY ? 'Anthropic' : null,
+  ].filter(Boolean).join(', ') || 'NONE');
+}
 
 // Import routes
 import aiRoutes from './routes/ai.js';
@@ -196,6 +200,13 @@ const isAllowedOrigin = (origin: string | undefined): boolean => {
   if (allowedOrigins.some(allowed => allowed && (allowed.endsWith('*') ? origin.startsWith(allowed.slice(0, -1)) : origin === allowed))) return true;
   const hostname = new URL(origin).hostname;
   // Enable known managed hosting domains
+  // In production, only allow origins explicitly listed in ALLOWED_ORIGINS env var
+  // In development, allow common managed hosting platforms
+  if (isProduction) {
+    const extraOrigins = (process.env.ALLOWED_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean);
+    return extraOrigins.some(allowed => origin === allowed || hostname === allowed);
+  }
+  // Dev-only: allow managed hosting platforms
   if (/\.(amazonaws|amplifyapp|elasticbeanstalk|awsapprunner)\.com$/i.test(hostname)) return true;
   if (/\.(railway|up\.railway)\.app$/i.test(hostname) || /\.railway\.app$/i.test(hostname)) return true;
   if (/\.cloudfront\.net$/i.test(hostname)) return true;
@@ -365,12 +376,26 @@ process.on('unhandledRejection', (reason) => {
 });
 
 // Graceful shutdown
-process.on('SIGTERM', () => {
-  console.log('SIGTERM received, shutting down gracefully');
+const gracefulShutdown = (signal: string) => {
+  console.log(`${signal} received, shutting down gracefully`);
   server.close(() => {
     console.log('Server closed');
+    // Attempt to drain DB pools
+    try {
+      const { getPool } = require('./db.js');
+      const pool = getPool();
+      if (pool) pool.end().catch(() => {});
+    } catch { /* db module may not be loaded */ }
     process.exit(0);
   });
-});
+  // Force exit after 10s if graceful shutdown hangs
+  setTimeout(() => {
+    console.error('Graceful shutdown timed out, forcing exit');
+    process.exit(1);
+  }, 10000).unref();
+};
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
 export default app;

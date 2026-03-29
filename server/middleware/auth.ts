@@ -2,7 +2,14 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'change-me-in-production-' + Math.random().toString(36);
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('FATAL: JWT_SECRET environment variable is required in production');
+  }
+  console.warn('[AUTH] WARNING: JWT_SECRET not set — using insecure dev-only fallback. Set JWT_SECRET before deploying.');
+}
+const EFFECTIVE_JWT_SECRET = JWT_SECRET || 'INSECURE-DEV-ONLY-DO-NOT-DEPLOY';
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -28,7 +35,7 @@ declare global {
 export function generateToken(user: AuthUser): string {
   return jwt.sign(
     { id: user.id, email: user.email, name: user.name, role: user.role },
-    JWT_SECRET,
+    EFFECTIVE_JWT_SECRET,
     { expiresIn: JWT_EXPIRES_IN }
   );
 }
@@ -36,7 +43,7 @@ export function generateToken(user: AuthUser): string {
 export function generateRefreshToken(user: AuthUser): string {
   return jwt.sign(
     { id: user.id, type: 'refresh' },
-    JWT_SECRET,
+    EFFECTIVE_JWT_SECRET,
     { expiresIn: '7d' }
   );
 }
@@ -45,7 +52,7 @@ export function generateRefreshToken(user: AuthUser): string {
 
 export function verifyToken(token: string): AuthUser | null {
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as AuthUser;
+    const decoded = jwt.verify(token, EFFECTIVE_JWT_SECRET) as AuthUser;
     return decoded;
   } catch {
     return null;

@@ -36,12 +36,28 @@ server/data/
 e2e-check.json
 test-results/
 test-results-simulation.json
+test-results-*.json
 
 # Local content extraction artifacts
 _doc209_extracted.txt
+_snippet.txt
+_merge_sections.py
+
+# One-off fix/build scripts
+apply_*.py
+find_*.py
 
 # Local build output artifacts
 build_output.txt
+build_error.txt
+build_result.txt
+
+# Temp/recovery files
+*.tmp
+
+# Personal/local scripts
+*.ps1
+!scripts/*.ps1
 
 # Deployment zip files
 bw-nexus-ai-deployment.zip

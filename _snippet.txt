@@ -1,9 +1,0 @@
-﻿buildNaturalFallbackReply = useCallback((userInput: string) => {
-    const trimmed = userInput.trim();
-    const isGreetingOnly = /^(hi|hello|hey|good\s+(morning|afternoon|evening)|yo|sup)[!.\s]*$/i.test(trimmed);
-
-    if (isGreetingOnly) {
-      return 'Hello — I can help with strategy, risk, partnerships, market entry, compliance, or document drafting. Tell me what decision you are trying to make right now, and I’ll give you a direct recommendation.';
-    }
-
-    return 'I’m tracking your context in the background. Share the decision you need to make (or the question you need answered
