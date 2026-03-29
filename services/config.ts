@@ -18,17 +18,20 @@ type PublicEnv = Partial<Record<
 
 type WindowWithEnv = Window & { __ENV__?: Record<string, string | undefined> };
 
+// Safe accessor for import.meta.env (undefined in Node/tsx)
+const _ime = (typeof import.meta !== 'undefined' && import.meta.env) ? import.meta.env : {} as Record<string, string | boolean | undefined>;
+
 const publicImportMetaEnv: PublicEnv = {
-  VITE_USE_REAL_AI: import.meta.env.VITE_USE_REAL_AI,
-  VITE_USE_REAL_DATA: import.meta.env.VITE_USE_REAL_DATA,
-  VITE_USE_REAL_BACKEND: import.meta.env.VITE_USE_REAL_BACKEND,
-  VITE_SHOW_DEMO_INDICATORS: import.meta.env.VITE_SHOW_DEMO_INDICATORS,
-  VITE_ENABLE_ANALYTICS: import.meta.env.VITE_ENABLE_ANALYTICS,
-  VITE_ENABLE_AUTH: import.meta.env.VITE_ENABLE_AUTH,
-  VITE_API_BASE_URL: import.meta.env.VITE_API_BASE_URL,
-  NODE_ENV: import.meta.env.MODE,
-  DEV: import.meta.env.DEV,
-  PROD: import.meta.env.PROD,
+  VITE_USE_REAL_AI: _ime.VITE_USE_REAL_AI,
+  VITE_USE_REAL_DATA: _ime.VITE_USE_REAL_DATA,
+  VITE_USE_REAL_BACKEND: _ime.VITE_USE_REAL_BACKEND,
+  VITE_SHOW_DEMO_INDICATORS: _ime.VITE_SHOW_DEMO_INDICATORS,
+  VITE_ENABLE_ANALYTICS: _ime.VITE_ENABLE_ANALYTICS,
+  VITE_ENABLE_AUTH: _ime.VITE_ENABLE_AUTH,
+  VITE_API_BASE_URL: _ime.VITE_API_BASE_URL,
+  NODE_ENV: _ime.MODE,
+  DEV: _ime.DEV,
+  PROD: _ime.PROD,
 };
 
 const runtimeEnv = typeof window !== 'undefined' ? (window as WindowWithEnv).__ENV__ || {} : {};

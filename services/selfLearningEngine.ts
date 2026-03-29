@@ -187,6 +187,7 @@ if (successRate < 0.8) improvementAreas.push('Improve success rate (currently ' 
 
   // Save learning data to localStorage
   private saveLearningData(): void {
+    if (typeof localStorage === 'undefined') return;
     try {
       localStorage.setItem('bw-nexus-learning-data', JSON.stringify(this.learningData));
       localStorage.setItem('bw-nexus-performance-history', JSON.stringify(this.performanceHistory));
@@ -197,6 +198,7 @@ if (successRate < 0.8) improvementAreas.push('Improve success rate (currently ' 
 
   // Load learning data from localStorage
   private loadLearningData(): void {
+    if (typeof localStorage === 'undefined') return;
     try {
       const data = localStorage.getItem('bw-nexus-learning-data');
       const history = localStorage.getItem('bw-nexus-performance-history');
