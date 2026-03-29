@@ -25,18 +25,23 @@ const envPaths = [
   path.resolve(__dirname, '.env.local'),
 ];
 
-const fallbackOverride = process.env.NODE_ENV !== 'production';
+// Preserve critical env vars set by the shell/infra before dotenv runs
+const shellNodeEnv = process.env.NODE_ENV;
+const shellPort = process.env.PORT;
+
+const fallbackOverride = shellNodeEnv !== 'production';
 for (const envPath of envPaths) {
-  const result = dotenv.config({ path: envPath, override: fallbackOverride });
+  // .env.local should always override .env (it contains real secrets)
+  const isLocal = envPath.endsWith('.env.local');
+  const result = dotenv.config({ path: envPath, override: isLocal || fallbackOverride });
   if (!result.error) {
     console.log('Loaded env vars from:', envPath);
   }
 }
 
-// Ensure production PORT from infra is not overwritten by local .env defaults
-if (!process.env.PORT) {
-  process.env.PORT = '3001';
-}
+// Restore shell-set values — dotenv must never overwrite infra/CLI env vars
+if (shellNodeEnv) process.env.NODE_ENV = shellNodeEnv;
+if (shellPort) process.env.PORT = shellPort;
 
 // Debug: Check which AI providers are configured
 console.log('[Server] Env loaded');
@@ -192,6 +197,11 @@ const allowedOrigins = [
   'https://*.s3.amazonaws.com',
 ].filter(Boolean);
 
+// Also allow ngrok tunnels in production
+if (isProduction) {
+  allowedOrigins.push('https://*.ngrok-free.dev', 'https://*.ngrok.io');
+}
+
 // In production, also allow same-origin requests (AWS serves frontend + API from same host)
 const isAllowedOrigin = (origin: string | undefined): boolean => {
   if (!origin) return true; // same-origin or non-browser clients
@@ -206,6 +216,7 @@ const isAllowedOrigin = (origin: string | undefined): boolean => {
     // Allow Railway and common PaaS domains in production
     if (/\.railway\.app$/i.test(hostname)) return true;
     if (/\.onrender\.com$/i.test(hostname)) return true;
+    if (/\.ngrok-free\.dev$/i.test(hostname) || /\.ngrok\.io$/i.test(hostname)) return true;
     return false;
   }
   // Dev-only: allow managed hosting platforms

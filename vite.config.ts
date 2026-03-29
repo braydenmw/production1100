@@ -31,7 +31,7 @@ export default defineConfig(({ mode }) => {
       'process.env.REACT_APP_ENABLE_ANALYTICS': JSON.stringify(env.VITE_ENABLE_ANALYTICS || 'false'),
       'process.env.REACT_APP_ENABLE_AUTH': JSON.stringify(env.VITE_ENABLE_AUTH || 'false'),
       'process.env.REACT_APP_API_BASE_URL': JSON.stringify(env.VITE_API_BASE_URL || '/api'),
-      'process.env.NODE_ENV': JSON.stringify(env.NODE_ENV || 'development'),
+      'process.env.NODE_ENV': JSON.stringify(mode === 'production' ? 'production' : (env.NODE_ENV || 'development')),
     },
     resolve: {
       alias: {

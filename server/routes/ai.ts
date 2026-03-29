@@ -872,24 +872,42 @@ const summariseNSILReport = (report: Record<string, unknown>): string => {
   return parts.join('\n');
 };
 
-const buildConsultantPrompt = (message: string, intent: ConsultantIntent, context?: unknown, systemPrompt?: string, brainPromptBlock?: string, nsilSummary?: string) => `
-${deriveConsultantCapabilityProfile(message, context).brief}
-${brainPromptBlock ? `\n═══ FULL BRAIN INTELLIGENCE (44-Engine Analysis) ═══\n${brainPromptBlock}\n═══ END BRAIN INTELLIGENCE ═══\n` : ''}
-${nsilSummary ? `\n═══ NSIL 10-LAYER ANALYSIS ═══\n${nsilSummary}\n═══ END NSIL ═══\n` : ''}
-OVERLOOKED-FIRST INTELLIGENCE:
-${JSON.stringify(buildOverlookedIntelligenceSnapshot(message, context), null, 2)}
+// Truncate a string to a rough token budget (1 token ≈ 4 chars).
+// Keeps the beginning of the text which has the most important context.
+const truncateToTokenBudget = (text: string, maxTokens: number): string => {
+  const maxChars = maxTokens * 4;
+  if (text.length <= maxChars) return text;
+  return text.slice(0, maxChars) + '\n... [truncated for token budget]';
+};
 
-STRATEGIC PIPELINE:
-${JSON.stringify(runStrategicIntelligencePipeline(message, context), null, 2)}
+const MAX_PROMPT_TOKENS = 8000; // Leave room for system instruction + response within Groq 12K TPM
+
+const buildConsultantPrompt = (message: string, intent: ConsultantIntent, context?: unknown, systemPrompt?: string, brainPromptBlock?: string, nsilSummary?: string) => {
+  // Build sections individually, then assemble and truncate
+  const capProfile = deriveConsultantCapabilityProfile(message, context).brief;
+  const brain = brainPromptBlock ? `\n═══ BRAIN INTELLIGENCE (summary) ═══\n${brainPromptBlock.slice(0, 2000)}\n═══ END ═══\n` : '';
+  const nsil = nsilSummary ? `\n═══ NSIL ANALYSIS (summary) ═══\n${nsilSummary.slice(0, 1500)}\n═══ END ═══\n` : '';
+  const overlooked = JSON.stringify(buildOverlookedIntelligenceSnapshot(message, context));
+  const pipeline = JSON.stringify(runStrategicIntelligencePipeline(message, context));
+  const ctxStr = context ? JSON.stringify(context) : 'No structured context provided.';
+
+  const raw = `${capProfile}
+${brain}
+${nsil}
+OVERLOOKED-FIRST INTELLIGENCE (compact):
+${overlooked.slice(0, 1500)}
+
+STRATEGIC PIPELINE (compact):
+${pipeline.slice(0, 1500)}
 
 INTENT: ${intent}
 INTENT DIRECTIVE: ${buildIntentDirective(intent)}
 
 CONTEXT:
-${context ? JSON.stringify(context, null, 2) : 'No structured context provided.'}
+${ctxStr.slice(0, 2000)}
 
 SYSTEM CASE PROMPT:
-${typeof systemPrompt === 'string' ? systemPrompt : 'N/A'}
+${typeof systemPrompt === 'string' ? systemPrompt.slice(0, 500) : 'N/A'}
 
 USER MESSAGE:
 ${message}
@@ -900,6 +918,8 @@ OUTPUT FORMAT:
 3) One follow-up question only if it materially improves quality.
 4) Do not force output-format menus unless user explicitly asks for format selection.
 `;
+  return truncateToTokenBudget(raw, MAX_PROMPT_TOKENS);
+};
 
 const invokeConsultantWithTogether = async (prompt: string): Promise<string> => {
   const key = getTogetherKey();
