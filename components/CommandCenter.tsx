@@ -479,19 +479,8 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                                     <li>It provides a complete picture of a place&rsquo;s worth, including risks, opportunities, and how it fits into the global economy, so you can make decisions based on facts, not guesswork.</li>
                                 </ul>
                                 <p className="text-sm text-slate-600 leading-relaxed text-justify mb-3">
-                                    The big idea is that trillions of dollars in economic potential are locked away in overlooked places because no tool existed to properly analyze them. BW Nexus AI changes that by giving you the intelligence to surface and prove that value.
+                                    The big idea is that trillions of dollars in economic potential are locked away in overlooked places because no tool existed to properly analyze them. BW Consultant changes that by giving you the intelligence to surface and prove that value.
                                 </p>
-
-                                <h5 className="text-base font-bold text-slate-900 mb-2 mt-4">How It Helps Anyone Exploring New Economic Markets</h5>
-                                <p className="text-sm text-slate-600 leading-relaxed text-justify mb-3">
-                                    Imagine you&rsquo;re trying to decide whether to invest in a new market, start a business in a different region, or plan government development. Current tools give you recycled data, generic templates, or incomplete information, leading to bad decisions. BW Nexus AI:
-                                </p>
-                                <ul className="text-sm text-slate-600 leading-relaxed mb-3 list-disc pl-5 space-y-1">
-                                    <li>Pulls in real-time data from global sources (like economic reports, trade data, and local statistics) to build a detailed profile of any place.</li>
-                                    <li>Uses smart analysis to predict trends, assess risks, and calculate true economic potential&mdash;things like how logistics, workforce, and regulations will impact your plans.</li>
-                                    <li>Generates customized reports and documents (over 240 types) that explain everything clearly, so you can understand and act on the insights.</li>
-                                    <li>Works for anyone, anywhere: Whether you&rsquo;re a small business owner looking at a new market or a government official planning infrastructure, it adapts to your needs and provides the depth of analysis that was previously impossible.</li>
-                                </ul>
 
                                 <h5 className="text-base font-bold text-slate-900 mb-2 mt-4">What&rsquo;s Actually Inside the System</h5>
                                 <p className="text-sm text-slate-600 leading-relaxed text-justify mb-3">
@@ -925,7 +914,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                             <div className="p-6 md:p-8 flex-1 flex flex-col justify-center">
                                 <div className="mb-4">
                                     <span className="inline-block px-2.5 py-1 bg-slate-800/90 text-white text-[10px] font-bold uppercase tracking-wider mb-3">Launch Platform</span>
-                                    <h4 className="text-xl font-bold text-slate-900 leading-snug mb-4">Launch the full BW Nexus Intelligence OS to start analyzing partnership opportunities with sovereign-grade analytical depth.</h4>
+                                    <h4 className="text-xl font-bold text-slate-900 leading-snug mb-4">Launch the full BW Intelligence OS to start analyzing partnership opportunities with sovereign-grade analytical depth.</h4>
                                 </div>
 
                                 {/* Terms of Engagement */}
@@ -3782,7 +3771,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                         <div className="flex items-center gap-3 text-xs text-white/40">
                             <span className="flex items-center gap-1">
                                 <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></div>
-                                Nexus Intelligence OS v7.0
+                                Intelligence OS v7.0
                             </span>
                             <span>*</span>
                             <span>NSIL Engine v7.0</span>
