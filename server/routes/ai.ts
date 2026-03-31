@@ -27,6 +27,7 @@ import { runFiveEngineTribunal } from '../services/FiveEngineTribunal.js';
 import { BrainIntegrationService, type BrainContext } from '../../services/BrainIntegrationService.js';
 import { NSILIntelligenceHub } from '../../services/NSILIntelligenceHub.js';
 import { validateBody, aiValidation } from '../middleware/validate.js';
+import { callAI, callAIParallel, getProviderStatus, availableProviderCount, type TaskType } from '../../services/AIProviderOrchestrator.js';
 
 const router = Router();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -62,14 +63,8 @@ const _isAIAvailable = (): boolean => {
   return false;
 };
 
-const generateWithAI = async (input: string | AIMessage[], systemInstruction?: string): Promise<string> => {
-  const openaiKey = getOpenAIKey();
-  const anthropicKey = getAnthropicKey();
-  const groqKey = getGroqKey();
-  const togetherKey = getTogetherKey();
-  const providerConfigured = Boolean(openaiKey || anthropicKey || groqKey || togetherKey);
-
-  const baseMessages: AIMessage[] = typeof input === 'string'
+const generateWithAI = async (input: string | AIMessage[], systemInstruction?: string, taskType?: TaskType): Promise<string> => {
+  const messages: AIMessage[] = typeof input === 'string'
     ? [{ role: 'user', content: input }]
     : input
         .filter((msg): msg is AIMessage =>
@@ -79,135 +74,18 @@ const generateWithAI = async (input: string | AIMessage[], systemInstruction?: s
         );
 
   const fullMessages: AIMessage[] = systemInstruction
-    ? [{ role: 'system', content: systemInstruction }, ...baseMessages]
-    : baseMessages;
+    ? [{ role: 'system', content: systemInstruction }, ...messages]
+    : messages;
 
-  // 1. AWS Bedrock (primary for AWS live deployments)
-  // Bedrock removed
-
-  // 2. OpenAI fallback
-  if (openaiKey) {
-    try {
-      const res = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${openaiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o-mini',
-          messages: fullMessages,
-          max_tokens: 4096,
-          temperature: 0.4,
-        }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        const text = (data.choices?.[0]?.message?.content || '').trim();
-        if (text) return text;
-      } else {
-        console.warn('[AI Routes] OpenAI error:', res.status);
-      }
-    } catch (openaiErr) {
-      console.warn('[AI Routes] OpenAI failed, trying Anthropic/Groq:', openaiErr instanceof Error ? openaiErr.message : openaiErr);
-    }
-  }
-
-  // 2b. Anthropic fallback
-  if (anthropicKey) {
-    try {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'x-api-key': anthropicKey,
-          'anthropic-version': '2023-06-01',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 4096,
-          system: systemInstruction || '',
-          messages: fullMessages
-            .filter(m => m.role !== 'system')
-            .map(m => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: m.content })),
-        }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        const text = (data.content?.[0]?.text || '').trim();
-        if (text) return text;
-      } else {
-        console.warn('[AI Routes] Anthropic error:', res.status);
-      }
-    } catch (anthropicErr) {
-      console.warn('[AI Routes] Anthropic failed, trying Groq:', anthropicErr instanceof Error ? anthropicErr.message : anthropicErr);
-    }
-  }
-
-  // 3. Groq fallback
-  if (groqKey) {
-    try {
-      const res = await fetch(GROQ_API_URL, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${groqKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: GROQ_MODEL_ID,
-          messages: fullMessages,
-          max_tokens: 4096,
-          temperature: 0.4,
-        }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        const text = (data.choices?.[0]?.message?.content || '').trim();
-        if (text) return text;
-      } else {
-        console.warn('[AI Routes] Groq error:', res.status);
-      }
-    } catch (groqErr) {
-      console.warn('[AI Routes] Groq failed, trying Together:', groqErr instanceof Error ? groqErr.message : groqErr);
-    }
-  }
-
-  // 4. Together.ai fallback
-  if (togetherKey) {
-    try {
-      const res = await fetch(TOGETHER_API_URL, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${togetherKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: TOGETHER_MODEL_ID,
-          messages: fullMessages,
-          max_tokens: 4096,
-          temperature: 0.4,
-        }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        const text = (data.choices?.[0]?.message?.content || '').trim();
-        if (text) return text;
-      } else {
-        console.warn('[AI Routes] Together.ai error:', res.status);
-      }
-    } catch (togetherErr) {
-      console.warn('[AI Routes] Together.ai failed:', togetherErr instanceof Error ? togetherErr.message : togetherErr);
-    }
-  }
-  console.error('[AI Routes] AI generation failed across configured providers', {
-    hasOpenAI: Boolean(openaiKey),
-    hasGroq: Boolean(groqKey),
-    hasTogether: Boolean(togetherKey),
+  // Use the intelligent multi-provider orchestrator
+  const result = await callAI({
+    messages: fullMessages,
+    taskType: taskType || 'general',
+    maxTokens: 8192,
+    temperature: 0.4,
   });
-  if (!providerConfigured) {
-    throw new Error('No AI provider configured. Set OPENAI_API_KEY / GROQ_API_KEY / TOGETHER_API_KEY.');
-  }
-  throw new Error('AI provider is configured, but upstream requests failed. Check provider key validity and outbound network access.');
+
+  return result;
 };
 // System instruction for the AI
 const SYSTEM_INSTRUCTION = `
@@ -880,12 +758,12 @@ const truncateToTokenBudget = (text: string, maxTokens: number): string => {
   return text.slice(0, maxChars) + '\n... [truncated for token budget]';
 };
 
-const MAX_PROMPT_TOKENS = 8000; // Leave room for system instruction + response within Groq 12K TPM
+const MAX_PROMPT_TOKENS = 16000; // Expanded for deeper brain analysis — Groq 128K context supports this
 
 const buildConsultantPrompt = (message: string, intent: ConsultantIntent, context?: unknown, systemPrompt?: string, brainPromptBlock?: string, nsilSummary?: string) => {
   // Build sections individually, then assemble and truncate
   const capProfile = deriveConsultantCapabilityProfile(message, context).brief;
-  const brain = brainPromptBlock ? `\n═══ BRAIN INTELLIGENCE (summary) ═══\n${brainPromptBlock.slice(0, 2000)}\n═══ END ═══\n` : '';
+  const brain = brainPromptBlock ? `\n═══ BRAIN INTELLIGENCE (summary) ═══\n${brainPromptBlock.slice(0, 6000)}\n═══ END ═══\n` : '';
   const nsil = nsilSummary ? `\n═══ NSIL ANALYSIS (summary) ═══\n${nsilSummary.slice(0, 1500)}\n═══ END ═══\n` : '';
   const overlooked = JSON.stringify(buildOverlookedIntelligenceSnapshot(message, context));
   const pipeline = JSON.stringify(runStrategicIntelligencePipeline(message, context));
@@ -1151,6 +1029,20 @@ router.get('/status', async (_req: Request, res: Response) => {
       together: availability.together
     }
   });
+});
+
+// ─── Provider Orchestrator Status ──────────────────────────────────────────────
+router.get('/provider-status', async (_req: Request, res: Response) => {
+  try {
+    const status = getProviderStatus();
+    res.json({
+      orchestrator: 'active',
+      availableProviders: availableProviderCount(),
+      providers: status,
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to get provider status' });
+  }
 });
 
 router.get('/readiness', async (_req: Request, res: Response) => {

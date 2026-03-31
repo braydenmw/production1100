@@ -814,9 +814,193 @@ function thinkAndPlan(
     reasoning.push('Safety net: Added foundation as minimum for non-trivial query');
   }
 
+  // ── ANTICIPATORY THINKING ────────────────────────────────────────────────
+  // The brain doesn't just react — it predicts what the user will need NEXT
+  // based on the current request. It pre-loads engines that the follow-up
+  // questions will almost certainly require.
+  const anticipations = anticipateNextMoves(analysis, params, readiness);
+  for (const anticipated of anticipations.groups) {
+    if (!selectedGroups.has(anticipated)) {
+      selectedGroups.add(anticipated);
+      reasoning.push(`Anticipated: Adding ${anticipated} — ${anticipations.reasons.find(r => r.includes(anticipated)) || 'predicted follow-up need'}`);
+    }
+  }
+
+  // ── UNCONVENTIONAL ANGLE INJECTION ──────────────────────────────────────
+  // Consider what would NOT normally be considered but could dramatically
+  // improve the outcome. Cross-domain insights, contrarian perspectives,
+  // and blind-spot detection.
+  const unconventional = identifyUnconventionalAngles(analysis, selectedGroups, readiness);
+  for (const angle of unconventional.groups) {
+    if (!selectedGroups.has(angle)) {
+      selectedGroups.add(angle);
+      reasoning.push(`Unconventional: Adding ${angle} — ${unconventional.reasons.find(r => r.includes(angle)) || 'cross-domain insight opportunity'}`);
+    }
+  }
+
   reasoning.push(`Decision: Activating ${selectedGroups.size} groups → [${[...selectedGroups].join(', ')}]`);
+  if (anticipations.groups.length) reasoning.push(`  ↳ ${anticipations.groups.length} anticipatory + ${unconventional.groups.length} unconventional additions`);
 
   return { groups: selectedGroups, reasoning, queryAnalysis: analysis, engineScores };
+}
+
+// ─── Anticipatory Intelligence ────────────────────────────────────────────────
+// Predicts what the user will need NEXT based on the current query pattern.
+// When someone asks "should we partner with X?", the brain knows they'll next
+// ask about risk, compliance, financial viability, and historical precedent.
+// Instead of waiting, it pre-loads those engines NOW.
+
+interface AnticipationResult {
+  groups: EngineGroup[];
+  reasons: string[];
+  predictedFollowUps: string[];
+}
+
+function anticipateNextMoves(
+  analysis: QueryAnalysis,
+  params: Partial<ReportParameters>,
+  readiness: number
+): AnticipationResult {
+  const groups: EngineGroup[] = [];
+  const reasons: string[] = [];
+  const predictedFollowUps: string[] = [];
+
+  // ── Pattern: Assessment → they'll want recommendations next ──
+  if (analysis.intent === 'assess' || analysis.intent === 'investigate') {
+    if (readiness >= 20) {
+      groups.push('strategic');
+      reasons.push('strategic — assessment queries always lead to "what should we do?"');
+      predictedFollowUps.push('What do you recommend?', 'What are our options?');
+    }
+    if (readiness >= 25) {
+      groups.push('risk');
+      reasons.push('risk — after assessment, risk questions always follow');
+      predictedFollowUps.push('What are the risks?', 'What could go wrong?');
+    }
+  }
+
+  // ── Pattern: Compare → they'll want financial analysis + history ──
+  if (analysis.intent === 'compare') {
+    groups.push('financial');
+    reasons.push('financial — comparisons always need cost/ROI numbers');
+    groups.push('historical');
+    reasons.push('historical — comparisons need precedent evidence');
+    predictedFollowUps.push('Which is more cost-effective?', 'Has this worked before?');
+  }
+
+  // ── Pattern: Plan/Advise → they'll want execution details ──
+  if (analysis.intent === 'plan' || analysis.intent === 'advise') {
+    if (analysis.mentionsCountry && params.country) {
+      groups.push('country');
+      reasons.push('country — planning needs jurisdiction intelligence');
+    }
+    if (readiness >= 30) {
+      groups.push('ethics');
+      reasons.push('ethics — strategic plans need compliance/IFC gates');
+      predictedFollowUps.push('Is this compliant?', 'What about IFC standards?');
+    }
+  }
+
+  // ── Pattern: Report/Document request → they'll need everything ──
+  if (analysis.isDocumentRequest) {
+    // Reports need comprehensive backing — fire wide
+    if (params.country) groups.push('country');
+    groups.push('historical');
+    groups.push('financial');
+    groups.push('risk');
+    reasons.push('country+historical+financial+risk — document generation needs comprehensive backing');
+    predictedFollowUps.push('Can you expand Section 3?', 'Add more financial detail');
+  }
+
+  // ── Pattern: Mentions partner/entity → due diligence will follow ──
+  if (analysis.mentionsOrg) {
+    groups.push('risk');
+    reasons.push('risk — entity queries always lead to due diligence');
+    groups.push('ethics');
+    reasons.push('ethics — partner assessment needs compliance screening');
+    predictedFollowUps.push('Are they sanctioned?', 'What is their track record?');
+  }
+
+  // ── Pattern: Country mentioned → proactive intelligence is cheap ──
+  if (analysis.mentionsCountry && params.country && readiness >= 25) {
+    groups.push('proactive');
+    reasons.push('proactive — country-specific signals and drift detection preloaded');
+    predictedFollowUps.push('What are we missing?', 'Any early warning signs?');
+  }
+
+  // ── Pattern: Complex/Deep query → quantum simulation adds value ──
+  if (analysis.complexity === 'deep' && readiness >= 40) {
+    groups.push('quantum');
+    reasons.push('quantum — deep queries benefit from Monte Carlo risk simulation');
+  }
+
+  // ── Pattern: Financial query → always need country context for rates/incentives ──
+  if (analysis.mentionsFinance && params.country) {
+    groups.push('country');
+    reasons.push('country — financial analysis needs macro context');
+  }
+
+  return { groups: [...new Set(groups)], reasons, predictedFollowUps };
+}
+
+// ─── Unconventional Angle Detection ──────────────────────────────────────────
+// Looks for cross-domain insights that wouldn't normally be considered.
+// If someone asks about financial viability, the brain also considers
+// workforce dynamics, supply chain resilience, and ESG factors that
+// traditional analysis would miss.
+
+function identifyUnconventionalAngles(
+  analysis: QueryAnalysis,
+  alreadySelected: Set<EngineGroup>,
+  readiness: number
+): { groups: EngineGroup[]; reasons: string[] } {
+  const groups: EngineGroup[] = [];
+  const reasons: string[] = [];
+
+  // ── Financial queries → add relocation/workforce (cost arbitrage angle) ──
+  if (analysis.mentionsFinance && !alreadySelected.has('relocation') && readiness >= 30) {
+    groups.push('relocation');
+    reasons.push('relocation — unconventional: workforce cost arbitrage and incentive discovery can change financial outlook');
+  }
+
+  // ── Risk queries → add historical (past failures = future warnings) ──
+  if (analysis.mentionsRisk && !alreadySelected.has('historical')) {
+    groups.push('historical');
+    reasons.push('historical — unconventional: historical failures in similar contexts are the strongest risk predictor');
+  }
+
+  // ── Strategy queries → add ethics (ESG/compliance can block or unlock deals) ──
+  if (analysis.domains.includes('strategic') && !alreadySelected.has('ethics') && readiness >= 25) {
+    groups.push('ethics');
+    reasons.push('ethics — unconventional: IFC/ESG compliance gaps can block otherwise sound strategies');
+  }
+
+  // ── Relocation queries → add quantum (Monte Carlo reveals hidden risk distributions) ──
+  if (analysis.mentionsRelocation && !alreadySelected.has('quantum') && readiness >= 35) {
+    groups.push('quantum');
+    reasons.push('quantum — unconventional: Monte Carlo simulation reveals tail risks in relocation decisions');
+  }
+
+  // ── Country queries → add organization (local partner landscape shapes outcomes) ──
+  if (analysis.mentionsCountry && !alreadySelected.has('organization') && readiness >= 20) {
+    groups.push('organization');
+    reasons.push('organization — unconventional: local partner/stakeholder landscape is often the decisive factor');
+  }
+
+  // ── Any substantive query → add proactive if nothing is watching for blind spots ──
+  if (!analysis.isTrivial && !alreadySelected.has('proactive') && readiness >= 35 &&
+      analysis.complexity !== 'simple' && analysis.complexity !== 'trivial') {
+    groups.push('proactive');
+    reasons.push('proactive — unconventional: blind spot detection and drift analysis catch what direct analysis misses');
+  }
+
+  // ── Deep research → add deep-research for external validation ──
+  if (analysis.complexity === 'deep' && !alreadySelected.has('deep-research') && readiness >= 40) {
+    groups.push('deep-research');
+    reasons.push('deep-research — unconventional: external research validates internal analysis and catches information gaps');
+  }
+
+  return { groups, reasons };
 }
 
 // ─── Main export ──────────────────────────────────────────────────────────────
@@ -853,6 +1037,11 @@ export class BrainIntegrationService {
     console.log(`[Brain] THINKING → Intent: ${thinking.queryAnalysis.intent} | Complexity: ${thinking.queryAnalysis.complexity} | LiveData: ${thinking.queryAnalysis.needsLiveData}`);
     console.log(`[Brain] SCORES → ${[...thinking.engineScores.entries()].map(([g, s]) => `${g}:${s}`).join(' | ')}`);
     console.log(`[Brain] DECISION → ${groups.size} groups active: [${[...groups].join(', ')}] (readiness: ${readiness}%)`);
+    // Show anticipatory and unconventional reasoning
+    const anticipatedReasoning = thinking.reasoning.filter(r => r.startsWith('Anticipated:') || r.startsWith('Unconventional:'));
+    if (anticipatedReasoning.length) {
+      console.log(`[Brain] ANTICIPATION → ${anticipatedReasoning.length} predictive additions: ${anticipatedReasoning.map(r => r.split('—')[0].trim()).join(', ')}`);
+    }
 
     // For trivial queries (greetings etc), return a minimal context immediately
     if (groups.size === 0) {
@@ -1604,6 +1793,18 @@ export class BrainIntegrationService {
       .join(', ');
     promptParts.push(`**Engine Relevance Scores (top 6):** ${topEngines}`);
     promptParts.push(`**Engines Activated:** ${groups.size} groups → [${[...groups].join(', ')}]`);
+    // Show anticipatory thinking in the prompt so the AI leverages it
+    const anticipatedItems = thinking.reasoning.filter(r => r.startsWith('Anticipated:'));
+    const unconventionalItems = thinking.reasoning.filter(r => r.startsWith('Unconventional:'));
+    if (anticipatedItems.length) {
+      promptParts.push(`**Anticipatory Pre-loading (${anticipatedItems.length}):** The brain predicted follow-up needs and pre-loaded additional engines.`);
+      anticipatedItems.forEach(r => promptParts.push(`  → ${r.replace('Anticipated: Adding ', '').trim()}`));
+    }
+    if (unconventionalItems.length) {
+      promptParts.push(`**Unconventional Angles (${unconventionalItems.length}):** Cross-domain insights that standard analysis would miss.`);
+      unconventionalItems.forEach(r => promptParts.push(`  → ${r.replace('Unconventional: Adding ', '').trim()}`));
+    }
+
     if (thinking.queryAnalysis.needsLiveData) {
       const liveEngines = ENGINE_REGISTRY.filter(e => e.hasLiveData && groups.has(e.group));
       if (liveEngines.length) {

@@ -48,7 +48,7 @@ router.post('/chat', async (req: Request, res: Response) => {
   const body: Record<string, unknown> = {
     model: model || 'meta-llama/Llama-3.1-70B-Instruct-Turbo',
     messages: cleanMessages,
-    max_tokens: Math.min(max_tokens || 4096, 8192),
+    max_tokens: Math.min(max_tokens || 8192, 16384),
     temperature: Math.min(Math.max(temperature || 0.4, 0), 1.5),
     stream: Boolean(stream),
   };
