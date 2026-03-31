@@ -493,60 +493,44 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                                     <li>Works for anyone, anywhere: Whether you&rsquo;re a small business owner looking at a new market or a government official planning infrastructure, it adapts to your needs and provides the depth of analysis that was previously impossible.</li>
                                 </ul>
 
-                                <h5 className="text-base font-bold text-slate-900 mb-2 mt-4">Who This Is Built to Help</h5>
+                                <h5 className="text-base font-bold text-slate-900 mb-2 mt-4">What&rsquo;s Actually Inside the System</h5>
                                 <p className="text-sm text-slate-600 leading-relaxed text-justify mb-3">
-                                    This system is for anyone who needs to make informed decisions about economic opportunities:
+                                    This isn&rsquo;t a concept or a prototype. It&rsquo;s a fully built, production-ready intelligence platform. Here&rsquo;s what powers it:
                                 </p>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
                                     <div className="border-l-2 border-blue-500 pl-3">
-                                        <h5 className="text-sm font-bold text-slate-900 mb-0.5">Business Consultants &amp; Investors</h5>
-                                        <p className="text-xs text-slate-600 leading-relaxed">To find and evaluate new markets without wasting time on outdated or incomplete data.</p>
+                                        <h5 className="text-sm font-bold text-slate-900 mb-0.5">Five Independent AI Minds</h5>
+                                        <p className="text-xs text-slate-600 leading-relaxed">Every analysis is processed by five specialized reasoning engines&mdash;each with a different perspective. They challenge each other, flag contradictions, and only present conclusions that survive adversarial debate. You never see unchecked output.</p>
                                     </div>
                                     <div className="border-l-2 border-emerald-500 pl-3">
-                                        <h5 className="text-sm font-bold text-slate-900 mb-0.5">Governments &amp; Planners</h5>
-                                        <p className="text-xs text-slate-600 leading-relaxed">To understand regional economies and make better development decisions.</p>
+                                        <h5 className="text-sm font-bold text-slate-900 mb-0.5">54+ Proprietary Formulas</h5>
+                                        <p className="text-xs text-slate-600 leading-relaxed">Purpose-built calculations for regional economics that don&rsquo;t exist anywhere else&mdash;covering logistics efficiency, workforce resilience, supply chain depth, regulatory friction, and true location-adjusted risk. No borrowed spreadsheets.</p>
                                     </div>
                                     <div className="border-l-2 border-amber-500 pl-3">
-                                        <h5 className="text-sm font-bold text-slate-900 mb-0.5">Businesses &amp; Banks</h5>
-                                        <p className="text-xs text-slate-600 leading-relaxed">To assess risks and opportunities in non-traditional locations, avoiding inflated costs or missed chances.</p>
+                                        <h5 className="text-sm font-bold text-slate-900 mb-0.5">240+ Document Types</h5>
+                                        <p className="text-xs text-slate-600 leading-relaxed">From investor prospectuses and government submissions to risk assessments and feasibility studies&mdash;generated automatically with full audit trails. These are boardroom-ready documents, not chat summaries.</p>
                                     </div>
                                     <div className="border-l-2 border-purple-500 pl-3">
-                                        <h5 className="text-sm font-bold text-slate-900 mb-0.5">Anyone Curious About Global Economics</h5>
-                                        <p className="text-xs text-slate-600 leading-relaxed">It democratizes access to high-level analysis, so even individuals can explore markets that were once only accessible to big firms.</p>
+                                        <h5 className="text-sm font-bold text-slate-900 mb-0.5">20+ Real-Time Data Sources</h5>
+                                        <p className="text-xs text-slate-600 leading-relaxed">Live connections to global economic databases, trade statistics, demographic feeds, and regulatory registries. Every data point is sourced, timestamped, and traceable&mdash;nothing is fabricated or assumed.</p>
                                     </div>
                                 </div>
 
-                                <h5 className="text-base font-bold text-slate-900 mb-2 mt-4">The Problem: The Tools Don&rsquo;t Exist, So Decisions Stay Broken</h5>
-                                <p className="text-sm text-slate-600 leading-relaxed text-justify mb-3">
-                                    Every day, billions in investment decisions are made poorly because the right tools simply don&rsquo;t exist. Here&rsquo;s how the current system is broken:
-                                </p>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-                                    <div className="border-l-2 border-red-500 pl-3">
-                                        <h5 className="text-sm font-bold text-slate-900 mb-0.5">What Advisory Firms Use</h5>
-                                        <p className="text-xs text-slate-600 leading-relaxed">They charge huge fees for thick reports that take months to produce, but they&rsquo;re often just recycling old data and using cookie-cutter templates. They miss the unique details of local markets, so their advice is generic and unreliable&mdash;leading to wasted money on bad investments.</p>
+                                    <div className="border-l-2 border-indigo-500 pl-3">
+                                        <h5 className="text-sm font-bold text-slate-900 mb-0.5">Monte Carlo Stress Testing</h5>
+                                        <p className="text-xs text-slate-600 leading-relaxed">Every projection is stress-tested across thousands of simulated scenarios&mdash;varying interest rates, demand shifts, regulatory changes, and supply disruptions&mdash;so you see the full range of outcomes, not just the optimistic one.</p>
                                     </div>
-                                    <div className="border-l-2 border-orange-500 pl-3">
-                                        <h5 className="text-sm font-bold text-slate-900 mb-0.5">What Governments Use</h5>
-                                        <p className="text-xs text-slate-600 leading-relaxed">They rely on scattered websites and outdated statistics from different departments. Planning is fragmented, so decisions about projects (like building roads or factories) are made without a full picture, causing delays, extra costs, and missed opportunities.</p>
-                                    </div>
-                                    <div className="border-l-2 border-yellow-500 pl-3">
-                                        <h5 className="text-sm font-bold text-slate-900 mb-0.5">What Businesses &amp; Banks Use</h5>
-                                        <p className="text-xs text-slate-600 leading-relaxed">They stick to simple spreadsheets designed for big-city properties. For anything outside major urban centers, they just guess at higher risks and charge more, even if the real data shows it&rsquo;s a great opportunity. Their models can&rsquo;t handle the nuances of regional economies.</p>
-                                    </div>
-                                    <div className="border-l-2 border-gray-500 pl-3">
-                                        <h5 className="text-sm font-bold text-slate-900 mb-0.5">What General-Purpose AI Uses</h5>
-                                        <p className="text-xs text-slate-600 leading-relaxed">Basic AI tools make up facts, invent numbers, or give vague summaries. They can&rsquo;t provide the detailed, verifiable analysis needed for serious decisions&mdash;like what a boardroom or regulator would require.</p>
+                                    <div className="border-l-2 border-rose-500 pl-3">
+                                        <h5 className="text-sm font-bold text-slate-900 mb-0.5">Guided 10-Step Intake</h5>
+                                        <p className="text-xs text-slate-600 leading-relaxed">You don&rsquo;t need to know what to ask. The system walks you through a structured intake process that captures exactly what the AI engines need to deliver a complete analysis&mdash;from first-time users to experienced analysts.</p>
                                     </div>
                                 </div>
-
-                                <p className="text-sm text-slate-600 leading-relaxed text-justify mb-3">
-                                    The result? Money flows to the same crowded markets, while hidden gems in regions, agriculture, or industry are ignored. Trillions in potential value stays locked because no one has the tools to prove it&rsquo;s worth investing in.
-                                </p>
 
                                 <div className="pt-3 border-t border-slate-200">
-                                    <h5 className="text-sm font-bold text-slate-900 mb-1">BW Nexus AI Fixes This.</h5>
+                                    <h5 className="text-sm font-bold text-slate-900 mb-1">Every Claim Is Traceable.</h5>
                                     <p className="text-xs text-slate-700 leading-relaxed font-medium">
-                                        BW Nexus AI is the tool that finally exists: It delivers accurate, deep, and actionable intelligence that makes broken decisions a thing of the past. It&rsquo;s production-ready, with no shortcuts or fake data&mdash;just real analysis to help you unlock the world&rsquo;s economic potential.
+                                        Nothing in this system is a black box. Every number has a source. Every conclusion has an audit trail. Every recommendation can be traced back through the reasoning chain that produced it&mdash;the kind of defensible logic that regulators, boards, and fiduciary committees require.
                                     </p>
                                 </div>
                             </div>
