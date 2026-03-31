@@ -96,6 +96,7 @@ import { QuantumCognitionBridge } from './quantum/QuantumCognitionBridge';
 import { SystemCapabilityBoundary, type CapabilitySnapshot } from './SystemCapabilityBoundary';
 import { FinancialCalculationService, type FinancialSnapshot } from './FinancialCalculationService';
 import { RiskMatrixEngine, type RiskMatrixResult } from './RiskMatrixEngine';
+import { runCognitiveAnalysis, formatCognitiveForPrompt, type CognitiveAnalysis } from './CognitiveReasoningEngine';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -235,6 +236,8 @@ export interface BrainContext {
   financialAnalysis: FinancialSnapshot | null;
   /** Risk Matrix Engine - programmatic 5x5 likelihood x impact grid */
   riskMatrix: RiskMatrixResult | null;
+  /** Cognitive Reasoning Engine - 12 human brain thinking layers */
+  cognitiveAnalysis: CognitiveAnalysis | null;
 }
 
 // ─── Simple in-process cache (keyed by country + objectives + org) ────────────
@@ -2497,7 +2500,19 @@ export class BrainIntegrationService {
       capabilityBoundary,
       financialAnalysis,
       riskMatrix,
+      cognitiveAnalysis: null,
     };
+
+    // ── Cognitive Reasoning Engine — 12 human brain thinking layers ─────────
+    const cognitiveAnalysis = (() => {
+      try {
+        return runCognitiveAnalysis(strategicQuestion, params, readiness);
+      } catch { return null; }
+    })();
+    if (cognitiveAnalysis) {
+      (provisionalResult as any).cognitiveAnalysis = cognitiveAnalysis;
+      promptParts.push(formatCognitiveForPrompt(cognitiveAnalysis));
+    }
 
     const qualityGate = IntelligenceQualityGate.assess(provisionalResult);
     promptParts.push('');
@@ -2565,6 +2580,7 @@ export class BrainIntegrationService {
       capabilityBoundary,
       financialAnalysis,
       riskMatrix,
+      cognitiveAnalysis,
       qualityGate,
     };
 

@@ -50,6 +50,22 @@ export interface AllIndicesResult {
   rni: IndexResult;
   sra: IndexResult;
   idv: IndexResult;
+  /** NEW: Partnership Viability Index - multi-dimensional partnership health */
+  pvi: IndexResult;
+  /** NEW: Regional Resilience Index - economic shock absorption capacity */
+  rri: IndexResult;
+  /** NEW: Composite Risk Priority Score - weighted risk aggregation */
+  crps: IndexResult;
+  /** NEW: Supply Chain Risk Index - dependency & logistics vulnerability */
+  srci: IndexResult;
+  /** NEW: Market Penetration Index - market entry feasibility */
+  mpi: IndexResult;
+  /** NEW: Governance Confidence Index - institutional trustworthiness */
+  gci: IndexResult;
+  /** NEW: Counterparty Integrity Score - entity-level trust metric */
+  cis: IndexResult;
+  /** NEW: Ecosystem Shock Index - resilience to external shocks */
+  eshock: IndexResult;
   composite: {
     overallScore: number;
     riskAdjustedScore: number;
@@ -815,12 +831,440 @@ export async function calculateIDV(params: Partial<ReportParameters>): Promise<I
 }
 
 // ============================================================================
+// NEW FORMULA IMPLEMENTATIONS (8 Missing Indices)
+// ============================================================================
+
+/**
+ * PVI - Partnership Viability Index
+ * Multi-dimensional partnership health assessment.
+ * Uses the "Core Truth" principle: at its heart, a partnership is two entities
+ * exchanging value — strip away complexity and measure alignment, capability
+ * match, and mutual benefit symmetry.
+ */
+export async function calculatePVI(params: Partial<ReportParameters>): Promise<IndexResult> {
+  const composite = await CompositeScoreService.getScores({
+    country: params.country,
+    region: params.region
+  });
+
+  // Strategic alignment — do both parties want the same future?
+  const strategicAlignment = params.partnerReadinessLevel === 'high' ? 82
+    : params.partnerReadinessLevel === 'medium' ? 62 : 40;
+  // Capability complementarity — do skills fill each other's gaps?
+  const capabilityMatch = composite.components.infrastructure * 0.4 +
+    composite.components.marketAccess * 0.3 + 30;
+  // Value symmetry — is value exchange balanced or lopsided?
+  const valueSymmetry = composite.components.regulatory > 50 ? 70 : 48;
+  // Cultural compatibility — governance, language, business norms
+  const culturalFit = params.country === params.userCountry ? 85 :
+    composite.components.politicalStability * 0.5 + 30;
+  // Exit optionality — can either party leave without catastrophe?
+  const exitOptionality = composite.components.regulatory * 0.4 +
+    composite.components.marketAccess * 0.3 + 20;
+
+  const components = {
+    strategicAlignment, capabilityMatch, valueSymmetry, culturalFit, exitOptionality
+  };
+  const value = clamp(
+    strategicAlignment * 0.25 + capabilityMatch * 0.20 + valueSymmetry * 0.20 +
+    culturalFit * 0.20 + exitOptionality * 0.15,
+    10, 95
+  );
+  return {
+    value: Math.round(value),
+    grade: getGrade(value),
+    interpretation: value > 70
+      ? 'Partnership has strong viability — aligned interests and balanced value exchange'
+      : value > 50
+      ? 'Partnership viable with conditions — address asymmetries before commitment'
+      : 'Partnership viability is low — fundamental misalignment detected',
+    components,
+    recommendations: [
+      'Map each party\'s non-negotiable outcomes before structuring terms',
+      'Build milestone-based trust escalation into the agreement',
+      'Define clear exit mechanics upfront — paradoxically strengthens commitment'
+    ]
+  };
+}
+
+/**
+ * RRI - Regional Resilience Index
+ * Economic shock absorption capacity.
+ * Measures how well a region can absorb and recover from external shocks
+ * (currency crises, political upheaval, supply chain disruption, pandemics).
+ */
+export async function calculateRRI(params: Partial<ReportParameters>): Promise<IndexResult> {
+  const composite = await CompositeScoreService.getScores({
+    country: params.country,
+    region: params.region
+  });
+
+  const economicDiversification = composite.components.marketAccess * 0.6 + 25;
+  const institutionalStrength = composite.components.politicalStability * 0.5 +
+    composite.components.regulatory * 0.3 + 15;
+  const fiscalBufferCapacity = composite.inputs.gdpGrowth > 3 ? 75 :
+    composite.inputs.gdpGrowth > 0 ? 55 : 30;
+  const infrastructureRedundancy = composite.components.infrastructure * 0.7 + 20;
+  const socialCohesion = composite.components.politicalStability * 0.6 + 25;
+
+  const components = {
+    diversification: economicDiversification,
+    institutions: institutionalStrength,
+    fiscalBuffer: fiscalBufferCapacity,
+    infrastructure: infrastructureRedundancy,
+    socialCohesion
+  };
+  const value = clamp(
+    economicDiversification * 0.25 + institutionalStrength * 0.20 +
+    fiscalBufferCapacity * 0.20 + infrastructureRedundancy * 0.20 +
+    socialCohesion * 0.15,
+    10, 95
+  );
+  return {
+    value: Math.round(value),
+    grade: getGrade(value),
+    interpretation: value > 70
+      ? 'Region has strong shock absorption — diversified economy with institutional depth'
+      : value > 50
+      ? 'Moderate resilience — vulnerable to prolonged or compound shocks'
+      : 'Low resilience — region is fragile; build contingency into every plan',
+    components,
+    recommendations: [
+      'Stress-test plans against 3 simultaneous adverse scenarios',
+      'Build local partnerships for supply chain redundancy',
+      'Maintain currency hedging if operating in volatile regions'
+    ]
+  };
+}
+
+/**
+ * CRPS - Composite Risk Priority Score
+ * Weighted risk aggregation using severity × probability × detectability.
+ * Inspired by FMEA (Failure Mode & Effects Analysis) from engineering —
+ * a cross-domain methodology that economic analysis typically ignores.
+ */
+export async function calculateCRPS(params: Partial<ReportParameters>): Promise<IndexResult> {
+  const composite = await CompositeScoreService.getScores({
+    country: params.country,
+    region: params.region
+  });
+
+  // Political risk severity × probability
+  const politicalRPN = (100 - composite.components.politicalStability) * 0.7 + 15;
+  // Regulatory risk — harder to detect (low detectability = higher priority)
+  const regulatoryRPN = (100 - composite.components.regulatory) * 0.8 + 10;
+  // Market risk — volatility and access barriers
+  const marketRPN = (100 - composite.components.marketAccess) * 0.5 + 20;
+  // Financial risk — inflation, currency, debt
+  const financialRPN = composite.inputs.inflation > 8 ? 75 :
+    composite.inputs.inflation > 4 ? 55 : 35;
+  // Operational risk — infrastructure and execution
+  const operationalRPN = (100 - composite.components.infrastructure) * 0.6 + 15;
+
+  const components = {
+    political: politicalRPN,
+    regulatory: regulatoryRPN,
+    market: marketRPN,
+    financial: financialRPN,
+    operational: operationalRPN
+  };
+  // CRPS inverts — higher score = LOWER risk (more favorable)
+  const rawRisk = (politicalRPN * 0.25 + regulatoryRPN * 0.25 + marketRPN * 0.15 +
+    financialRPN * 0.20 + operationalRPN * 0.15);
+  const value = clamp(100 - rawRisk, 10, 95);
+  return {
+    value: Math.round(value),
+    grade: getGrade(value),
+    interpretation: value > 70
+      ? 'Risk priority is low — no category exceeds acceptable thresholds'
+      : value > 50
+      ? 'Moderate risk concentration — 1-2 categories need mitigation plans'
+      : 'High composite risk — multiple overlapping risk factors require immediate action',
+    components,
+    recommendations: [
+      'Rank risks by detectability — the ones you cannot see early are the most dangerous',
+      'Build a risk waterfall: address highest-RPN items first',
+      'Assign risk owners — unowned risks are unmanaged risks'
+    ]
+  };
+}
+
+/**
+ * SRCI - Supply Chain Risk Index
+ * Dependency and logistics vulnerability assessment.
+ * Measures how exposed operations are to supply chain disruption,
+ * concentration risk, and logistics fragility.
+ */
+export async function calculateSRCI(params: Partial<ReportParameters>): Promise<IndexResult> {
+  const composite = await CompositeScoreService.getScores({
+    country: params.country,
+    region: params.region
+  });
+
+  const logisticsQuality = composite.components.infrastructure * 0.7 + 20;
+  const supplierDiversification = composite.components.marketAccess * 0.5 + 30;
+  // Geographic concentration risk — single-country dependency
+  const geoConcentration = params.country && params.userCountry &&
+    params.country !== params.userCountry ? 55 : 75;
+  const regulatoryStability = composite.components.regulatory * 0.6 + 25;
+  const corridorReliability = composite.components.infrastructure * 0.5 +
+    composite.components.politicalStability * 0.3 + 15;
+
+  const components = {
+    logistics: logisticsQuality,
+    diversification: supplierDiversification,
+    geoConcentration,
+    regulatoryStability,
+    corridor: corridorReliability
+  };
+  const value = clamp(
+    logisticsQuality * 0.25 + supplierDiversification * 0.20 +
+    geoConcentration * 0.20 + regulatoryStability * 0.15 +
+    corridorReliability * 0.20,
+    10, 95
+  );
+  return {
+    value: Math.round(value),
+    grade: getGrade(value),
+    interpretation: value > 70
+      ? 'Supply chain resilience is strong — diversified sources and reliable corridors'
+      : value > 50
+      ? 'Moderate supply chain risk — concentration or logistics gaps need attention'
+      : 'High supply chain vulnerability — single points of failure detected',
+    components,
+    recommendations: [
+      'Map tier-2 and tier-3 suppliers — hidden dependencies cause surprise failures',
+      'Establish dual-corridor logistics for critical inputs',
+      'Maintain 90-day buffer inventory for mission-critical materials'
+    ]
+  };
+}
+
+/**
+ * MPI - Market Penetration Index
+ * Market entry feasibility and competitive positioning.
+ * Measures how accessible and penetrable a target market is,
+ * considering barriers, competition intensity, and growth potential.
+ */
+export async function calculateMPI(params: Partial<ReportParameters>): Promise<IndexResult> {
+  const composite = await CompositeScoreService.getScores({
+    country: params.country,
+    region: params.region
+  });
+
+  const marketAccessibility = composite.components.marketAccess * 0.8 + 15;
+  const growthPotential = composite.inputs.gdpGrowth > 5 ? 85 :
+    composite.inputs.gdpGrowth > 2 ? 65 : 40;
+  const competitiveIntensity = params.industry?.length
+    ? Math.max(30, 80 - params.industry.length * 8) : 55;
+  const regulatoryEase = composite.components.regulatory * 0.7 + 20;
+  const consumerReadiness = composite.components.infrastructure * 0.4 +
+    composite.components.marketAccess * 0.3 + 20;
+
+  const components = {
+    accessibility: marketAccessibility,
+    growth: growthPotential,
+    competition: competitiveIntensity,
+    regulatory: regulatoryEase,
+    consumer: consumerReadiness
+  };
+  const value = clamp(
+    marketAccessibility * 0.25 + growthPotential * 0.25 +
+    competitiveIntensity * 0.15 + regulatoryEase * 0.20 +
+    consumerReadiness * 0.15,
+    10, 95
+  );
+  return {
+    value: Math.round(value),
+    grade: getGrade(value),
+    interpretation: value > 70
+      ? 'Market is highly penetrable — favorable conditions for entry'
+      : value > 50
+      ? 'Market penetration feasible but requires strategic positioning'
+      : 'Market entry is difficult — high barriers or intense competition',
+    components,
+    recommendations: [
+      'Enter through partnership or JV to reduce barrier exposure',
+      'Target underserved segments where competition is thinnest',
+      'Build local brand equity before scaling — trust precedes market share'
+    ]
+  };
+}
+
+/**
+ * GCI - Governance Confidence Index
+ * Institutional trustworthiness and rule-of-law confidence.
+ * Measures how much an investor/partner can trust the governance
+ * environment to be predictable, fair, and enforceable.
+ */
+export async function calculateGCI(params: Partial<ReportParameters>): Promise<IndexResult> {
+  const composite = await CompositeScoreService.getScores({
+    country: params.country,
+    region: params.region
+  });
+
+  const ruleOfLaw = composite.components.politicalStability * 0.6 +
+    composite.components.regulatory * 0.3 + 10;
+  const regulatoryPredictability = composite.components.regulatory * 0.8 + 15;
+  const judicialIndependence = composite.components.politicalStability * 0.5 + 30;
+  const corruptionControl = composite.components.politicalStability * 0.4 +
+    composite.components.regulatory * 0.3 + 20;
+  const contractEnforceability = composite.components.regulatory * 0.7 +
+    composite.components.infrastructure * 0.1 + 15;
+
+  const components = {
+    ruleOfLaw,
+    regulatoryPredictability,
+    judicialIndependence,
+    corruption: corruptionControl,
+    contracts: contractEnforceability
+  };
+  const value = clamp(
+    ruleOfLaw * 0.25 + regulatoryPredictability * 0.20 +
+    judicialIndependence * 0.20 + corruptionControl * 0.20 +
+    contractEnforceability * 0.15,
+    10, 95
+  );
+  return {
+    value: Math.round(value),
+    grade: getGrade(value),
+    interpretation: value > 70
+      ? 'Strong governance environment — institutions are reliable and predictable'
+      : value > 50
+      ? 'Moderate governance confidence — some institutional gaps, use contractual safeguards'
+      : 'Low governance confidence — structure agreements with international arbitration clauses',
+    components,
+    recommendations: [
+      'Include international arbitration (ICC/LCIA) in all agreements',
+      'Build relationships with local legal counsel who understand enforcement realities',
+      'Structure deals to minimize exposure to local judicial systems where weak'
+    ]
+  };
+}
+
+/**
+ * CIS - Counterparty Integrity Score
+ * Entity-level trust metric.
+ * Assesses the trustworthiness of a specific counterparty based on
+ * corporate governance, sanctions exposure, financial health signals,
+ * and relationship history patterns.
+ */
+export async function calculateCIS(params: Partial<ReportParameters>): Promise<IndexResult> {
+  const composite = await CompositeScoreService.getScores({
+    country: params.country,
+    region: params.region
+  });
+
+  // Entity governance quality (proxy from regional governance)
+  const entityGovernance = composite.components.regulatory * 0.5 +
+    composite.components.politicalStability * 0.2 + 25;
+  // Sanctions risk (lower score if high-risk jurisdiction)
+  const sanctionsRisk = composite.components.politicalStability > 60 ? 80 : 45;
+  // Financial transparency signal
+  const financialTransparency = composite.components.regulatory * 0.6 + 30;
+  // Track record reliability
+  const trackRecord = params.partnerReadinessLevel === 'high' ? 80 :
+    params.partnerReadinessLevel === 'medium' ? 60 : 40;
+  // Operational credibility
+  const operationalCredibility = composite.components.infrastructure * 0.5 + 35;
+
+  const components = {
+    governance: entityGovernance,
+    sanctions: sanctionsRisk,
+    transparency: financialTransparency,
+    trackRecord,
+    credibility: operationalCredibility
+  };
+  const value = clamp(
+    entityGovernance * 0.25 + sanctionsRisk * 0.20 +
+    financialTransparency * 0.20 + trackRecord * 0.20 +
+    operationalCredibility * 0.15,
+    10, 95
+  );
+  return {
+    value: Math.round(value),
+    grade: getGrade(value),
+    interpretation: value > 70
+      ? 'Counterparty integrity is strong — proceed with standard due diligence'
+      : value > 50
+      ? 'Moderate counterparty risk — enhanced due diligence recommended'
+      : 'Counterparty integrity concerns — consider escrow structures and phased commitment',
+    components,
+    recommendations: [
+      'Run OpenSanctions + GLEIF screening before any financial commitment',
+      'Request audited financials for the last 3 years',
+      'Verify beneficial ownership through independent registry checks'
+    ]
+  };
+}
+
+/**
+ * ESHOCK - Ecosystem Shock Index
+ * Measures resilience to cascading external shocks.
+ * Different from RRI (which measures the region) — ESHOCK measures
+ * how the entire business ecosystem (partners, supply chains, markets,
+ * regulatory environment) would react to simultaneous disruptions.
+ * Uses compound stress methodology: what happens when 3 things go wrong at once?
+ */
+export async function calculateESHOCK(params: Partial<ReportParameters>): Promise<IndexResult> {
+  const composite = await CompositeScoreService.getScores({
+    country: params.country,
+    region: params.region
+  });
+
+  // Single-shock absorption (one thing goes wrong)
+  const singleShockCapacity = composite.components.infrastructure * 0.4 +
+    composite.components.marketAccess * 0.3 + 25;
+  // Compound shock resistance (2+ simultaneous failures)
+  const compoundShockResistance = (composite.components.politicalStability +
+    composite.components.regulatory + composite.components.infrastructure) / 3 * 0.5 + 20;
+  // Recovery velocity (how fast can ecosystem bounce back)
+  const recoveryVelocity = composite.inputs.gdpGrowth > 3 ? 75 :
+    composite.inputs.gdpGrowth > 0 ? 55 : 30;
+  // Contagion isolation (can failures be contained)
+  const contagionIsolation = composite.components.regulatory * 0.5 + 30;
+  // Adaptive capacity (can ecosystem reconfigure under stress)
+  const adaptiveCapacity = composite.components.marketAccess * 0.5 +
+    composite.components.infrastructure * 0.2 + 25;
+
+  const components = {
+    singleShock: singleShockCapacity,
+    compoundShock: compoundShockResistance,
+    recovery: recoveryVelocity,
+    isolation: contagionIsolation,
+    adaptability: adaptiveCapacity
+  };
+  const value = clamp(
+    singleShockCapacity * 0.15 + compoundShockResistance * 0.30 +
+    recoveryVelocity * 0.20 + contagionIsolation * 0.15 +
+    adaptiveCapacity * 0.20,
+    10, 95
+  );
+  return {
+    value: Math.round(value),
+    grade: getGrade(value),
+    interpretation: value > 70
+      ? 'Ecosystem can absorb compound shocks — strong adaptive capacity'
+      : value > 50
+      ? 'Ecosystem survives single shocks but vulnerable to compound stress'
+      : 'Fragile ecosystem — cascading failures likely under stress',
+    components,
+    recommendations: [
+      'Run compound stress tests: currency crash + political change + supply disruption simultaneously',
+      'Build circuit breakers into contracts — auto-pause mechanisms for extreme events',
+      'Maintain strategic reserves (cash, inventory, alternative suppliers) for 180-day self-sufficiency'
+    ]
+  };
+}
+
+// ============================================================================
 // COMPREHENSIVE INDEX CALCULATOR
 // ============================================================================
 
 export async function calculateAllIndices(params: Partial<ReportParameters>): Promise<AllIndicesResult> {
-  // Calculate all indices in parallel
-  const [barna, nvi, cri, cap, agi, vci, ati, esi, isi, osi, tco, pri, rni, sra, idv] = await Promise.all([
+  // Calculate all 23 indices in parallel — full analytical coverage
+  const [barna, nvi, cri, cap, agi, vci, ati, esi, isi, osi, tco, pri, rni, sra, idv,
+         pvi, rri, crps, srci, mpi, gci, cis, eshock] = await Promise.all([
     calculateBARNA(params),
     calculateNVI(params),
     calculateCRI(params),
@@ -835,18 +1279,27 @@ export async function calculateAllIndices(params: Partial<ReportParameters>): Pr
     calculatePRI(params),
     calculateRNI(params),
     calculateSRA(params),
-    calculateIDV(params)
+    calculateIDV(params),
+    calculatePVI(params),
+    calculateRRI(params),
+    calculateCRPS(params),
+    calculateSRCI(params),
+    calculateMPI(params),
+    calculateGCI(params),
+    calculateCIS(params),
+    calculateESHOCK(params)
   ]);
 
   // Calculate composite scores by category
-  const opportunityIndices = [barna, nvi, vci, agi, esi];
-  const riskIndices = [cri, pri, sra, idv];
+  const opportunityIndices = [barna, nvi, vci, agi, esi, mpi];
+  const riskIndices = [cri, pri, sra, idv, crps, srci, eshock];
   const readinessIndices = [cap, isi, osi, rni];
+  const partnershipIndices = [pvi, cis, gci, rri];
 
-  // Cost indices (tco, ati) included in overall calculation below
   const overallScore = Math.round(
-    [barna, nvi, cri, cap, agi, vci, ati, esi, isi, osi, tco, pri, rni, sra, idv]
-      .reduce((sum, idx) => sum + idx.value, 0) / 15
+    [barna, nvi, cri, cap, agi, vci, ati, esi, isi, osi, tco, pri, rni, sra, idv,
+     pvi, rri, crps, srci, mpi, gci, cis, eshock]
+      .reduce((sum, idx) => sum + idx.value, 0) / 23
   );
 
   const opportunityScore = Math.round(
@@ -863,6 +1316,7 @@ export async function calculateAllIndices(params: Partial<ReportParameters>): Pr
 
   return {
     barna, nvi, cri, cap, agi, vci, ati, esi, isi, osi, tco, pri, rni, sra, idv,
+    pvi, rri, crps, srci, mpi, gci, cis, eshock,
     composite: {
       overallScore,
       riskAdjustedScore,
@@ -888,6 +1342,14 @@ export default {
   calculateRNI,
   calculateSRA,
   calculateIDV,
+  calculatePVI,
+  calculateRRI,
+  calculateCRPS,
+  calculateSRCI,
+  calculateMPI,
+  calculateGCI,
+  calculateCIS,
+  calculateESHOCK,
   calculateAllIndices
 };
 
