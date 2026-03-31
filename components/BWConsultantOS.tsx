@@ -1215,6 +1215,13 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, onNavi
   const quickSyncSignatureRef = useRef('');
   const strategicApplySignatureRef = useRef('');
   const matterFingerprintRef = useRef('');
+  const matterArchiveRef = useRef<Array<{
+    matter: string;
+    country: string;
+    sector: string;
+    entities: string[];
+    timestamp: number;
+  }>>([]);
   
   // Workspace modal
   const [showWorkspaceModal, setShowWorkspaceModal] = useState(false);
@@ -1356,6 +1363,30 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, onNavi
       .split(' ')
       .filter((token) => token.length >= 4);
 
+    // Extract key entities (locations, people, orgs) from text for semantic linking
+    const extractEntities = (text: string): string[] => {
+      const lc = text.toLowerCase();
+      const entities: string[] = [];
+      // Location keywords
+      const locationPatterns = [
+        /\b(pagadian|manila|cebu|davao|zamboanga|mindanao|luzon|visayas|sydney|melbourne|lagos|nairobi|dubai|singapore|tokyo|london|berlin|riyadh|jakarta|bangkok|hanoi|mumbai|delhi|shanghai|beijing)\b/gi,
+        /\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*\s+(?:city|province|region|state|district|municipality)\b/gi,
+      ];
+      for (const pat of locationPatterns) {
+        const matches = text.match(pat) || [];
+        entities.push(...matches.map(m => m.toLowerCase().trim()));
+      }
+      // Person titles
+      const personMatch = text.match(/\b(?:mayor|governor|minister|president|senator|secretary|ambassador|ceo|director)\s+\w+(?:\s+\w+)?/gi);
+      if (personMatch) entities.push(...personMatch.map(m => m.toLowerCase().trim()));
+      // Sector keywords
+      const sectorWords = ['investment', 'partner', 'trade', 'agriculture', 'manufacturing', 'tourism', 'energy', 'mining', 'infrastructure', 'development', 'business', 'market', 'economy', 'regional', 'rural', 'urban'];
+      for (const sw of sectorWords) {
+        if (lc.includes(sw)) entities.push(sw);
+      }
+      return [...new Set(entities)];
+    };
+
     const previousFingerprint = matterFingerprintRef.current;
     const currentMatter = caseStudy.currentMatter.trim();
     const currentFingerprint = normalizeMatter(currentMatter);
@@ -1367,6 +1398,14 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, onNavi
 
     if (!previousFingerprint) {
       matterFingerprintRef.current = currentFingerprint;
+      // Archive this as the first matter
+      matterArchiveRef.current = [{
+        matter: currentMatter.substring(0, 300),
+        country: caseStudy.country,
+        sector: caseStudy.organizationType,
+        entities: extractEntities(currentMatter),
+        timestamp: Date.now(),
+      }];
       return;
     }
 
@@ -1378,15 +1417,86 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, onNavi
     const currentTokens = tokenizeMatter(currentFingerprint);
     const overlapCount = currentTokens.filter((token) => previousTokens.has(token)).length;
     const overlapRatio = currentTokens.length > 0 ? overlapCount / currentTokens.length : 0;
-    const isMaterialMatterShift = currentMatter.length >= 40 && overlapRatio < 0.35;
+
+    // ── SMART MATTER DETECTION ──────────────────────────────────────────────
+    // Instead of a hard token-overlap threshold, check for semantic connections:
+    // shared country, shared sector, shared entities (people, places, topics)
+    const currentEntities = extractEntities(currentMatter);
+    const previousEntities = extractEntities(previousFingerprint);
+    const sharedEntities = currentEntities.filter(e => previousEntities.includes(e));
+
+    // Check if country context is shared
+    const sharedCountry = !!(caseStudy.country && caseStudy.country.trim().length > 0);
+
+    // Check if any archived matter shares entities with the new one
+    const linkedToArchive = matterArchiveRef.current.some(archived => {
+      const archivedEntities = archived.entities;
+      return (
+        archivedEntities.some(e => currentEntities.includes(e)) ||
+        (archived.country && archived.country === caseStudy.country) ||
+        (archived.sector && archived.sector === caseStudy.organizationType)
+      );
+    });
+
+    // A matter is truly new only if:
+    // 1. Token overlap is very low (< 0.20 instead of 0.35)
+    // 2. AND no shared entities with current or archived matters
+    // 3. AND no shared country/sector context
+    const isTokenDisjoint = currentMatter.length >= 40 && overlapRatio < 0.20;
+    const hasSemanticLink = sharedEntities.length > 0 || sharedCountry || linkedToArchive;
+    const isTrulyNewMatter = isTokenDisjoint && !hasSemanticLink;
 
     matterFingerprintRef.current = currentFingerprint;
 
-    if (!isMaterialMatterShift) {
+    // Archive the current matter regardless
+    matterArchiveRef.current = [
+      ...matterArchiveRef.current.slice(-9), // keep last 10 matters
+      {
+        matter: currentMatter.substring(0, 300),
+        country: caseStudy.country,
+        sector: caseStudy.organizationType,
+        entities: currentEntities,
+        timestamp: Date.now(),
+      }
+    ];
+
+    if (!isTrulyNewMatter) {
+      // Topic shift detected but semantically linked - keep context, note the transition
+      if (overlapRatio < 0.35 && currentMatter.length >= 40) {
+        const linkDescription = sharedEntities.length > 0
+          ? `linked by: ${sharedEntities.slice(0, 3).join(', ')}`
+          : sharedCountry
+            ? `same region: ${caseStudy.country}`
+            : 'related to previous topics';
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: crypto.randomUUID(),
+            role: 'system',
+            content: `Topic shift noted (${linkDescription}). Carrying forward all prior context and intelligence to inform this line of inquiry.`,
+            timestamp: new Date(),
+            phase: 'discovery'
+          }
+        ]);
+      }
       return;
     }
 
-    brainCtxRef.current = null;
+    // ── SELECTIVE RESET: Preserve what carries forward ──────────────────────
+    // Instead of wiping brainCtxRef entirely, preserve external data and
+    // historical patterns if the country is the same
+    const prevBrainCtx = brainCtxRef.current;
+    if (prevBrainCtx && caseStudy.country && prevBrainCtx.externalData) {
+      // Keep external data (country-level data carries forward)
+      // Only wipe the matter-specific analysis
+      brainCtxRef.current = {
+        ...prevBrainCtx,
+        promptBlock: '', // Clear the prompt-specific block
+      } as typeof prevBrainCtx;
+    } else {
+      brainCtxRef.current = null;
+    }
+
     quickSyncSignatureRef.current = '';
     strategicApplySignatureRef.current = '';
     setQuickDraftLines('');
@@ -1396,17 +1506,27 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, onNavi
     setLiveInsightResults([]);
     setLiveInsightsRequested(false);
     setLastLiveInsightSearchSignature('');
+
+    // Build a summary of what was discussed before for context continuity
+    const archivedTopics = matterArchiveRef.current
+      .slice(0, -1) // exclude the one we just added
+      .map(a => a.matter.substring(0, 100))
+      .filter(Boolean);
+    const topicHistoryNote = archivedTopics.length > 0
+      ? ` Previous topics in this session: ${archivedTopics.join('; ')}.`
+      : '';
+
     setMessages((prev) => [
       ...prev,
       {
         id: crypto.randomUUID(),
         role: 'system',
-        content: 'New matter detected. NSIL context and strategic carry-over have been reset. Please provide the new problem details to continue.',
+        content: `New topic detected. NSIL analysis engines are recalibrating for this new line of inquiry.${topicHistoryNote} Core intelligence and session learnings have been preserved.`,
         timestamp: new Date(),
         phase: 'discovery'
       }
     ]);
-  }, [caseStudy.currentMatter]);
+  }, [caseStudy.currentMatter, caseStudy.country, caseStudy.organizationType]);
 
   const initializeExecutionTimeline = useCallback(() => {
     setExecutionTimeline([
@@ -4991,10 +5111,30 @@ ${agentRegistry.current.toManifest()}`;
           }
         }
         const priorTurns = memoryRef.current.recall('consultant-turns', 5);
-        const memoryBlock = priorTurns.length
+        const priorTurnsBlock = priorTurns.length
           ? `\n\n### PRIOR SESSION CONTEXT (${priorTurns.length} remembered turns)\n` +
             priorTurns.map(t => `- [${new Date(t.timestamp).toLocaleDateString()}] ${t.action.substring(0, 120)}`).join('\n')
           : '';
+
+        // ── CONVERSATION HISTORY: Include recent messages so the AI sees the full thread ──
+        const recentHistory = messages
+          .filter(m => m.role === 'user' || m.role === 'assistant')
+          .slice(-8) // last 8 turns (4 exchanges)
+          .map(m => `${m.role === 'user' ? 'User' : 'Consultant'}: ${m.content.substring(0, 500)}`)
+          .join('\n\n');
+        const conversationHistoryBlock = recentHistory
+          ? `\n\n### CONVERSATION HISTORY (recent exchanges in this session)\nThe following is the recent conversation. Use this to maintain context, identify connections between topics, and avoid repeating information the user already received.\n\n${recentHistory}`
+          : '';
+
+        // ── MATTER ARCHIVE: Show the AI what topics have been discussed ──
+        const matterArchive = matterArchiveRef.current;
+        const matterArchiveBlock = matterArchive.length > 1
+          ? `\n\n### TOPICS DISCUSSED IN THIS SESSION (${matterArchive.length} topics)\n` +
+            matterArchive.map((m, i) => `${i + 1}. ${m.matter.substring(0, 150)}${m.country ? ` [${m.country}]` : ''}${m.sector ? ` (${m.sector})` : ''}`).join('\n') +
+            `\n\nINSTRUCTION: These topics may be interconnected. When the user asks about a new topic, consider whether it relates to or builds upon previous topics. Draw connections proactively. Do NOT treat each topic as isolated unless the user explicitly starts a completely new inquiry.`
+          : '';
+
+        const memoryBlock = `${priorTurnsBlock}${conversationHistoryBlock}${matterArchiveBlock}`;
         setIsStreamingResponse(true);
         displayedMsgIds.current.add(assistantMessageId);
         // Build the system instruction. For greeting/low-readiness turns inject a
