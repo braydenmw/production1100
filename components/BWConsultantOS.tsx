@@ -5732,9 +5732,13 @@ CRITICAL RULES:
       }
 
       // ── DOCUMENT BUILDER: Auto-show report options when document intent detected ──
-      // Even without a file upload, when the user asks for a letter/report/case study,
-      // build a report options menu from conversation context and show the tier picker.
-      if (isDocBuilderIntent && !isReportGeneration && !hadFileUpload) {
+      // Only show the panel when the conversation has enough context — NOT on the
+      // very first message or a casual mention.  Require either:
+      //   • at least 2 prior messages (a real back-and-forth), OR
+      //   • readiness ≥ 15  (enough signals captured), OR
+      //   • the user's message is explicitly asking to generate (> 60 chars of substance)
+      const hasEnoughContext = messages.length >= 2 || liveReadiness >= 15 || trimmedUserContent.length > 60;
+      if (isDocBuilderIntent && !isReportGeneration && !hadFileUpload && hasEnoughContext) {
         setDocumentBuilderActive(true);
         const conversationWordCount = ReportLengthRouter.estimateWordCount(
           caseDraft.currentMatter + ' ' + caseDraft.objectives + ' ' + trimmedUserContent
@@ -8268,8 +8272,8 @@ CRITICAL RULES:
             )}
 
             {/* Input Area */}
-            <div className="p-4 border-t border-stone-200 bg-white">
-              <div className="flex items-end gap-3 max-w-4xl mx-auto">
+            <div className="px-3 py-2 border-t border-stone-200 bg-white">
+              <div className="flex items-end gap-2 max-w-4xl mx-auto">
                 <button
                   onClick={() => fileInputRef.current?.click()}
                   className="p-3 bg-stone-100 hover:bg-stone-200 text-slate-600 border border-stone-300 transition-all"
@@ -8341,7 +8345,7 @@ CRITICAL RULES:
                         ? "Select documents or describe what you need..."
                         : "Share more details or ask questions..."
                   }
-                  className="flex-1 resize-none border border-stone-300 px-3 md:px-4 py-3 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-h-[48px] max-h-[150px] leading-relaxed"
+                  className="flex-1 resize-none border border-stone-300 rounded-lg px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-h-[40px] max-h-[120px] leading-normal"
                   rows={1}
                 />
                 <button
@@ -8363,14 +8367,31 @@ CRITICAL RULES:
                     </>
                   )}
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setShowExecutionTimeline((prev) => !prev)}
-                  className="px-3 py-2 text-xs border border-stone-300 bg-stone-50 text-slate-700 hover:bg-stone-100"
-                >
-                  {showExecutionTimeline ? 'Hide Runtime' : 'Show Runtime'}
-                </button>
               </div>
+              {/* Secondary controls row */}
+              <div className="flex items-center justify-between max-w-4xl mx-auto mt-1">
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setShowExecutionTimeline((prev) => !prev)}
+                    className="px-2 py-0.5 text-[10px] border border-stone-200 rounded bg-stone-50 text-slate-500 hover:bg-stone-100 hover:text-slate-700 transition-colors"
+                  >
+                    {showExecutionTimeline ? 'Hide Runtime' : 'Runtime'}
+                  </button>
+                  {messages.length > 0 && (augmentedAISnapshot || augmentedRecommendedTools.length > 0 || augmentedUnresolvedGaps.length > 0) && (
+                    <button
+                      type="button"
+                      onClick={() => setShowAugmentedPanel((prev) => !prev)}
+                      className="px-2 py-0.5 text-[10px] border border-emerald-200 rounded bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors"
+                    >
+                      {showAugmentedPanel ? 'Hide AI Runtime' : 'AI Runtime'}
+                    </button>
+                  )}
+                </div>
+                <span className="text-[9px] text-slate-300">↵ send · ⇧↵ new line</span>
+              </div>
+
+              {/* Execution timeline panel */}
               {showExecutionTimeline && (
                 <div className="max-w-4xl mx-auto mt-2 border border-stone-200 bg-stone-50 px-3 py-2">
                   <p className="text-[11px] font-semibold text-slate-800">Background Runtime</p>
@@ -8476,18 +8497,9 @@ CRITICAL RULES:
                   <p className="text-[11px] text-blue-700 mt-0.5">{reactiveDraftHint}</p>
                 </div>
               )}
-              {/* Augmented AI Human-in-the-Loop panel is now gated by explicit user action */}
-              {messages.length > 0 && (augmentedAISnapshot || augmentedRecommendedTools.length > 0 || augmentedUnresolvedGaps.length > 0) && (
-                <div className="max-w-4xl mx-auto mt-2">
-                  <button
-                    type="button"
-                    onClick={() => setShowAugmentedPanel((prev) => !prev)}
-                    className="px-3 py-2 text-xs border border-emerald-300 bg-emerald-50 text-emerald-900 hover:bg-emerald-100 mb-2"
-                  >
-                    {showAugmentedPanel ? 'Hide Augmented AI Runtime' : 'Show Augmented AI Runtime'}
-                  </button>
-                  {showAugmentedPanel && (
-                    <div className="border border-emerald-300 bg-emerald-50 px-3 py-2">
+              {/* Augmented AI expanded panel — rendered below the controls row */}
+              {showAugmentedPanel && (
+                <div className="max-w-4xl mx-auto mt-1 border border-emerald-300 bg-emerald-50 px-3 py-2 rounded">
                       <button
                         type="button"
                         onClick={() => setAugmentedPanelExpanded((prev) => !prev)}
@@ -8581,11 +8593,8 @@ CRITICAL RULES:
                         </span>
                         {augmentedReviewLoading && <Loader2 size={11} className="animate-spin text-emerald-700" />}
                       </div>
-                    </div>
-                  )}
                 </div>
               )}
-              {/* Pending Actions no longer rendered here — moved inside Runtime panel above */}
               {/* Compliance Warning Strip (only visible when runtime panel is shown) */}
               {showAugmentedPanel && complianceWarnings.length > 0 && (
                 <div className="max-w-4xl mx-auto mt-2 border border-red-200 bg-red-50 px-3 py-2">
@@ -8600,9 +8609,7 @@ CRITICAL RULES:
                   </ul>
                 </div>
               )}
-              <p className="text-[10px] text-slate-400 mt-2 text-center">
-                Enter to send • Shift+Enter new line
-              </p>
+
             </div>
 
             {/* NSIL Footer */}
