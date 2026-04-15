@@ -362,8 +362,11 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                                 Every AI system on the market generates answers.<br className="hidden md:block" />
                                 This one verifies them first.
                             </h2>
-                            <p className="text-lg text-slate-500 leading-relaxed mb-6">
+                            <p className="text-lg text-slate-500 leading-relaxed mb-4">
                                 This isn&rsquo;t a chatbot with a business skin. It&rsquo;s an operating system that formally attacks its own conclusions, debates them across competing engines, stress-tests them mathematically, and scores every claim before it reaches you.
+                            </p>
+                            <p className="text-sm text-slate-600 leading-relaxed">
+                                Ten proven mathematical systems &mdash; SAT solvers, Monte Carlo simulation, Bayesian inference, computational neuroscience, self-evolving algorithms &mdash; each used in isolation across chip design, Wall Street, medical diagnostics, and research labs. We built the architecture that forces all ten into a single adversarial pipeline where every layer challenges every other layer. No one has done this before. That&rsquo;s what ADVOS is.
                             </p>
                         </div>
 
@@ -379,25 +382,6 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                         </div>
                     </div>
 
-                    {/* Comparison Strip */}
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 text-left">
-                        <div className="border-t-2 border-slate-300 pt-4">
-                            <h4 className="text-sm font-bold text-slate-900 mb-1">Strategy Consulting</h4>
-                            <p className="text-xs text-slate-500 leading-relaxed">Sells time. Delivery in months. Frameworks designed for Fortune 500, not regional economies.</p>
-                        </div>
-                        <div className="border-t-2 border-slate-300 pt-4">
-                            <h4 className="text-sm font-bold text-slate-900 mb-1">Financial Modelling</h4>
-                            <p className="text-xs text-slate-500 leading-relaxed">Sells projections. Built for standardised asset classes. Can&rsquo;t quantify localised advantages.</p>
-                        </div>
-                        <div className="border-t-2 border-slate-300 pt-4">
-                            <h4 className="text-sm font-bold text-slate-900 mb-1">General-Purpose AI</h4>
-                            <p className="text-xs text-slate-500 leading-relaxed">Sells summaries. Fast and accessible, but no verification, no evidence tracing, no fiduciary rigour.</p>
-                        </div>
-                        <div className="border-t-2 border-blue-600 pt-4">
-                            <h4 className="text-sm font-bold text-blue-700 mb-1">ADVOS</h4>
-                            <p className="text-xs text-slate-500 leading-relaxed">Ten mathematical systems forced into adversarial conflict. Every conclusion is attacked by competing engines, checked for logical contradiction, and stress-tested before it reaches you. Nothing else does this.</p>
-                        </div>
-                    </div>
                 </div>
             </section>
 
@@ -423,7 +407,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                             <p className="text-xs font-bold text-blue-600 uppercase tracking-[0.2em] mb-4">What Makes This a First</p>
                             <h2 className="text-3xl md:text-4xl lg:text-5xl font-light text-slate-900 leading-tight mb-6">The world&rsquo;s first Adversarial Decision Verification Operating System.</h2>
                             <p className="text-sm text-slate-600 leading-relaxed mb-4">
-                                SAT solvers verify chips at Intel. Monte Carlo simulations price derivatives on Wall Street. Bayesian networks diagnose disease. Computational neuroscience models sit in university labs. Each one is proven. Each one is siloed. We built the architecture that forces all ten to operate as one adversarial pipeline &mdash; every layer challenging every other layer.
+                                Every technology in this pipeline is proven independently &mdash; but they&rsquo;ve never been connected. We built the integration layer: the adversarial debate protocol between reasoning engines, the formal logic checker that catches contradictions across them, the stress tester that breaks their projections, the cognition model that predicts how you&rsquo;ll process the output, and the reflexive layer that watches the entire system for drift and overconfidence.
                             </p>
                             <p className="text-sm text-slate-600 leading-relaxed">
                                 We searched academia, commercial products, and government. Nothing comparable exists. The closest parallels handle one or two of these in isolation. None merge all ten. None make them adversarial. That&rsquo;s the invention.

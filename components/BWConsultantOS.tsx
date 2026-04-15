@@ -3341,13 +3341,13 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, onNavi
         id: crypto.randomUUID(),
         role: 'assistant',
         content: [
-          'Hello — welcome, and thank you for being here.',
+          'Welcome to ADVOS.',
           '',
-          'I\'m your BW AI Consultant. I\'m here to assist you in any way I can to help you better connect with those who wish to do business or invest in regional areas, no matter where they are in the world. Whether it\'s preparing the right documents, understanding a new market, building a compelling case, or simply working through an idea — this is what I do.',
+          'Tell me what you\'re working on — a deal, a market, a region, a partner, a project — in your own words. The system will handle the rest.',
           '',
-          'Are you looking to know more about something? Need help writing a letter or proposal? Want to build a case study for a project you\'re working on? Or do you just need some guidance on where to start?',
+          'Behind this conversation, ten verification layers are standing by: adversarial reasoning engines, contradiction detection, Monte Carlo stress testing, cognitive modelling, entity intelligence, confidence scoring, and a 247-template document factory. Everything you share is verified, cross-checked, and stress-tested before any conclusion is returned.',
           '',
-          'Let me know what you need and we\'ll get to work.'
+          'You don\'t need to know which tools apply. Just describe your situation and the pipeline activates automatically.'
         ].join('\n'),
         timestamp: new Date(),
         phase: 'discovery'
