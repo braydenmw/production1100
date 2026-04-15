@@ -368,9 +368,11 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                             <p className="text-lg text-slate-500 leading-relaxed mb-4">
                                 ADVERSIQ &mdash; the <strong className="text-slate-900">Adversarial Intelligence Quorum</strong> &mdash; isn&rsquo;t a chatbot with a business skin. It&rsquo;s an operating system that formally attacks its own conclusions, debates them across competing engines, stress-tests them mathematically, and scores every claim before it reaches you.
                             </p>
-                            <p className="text-sm text-slate-600 leading-relaxed">
-                                Ten proven mathematical systems &mdash; SAT solvers, Monte Carlo simulation, Bayesian inference, computational neuroscience, self-evolving algorithms &mdash; each used in isolation across chip design, Wall Street, medical diagnostics, and research labs. We built the architecture that forces all ten into a single adversarial pipeline where every layer challenges every other layer. No one has done this before. That&rsquo;s what ADVERSIQ is.
-                            </p>
+                            <div className="mt-8 space-y-1">
+                                {['Adversarial', 'Verified', 'Autonomous', 'Mathematical', 'Defensible'].map((word) => (
+                                    <p key={word} className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 leading-tight tracking-tight">{word}.</p>
+                                ))}
+                            </div>
                         </div>
 
                         {/* Right — Photo */}
@@ -468,51 +470,6 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                             >
                                 Full Architecture &rarr;
                             </button>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* ═══════════════════════════════════════════════════════════════
-                WHY ADVERSIQ — Every Word Is Precise
-            ═══════════════════════════════════════════════════════════════ */}
-            <section className="py-20 px-4 bg-white">
-                <div className="max-w-6xl mx-auto">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-16">
-                        {/* Left — Photo */}
-                        <div>
-                            <div className="h-80 lg:h-[28rem] overflow-hidden">
-                                <img
-                                    src="https://images.unsplash.com/photo-1639322537228-f710d846310a?w=800&h=900&fit=crop&q=80"
-                                    alt="Adversarial verification architecture"
-                                    className="w-full h-full object-cover"
-                                />
-                            </div>
-                        </div>
-
-                        {/* Right — Text */}
-                        <div>
-                            <p className="text-xs font-bold text-blue-600 uppercase tracking-[0.2em] mb-4">Why &ldquo;ADVERSIQ&rdquo;</p>
-                            <h2 className="text-3xl md:text-4xl lg:text-5xl font-light text-slate-900 leading-tight mb-6">Every word is precise.</h2>
-                            <p className="text-sm text-slate-600 leading-relaxed mb-6">
-                                The name isn&rsquo;t marketing. It&rsquo;s a technical description. Each component maps directly to what the system does &mdash; and what makes it fundamentally different from anything else on the market.
-                            </p>
-                        </div>
-                    </div>
-
-                    {/* Three columns below — A·D·V·E·R·S·I·Q */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-                        <div className="border-t-2 border-blue-600 pt-6">
-                            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide mb-3">Adversarial</h3>
-                            <p className="text-sm text-slate-500 leading-relaxed">The system attacks its own conclusions. Five competing AI engines &mdash; Skeptic, Regulator, Accountant, Advocate, Operator &mdash; debate every claim. SAT solvers catch contradictions, Monte Carlo simulations stress-test projections. The output isn&rsquo;t what the AI thinks is right &mdash; it&rsquo;s what survived the attack.</p>
-                        </div>
-                        <div className="border-t-2 border-blue-600 pt-6">
-                            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide mb-3">Intelligence</h3>
-                            <p className="text-sm text-slate-500 leading-relaxed">44 engines, 10 mathematical systems, multi-provider AI with automatic failover, 20+ live external APIs, a full compliance framework (IFC PS1&ndash;PS8, UN SDGs), and a 247-template document pipeline. Intelligence that reasons, not just retrieves.</p>
-                        </div>
-                        <div className="border-t-2 border-blue-600 pt-6">
-                            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide mb-3">Quorum</h3>
-                            <p className="text-sm text-slate-500 leading-relaxed">No single engine decides. A quorum of independent systems must converge before any output reaches you. The Five-Engine Tribunal votes, NSIL validates across ten layers, and the contradiction detector signs off. Consensus through adversarial convergence &mdash; not majority rule.</p>
                         </div>
                     </div>
                 </div>
