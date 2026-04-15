@@ -13,7 +13,7 @@ export const About: React.FC = () => {
                 <div className="mb-12">
                     <h2 className="text-bw-gold font-bold uppercase tracking-widest text-xs mb-3">System Philosophy</h2>
                     <h3 className="text-4xl md:text-5xl font-serif font-bold text-bw-navy leading-tight mb-6">
-                    Verified Decision Intelligence.<br/>Trust the Output.
+                    Adversarial Intelligence Quorum.<br/>Trust the Output.
                     </h3>
                 </div>
 
@@ -41,7 +41,7 @@ export const About: React.FC = () => {
                         <h4 className="text-xl font-bold text-bw-navy mb-3">Deterministic Intelligence</h4>
                         <h5 className="text-sm font-bold text-stone-900 uppercase tracking-wide mb-2">Verified, Not Generated.</h5>
                         <p className="leading-[1.85] text-[15px] md:text-base text-[#1C1C1C]" style={{fontFamily:'Inter, Arial, sans-serif'}}>
-                            This is not a chatbot that generates plausible text. It is an <strong>Verified Decision Intelligence Exchange</strong> — five independent AI minds debate every conclusion, a SAT solver catches logical impossibilities, and nothing reaches you without surviving formal adversarial scrutiny.
+                            This is not a chatbot that generates plausible text. It is an <strong>Adversarial Intelligence Quorum</strong> — five independent AI minds debate every conclusion, a SAT solver catches logical impossibilities, and nothing reaches you without surviving formal adversarial scrutiny.
                         </p>
                         <p className="leading-[1.85] text-[15px] md:text-base mt-4 text-[#808080]" style={{fontFamily:'Inter, Arial, sans-serif'}}>
                             It ingests your strategic intent and stress-tests it using 54+ proprietary formulas, Monte Carlo simulation, Bayesian belief updating, and causal reasoning. We don't guess if a strategy will work; we calculate the specific ways it might fail — and how to correct for them.

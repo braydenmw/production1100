@@ -40,13 +40,13 @@ export const Hero: React.FC = () => {
                             <div className="inline-flex items-center gap-3">
                                 <span className="h-px w-10 bg-bw-gold/70" aria-hidden="true" />
                                 <span className="text-[11px] font-bold uppercase tracking-[0.35em] text-bw-navy/70">
-                                    Verified Decision Intelligence * 5 Independent AI Minds * 54+ Formulas * 240+ Documents
+                                    Adversarial Intelligence Quorum * 5 Independent AI Minds * 54+ Formulas * 240+ Documents
                                 </span>
                             </div>
 
                             <h1 className="text-4xl sm:text-5xl md:text-6xl font-serif font-bold text-bw-navy leading-[1.05]">
                                 Beyond Data. Beyond Consulting.
-                                <span className="block mt-3 text-bw-gold">The World's First Verified Decision Intelligence Exchange.</span>
+                                <span className="block mt-3 text-bw-gold">The World's First Adversarial Intelligence Quorum.</span>
                             </h1>
 
                             <div className="space-y-5 max-w-3xl text-[15px] sm:text-lg text-slate-700 leading-[1.85]">
@@ -54,7 +54,7 @@ export const Hero: React.FC = () => {
                                     Every organisation on earth that uses AI to make high-stakes decisions has the same problem: <strong className="text-bw-navy">How do you trust the output?</strong> LLMs hallucinate. Dashboards show data without argument. Consultants give opinions. Nobody formally verifies decisions before they're made.
                                 </p>
                                 <p className="text-bw-navy font-medium">
-                                    This system does. Whether you're an investor, a business owner, a government planner, or a consultant — the VERDIX Consultant formally verifies every decision through adversarial debate, contradiction detection, Monte Carlo stress-testing, and full audit trail before any output reaches you.
+                                    This system does. Whether you're an investor, a business owner, a government planner, or a consultant — the ADVERSIQ Consultant formally verifies every decision through adversarial debate, contradiction detection, Monte Carlo stress-testing, and full audit trail before any output reaches you.
                                 </p>
                                 <p>
                                     We architected the <strong className="text-bw-navy">Nexus Strategic Intelligence Layer (NSIL)</strong> — a 10-layer deterministic pipeline where five independent AI minds argue every conclusion, a SAT solver catches logical impossibilities, and 54+ proprietary formulas score every dimension. Nothing is guessed. Everything is auditable.
@@ -141,7 +141,7 @@ export const Hero: React.FC = () => {
                                             </div>
                                             <div className="p-4 rounded-xl bg-white/5 border border-white/10">
                                                 <div className="text-[10px] uppercase tracking-[0.3em] text-white/60">Purpose</div>
-                                                <div className="mt-1 text-sm text-white/90">Verified Decision Intelligence</div>
+                                                <div className="mt-1 text-sm text-white/90">Adversarial Intelligence Quorum</div>
                                             </div>
                                         </div>
                                     </div>

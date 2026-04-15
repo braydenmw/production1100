@@ -25,10 +25,10 @@ export const Navbar: React.FC = () => {
             </div>
             <div className="flex flex-col justify-center">
               <h1 className="text-xl font-serif font-bold leading-none tracking-tight text-bw-navy">
-                    VERDIX
+                    ADVERSIQ
                 </h1>
                 <span className="text-[10px] text-bw-gold font-medium uppercase tracking-[0.2em] mt-1 opacity-90">
-                    Verified Decision Intelligence Exchange
+                    Adversarial Intelligence Quorum
                 </span>
             </div>
           </div>

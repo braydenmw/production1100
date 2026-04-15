@@ -78,7 +78,7 @@ const UserManual: React.FC<UserManualProps> = ({ onLaunchOS, onOpenCommandCenter
               Every satisfying answer<br/>deserves to be verified.
             </h1>
             <p className="text-xl text-slate-200 leading-relaxed max-w-xl mb-4">
-              The world&rsquo;s first Verified Decision Intelligence Exchange &mdash; institutional-grade intelligence that formally verifies every conclusion through adversarial debate, contradiction detection, and stress-testing before any output reaches you.
+              The world&rsquo;s first Adversarial Intelligence Quorum &mdash; institutional-grade intelligence that formally verifies every conclusion through adversarial debate, contradiction detection, and stress-testing before any output reaches you.
             </p>
             <p className="text-lg text-slate-400 leading-relaxed max-w-xl">
               Built from regional development. Architected for every high-stakes decision.
@@ -123,7 +123,7 @@ const UserManual: React.FC<UserManualProps> = ({ onLaunchOS, onOpenCommandCenter
         </div>
       </section>
 
-      {/* THE STORY OF VERDIX - Full Width with Side Column */}
+      {/* THE STORY OF ADVERSIQ - Full Width with Side Column */}
       <section className="bg-white py-16 border-b border-slate-200">
           {/* Full-width banner across the entire page */}
           <div className="relative w-full min-h-[32rem] overflow-hidden shadow-lg mb-8 bg-gradient-to-br from-slate-800 via-slate-700 to-slate-900">
@@ -131,10 +131,10 @@ const UserManual: React.FC<UserManualProps> = ({ onLaunchOS, onOpenCommandCenter
               <div className="w-full max-w-4xl text-center">
                 <div className="bg-white/60 backdrop-blur-sm rounded-lg p-10 md:p-16 shadow-lg">
                   <p className="text-slate-600 uppercase tracking-widest text-xs mb-3">OUR ORIGIN</p>
-                  <h2 className="text-4xl md:text-5xl font-light text-slate-900 mb-6">The Story of VERDIX</h2>
+                  <h2 className="text-4xl md:text-5xl font-light text-slate-900 mb-6">The Story of ADVERSIQ</h2>
                   <div className="space-y-6 text-left max-w-3xl mx-auto">
                     <p className="text-lg text-slate-800 leading-relaxed text-justify">
-                      VERDIX (Verified Decision Intelligence Exchange) wasn't founded in a glass skyscraper in New York or London. It was born on the edge of the developing world, in a small coastal city where the gap between potential and opportunity is painfully clear.
+                      ADVERSIQ (Adversarial Intelligence Quorum) wasn't founded in a glass skyscraper in New York or London. It was born on the edge of the developing world, in a small coastal city where the gap between potential and opportunity is painfully clear.
                     </p>
                     <p className="text-base text-slate-700 leading-relaxed text-justify">
                       For years, we watched dedicated regional leaders - mayors, local entrepreneurs, and councils - work tirelessly to attract investment to their communities. They had the vision. They had the drive. They had the raw assets. But time and again, they were ignored by global capital.
@@ -143,7 +143,7 @@ const UserManual: React.FC<UserManualProps> = ({ onLaunchOS, onOpenCommandCenter
                       We realized the problem wasn't their ideas; it was their language. Wall Street and global investors speak a specific dialect of risk matrices, financial models, and feasibility studies. If you can't speak that language, you don't get a seat at the table. Wealthy corporations hire armies of consultants costing $50,000 a month to write these documents for them. Regional communities simply couldn't afford that admission fee, so they were left behind.
                     </p>
                     <p className="text-base text-slate-700 leading-relaxed text-justify">
-                      We built VERDIX to break that barrier. Our mission is simple: to give the underdog - the regional council, the local business, the emerging exporter - the same strategic firepower as a multinational corporation.
+                      We built ADVERSIQ to break that barrier. Our mission is simple: to give the underdog - the regional council, the local business, the emerging exporter - the same strategic firepower as a multinational corporation.
                     </p>
                   </div>
                 </div>
@@ -153,22 +153,22 @@ const UserManual: React.FC<UserManualProps> = ({ onLaunchOS, onOpenCommandCenter
 
           <div className="max-w-7xl mx-auto px-6">
 
-          {/* Section 2: What VERDIX Actually Is - Full Width */}
+          {/* Section 2: What ADVERSIQ Actually Is - Full Width */}
           <div className="max-w-7xl mx-auto px-6">
             <div className="border-t border-slate-200 pt-6">
               <p className="text-slate-500 uppercase tracking-widest text-xs mb-3">THE TECHNOLOGY</p>
-              <h3 className="text-2xl font-light text-slate-900 mb-4">What VERDIX Actually Is</h3>
+              <h3 className="text-2xl font-light text-slate-900 mb-4">What ADVERSIQ Actually Is</h3>
               <p className="text-base text-slate-600 leading-relaxed mb-4 text-justify">
-                Standard AI tools generate text - they predict the next word. That's useful for writing emails, but it's not enough to structure a complex deal, stress-test a business case, or produce a document you'd stake your reputation on. We built VERDIX to close that gap: an intelligence system that reasons through problems, validates assumptions with hard data, and delivers outputs you can confidently present to investors, boards, and government bodies.
+                Standard AI tools generate text - they predict the next word. That's useful for writing emails, but it's not enough to structure a complex deal, stress-test a business case, or produce a document you'd stake your reputation on. We built ADVERSIQ to close that gap: an intelligence system that reasons through problems, validates assumptions with hard data, and delivers outputs you can confidently present to investors, boards, and government bodies.
               </p>
               <p className="text-base text-slate-600 leading-relaxed mb-4 text-justify">
-                <strong className="text-slate-900">VERDIX</strong> is a Sovereign-Grade Intelligence Operating System. It is not a chatbot. It is a <strong className="text-slate-900">digital boardroom</strong>: a team of specialized AI agents that research, debate, score, and write - coordinated by two proprietary engines working in concert. The <strong className="text-slate-900">NSIL (Nexus Strategic Intelligence Layer)</strong> is a reasoning engine with 38 proprietary mathematical formulas that stress-test every dimension of your project, from financial viability to regulatory friction.
+                <strong className="text-slate-900">ADVERSIQ</strong> is a Sovereign-Grade Intelligence Operating System. It is not a chatbot. It is a <strong className="text-slate-900">digital boardroom</strong>: a team of specialized AI agents that research, debate, score, and write - coordinated by two proprietary engines working in concert. The <strong className="text-slate-900">NSIL (Nexus Strategic Intelligence Layer)</strong> is a reasoning engine with 38 proprietary mathematical formulas that stress-test every dimension of your project, from financial viability to regulatory friction.
               </p>
               <p className="text-base text-slate-600 leading-relaxed mb-4 text-justify">
                 The second engine is the <strong className="text-slate-900">Human Cognition Engine</strong>a"7 proprietary behavioural models that simulate how real decision-makers process complexity, allocate attention, and react under pressure. These models address neural field dynamics, predictive processing, attention allocation, emotional valence, and working memory constraints. Together, these <strong className="text-slate-900">38 mathematical formulations</strong> create an intelligence platform that doesn't just analyze data - it anticipates how humans will respond to it.
               </p>
               <p className="text-base text-slate-600 leading-relaxed mb-4 text-justify">
-                In practice, this powers every feature of the platform: <strong className="text-slate-900">VERDIX Search</strong> for instant intelligence on any city, company, or government; the <strong className="text-slate-900">Live Report System</strong> for real-time multi-agent analysis; the <strong className="text-slate-900">VERDIX Consultant</strong> as an embedded AI advisor; and a <strong className="text-slate-900">Document Factory</strong> producing 200+ institutional-grade outputs.
+                In practice, this powers every feature of the platform: <strong className="text-slate-900">ADVERSIQ Search</strong> for instant intelligence on any city, company, or government; the <strong className="text-slate-900">Live Report System</strong> for real-time multi-agent analysis; the <strong className="text-slate-900">ADVERSIQ Consultant</strong> as an embedded AI advisor; and a <strong className="text-slate-900">Document Factory</strong> producing 200+ institutional-grade outputs.
               </p>
             </div>
           </div>
@@ -184,18 +184,18 @@ const UserManual: React.FC<UserManualProps> = ({ onLaunchOS, onOpenCommandCenter
                       <p className="text-slate-500 uppercase tracking-widest text-xs mb-3">THE DIFFERENCE</p>
                       <h3 className="text-2xl font-light text-slate-900 mb-4">Why This Is Different <span className="text-slate-400">(The "Magic")</span></h3>
                       <p className="text-base text-slate-600 leading-relaxed mb-5 text-justify">
-                        VERDIX doesn't just generate text like other AI; it puts your ideas through a <strong className="text-slate-900">digital gauntlet</strong>, rigorously stress-testing them. This stems from a fundamental design philosophy that contrasts sharply with most AI-driven strategic tools:
+                        ADVERSIQ doesn't just generate text like other AI; it puts your ideas through a <strong className="text-slate-900">digital gauntlet</strong>, rigorously stress-testing them. This stems from a fundamental design philosophy that contrasts sharply with most AI-driven strategic tools:
                       </p>
                       <p className="text-lg text-slate-900 font-bold mb-2">Beyond Echo Chambers</p>
-                      <p className="text-base text-slate-600 leading-relaxed mb-0 text-justify">Unlike generic Large Language Models (LLMs) such as ChatGPT or Bard, which are designed to be helpful and agreeable, VERDIX is built for adversarial reasoning. These LLMs can generate business plans, but independent analysis reveals a tendency to confirm user biases and a lack of critical evaluation. They are optimized for language prediction, not strategic validation. VERDIX, in contrast, actively seeks weaknesses.</p>
+                      <p className="text-base text-slate-600 leading-relaxed mb-0 text-justify">Unlike generic Large Language Models (LLMs) such as ChatGPT or Bard, which are designed to be helpful and agreeable, ADVERSIQ is built for adversarial reasoning. These LLMs can generate business plans, but independent analysis reveals a tendency to confirm user biases and a lack of critical evaluation. They are optimized for language prediction, not strategic validation. ADVERSIQ, in contrast, actively seeks weaknesses.</p>
                       <p className="text-lg text-slate-900 font-bold mb-2">Consultant-Level Scrutiny, Automated</p>
-                      <p className="text-base text-slate-600 leading-relaxed mb-0 text-justify">Traditional consulting firms do offer critical review, but this process is expensive and often subjective. A small team of analysts, potentially lacking diverse expertise or regional understanding, formulates an opinion. VERDIX replicates this scrutiny using a multi-agent system. It splits your project into five specialized AI personas - a Skeptic, Regulator, Accountant, Advocate, and Operator. Each persona acts as a dedicated consultant, applying its own analytical framework to assess your plan from a unique angle.</p>
+                      <p className="text-base text-slate-600 leading-relaxed mb-0 text-justify">Traditional consulting firms do offer critical review, but this process is expensive and often subjective. A small team of analysts, potentially lacking diverse expertise or regional understanding, formulates an opinion. ADVERSIQ replicates this scrutiny using a multi-agent system. It splits your project into five specialized AI personas - a Skeptic, Regulator, Accountant, Advocate, and Operator. Each persona acts as a dedicated consultant, applying its own analytical framework to assess your plan from a unique angle.</p>
                       <p className="text-lg text-slate-900 font-bold mb-2">Quantified, Not Just "Considered"</p>
-                      <p className="text-base text-slate-600 leading-relaxed mb-0 text-justify">While other systems might acknowledge risks qualitatively, VERDIX goes further: The system subjects your project to <strong className="text-slate-900">38 proprietary mathematical formulas</strong>, generating hard metrics like the Success Probability Index (SPI) and Regional Return on Investment (RROI). These indices aren't based on subjective opinion; they provide a quantifiable, comparable score, allowing you to benchmark your project against a data-backed standard. This level of granular, quantitative analysis is rarely found in standard strategic AI platforms that focus on text generation rather than numerical validation.</p>
+                      <p className="text-base text-slate-600 leading-relaxed mb-0 text-justify">While other systems might acknowledge risks qualitatively, ADVERSIQ goes further: The system subjects your project to <strong className="text-slate-900">38 proprietary mathematical formulas</strong>, generating hard metrics like the Success Probability Index (SPI) and Regional Return on Investment (RROI). These indices aren't based on subjective opinion; they provide a quantifiable, comparable score, allowing you to benchmark your project against a data-backed standard. This level of granular, quantitative analysis is rarely found in standard strategic AI platforms that focus on text generation rather than numerical validation.</p>
                       <p className="text-lg text-slate-900 font-bold mb-2">Simulating Real-World Pressure</p>
                       <p className="text-base text-slate-600 leading-relaxed mb-0 text-justify">The combination of these personas and the rigid scoring creates a simulation of a real-world investment committee. The AI isn't just "generating content"; it's processing, debating, and scoring your idea as if it were in a high-stakes pitch.</p>
                       <p className="text-base text-slate-600 leading-relaxed text-justify">
-                        This multi-faceted, adversarial approach, combined with its quantitative rigor, sets VERDIX apart, offering a level of strategic validation that's simply not available in most other AI-driven systems or through traditional, less accessible consulting avenues.
+                        This multi-faceted, adversarial approach, combined with its quantitative rigor, sets ADVERSIQ apart, offering a level of strategic validation that's simply not available in most other AI-driven systems or through traditional, less accessible consulting avenues.
                       </p>
                     </div>
 
@@ -280,7 +280,7 @@ const UserManual: React.FC<UserManualProps> = ({ onLaunchOS, onOpenCommandCenter
               <p className="text-amber-200 uppercase tracking-widest text-xs mb-3">NEXT STEPS</p>
               <h2 className="text-3xl font-light text-white mb-6">Partnership & Pilot Programs</h2>
                 <p className="text-amber-100 leading-relaxed mb-6">
-                The most effective way to demonstrate the value of VERDIX is to apply it to real-world challenges. 
+                The most effective way to demonstrate the value of ADVERSIQ is to apply it to real-world challenges. 
                 We propose collaborative partnerships through structured pilot programs.
               </p>
               <div className="space-y-4">
@@ -613,7 +613,7 @@ const UserManual: React.FC<UserManualProps> = ({ onLaunchOS, onOpenCommandCenter
                   This platform exists for one reason: to help capital, partnerships, and capability reach the places that are too often overlooked - despite holding extraordinary, investable potential.
                 </p>
                 <p className="text-lg text-slate-200 mb-6 max-w-3xl mx-auto text-center leading-relaxed">
-                  VERDIX is 100% dedicated to regional growth. During this beta phase and in future subscriptions, we commit that <strong className="text-white">10% of every paid transaction</strong> will be directed back into initiatives that support regional development and long-term community outcomes. This is more than an AI/human report system - it's a practical bridge between global decision-makers and real opportunities on the ground.
+                  ADVERSIQ is 100% dedicated to regional growth. During this beta phase and in future subscriptions, we commit that <strong className="text-white">10% of every paid transaction</strong> will be directed back into initiatives that support regional development and long-term community outcomes. This is more than an AI/human report system - it's a practical bridge between global decision-makers and real opportunities on the ground.
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-6xl mx-auto mb-6 text-left">
                   <div className="bg-white/5 border border-white/20 p-4">
@@ -653,7 +653,7 @@ const UserManual: React.FC<UserManualProps> = ({ onLaunchOS, onOpenCommandCenter
             <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl p-10 text-center border border-slate-700 mt-16">
               <h3 className="text-2xl font-light text-white mb-3">Ready to Experience the Platform?</h3>
               <p className="text-slate-400 mb-6 max-w-xl mx-auto">
-                Launch the full VERDIX Intelligence OS to start analyzing partnership opportunities with sovereign-grade analytical depth.
+                Launch the full ADVERSIQ Intelligence OS to start analyzing partnership opportunities with sovereign-grade analytical depth.
               </p>
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
                   <button 
@@ -1239,13 +1239,13 @@ const UserManual: React.FC<UserManualProps> = ({ onLaunchOS, onOpenCommandCenter
       </Modal>
 
       {/* ARCHITECTURE MODAL - Formal University Technical Report */}
-      <Modal isOpen={activeModal === 'architecture'} onClose={() => setActiveModal(null)} title="VERDIX: Technical Architecture Report">
+      <Modal isOpen={activeModal === 'architecture'} onClose={() => setActiveModal(null)} title="ADVERSIQ: Technical Architecture Report">
         <div className="space-y-6 text-slate-700 text-sm leading-relaxed">
           
           {/* Title Block */}
           <div className="text-center border-b border-slate-300 pb-6">
             <p className="text-xs text-slate-500 uppercase tracking-wider mb-2">Technical Report * January 2026</p>
-            <h2 className="text-2xl font-bold text-slate-900 mb-2">VERDIX</h2>
+            <h2 className="text-2xl font-bold text-slate-900 mb-2">ADVERSIQ</h2>
             <h3 className="text-lg text-slate-700 mb-4">A Neuro-Symbolic Decision-Support Architecture for Cross-Border Partnership Intelligence</h3>
             <p className="text-xs text-slate-500">Brayden Walls Global Advisory * Research & Development Division</p>
           </div>
@@ -1254,10 +1254,10 @@ const UserManual: React.FC<UserManualProps> = ({ onLaunchOS, onOpenCommandCenter
           <div className="border-l-4 border-slate-400 pl-4 py-2 bg-slate-50">
             <h4 className="font-bold text-slate-900 mb-2">Abstract</h4>
             <p className="text-slate-700 mb-2">
-              This document presents the technical architecture of VERDIX, a decision-support system designed for cross-border partnership analysis and regional investment intelligence. The system integrates three core innovations: (1) a neuro-symbolic reasoning layer combining large language models with formal logic validation, (2) a multi-agent adversarial debate framework using five specialist personas, and (3) a 21-formula quantified scoring suite executed via directed acyclic graph (DAG) scheduling.
+              This document presents the technical architecture of ADVERSIQ, a decision-support system designed for cross-border partnership analysis and regional investment intelligence. The system integrates three core innovations: (1) a neuro-symbolic reasoning layer combining large language models with formal logic validation, (2) a multi-agent adversarial debate framework using five specialist personas, and (3) a 21-formula quantified scoring suite executed via directed acyclic graph (DAG) scheduling.
             </p>
             <p className="text-slate-700 mb-4">
-              Unlike conventional AI assistants that produce unstructured text, VERDIX generates auditable, explainable outputs where every recommendation is traceable to its inputs, scoring components, and debate evidence. This architecture addresses the limitations of both traditional consulting (slow, expensive, subjective) and generic AI tools (unstructured, unverifiable, hallucination-prone).
+              Unlike conventional AI assistants that produce unstructured text, ADVERSIQ generates auditable, explainable outputs where every recommendation is traceable to its inputs, scoring components, and debate evidence. This architecture addresses the limitations of both traditional consulting (slow, expensive, subjective) and generic AI tools (unstructured, unverifiable, hallucination-prone).
             </p>
             {/* Sample Formula */}
             <div className="text-center py-4 border-t border-slate-300">
@@ -1281,7 +1281,7 @@ const UserManual: React.FC<UserManualProps> = ({ onLaunchOS, onOpenCommandCenter
               Recent advances in large language models (LLMs) offer speed and accessibility, but introduce new problems: outputs are unstructured, unverifiable, and prone to hallucination. There is no audit trail, no quantified scoring, and no mechanism to detect logical contradictions in user inputs or AI reasoning.
             </p>
             <p>
-              VERDIX addresses these gaps by implementing a hybrid architecture that preserves the generative capabilities of LLMs while adding structure, validation, and explainability. The system processes user inputs through a formal intake protocol, validates them for logical consistency, subjects strategic options to multi-perspective adversarial debate, scores outcomes using mathematical indices, and delivers recommendations with full provenance chains.
+              ADVERSIQ addresses these gaps by implementing a hybrid architecture that preserves the generative capabilities of LLMs while adding structure, validation, and explainability. The system processes user inputs through a formal intake protocol, validates them for logical consistency, subjects strategic options to multi-perspective adversarial debate, scores outcomes using mathematical indices, and delivers recommendations with full provenance chains.
             </p>
           </div>
 
@@ -1508,7 +1508,7 @@ const UserManual: React.FC<UserManualProps> = ({ onLaunchOS, onOpenCommandCenter
           <div>
             <h4 className="font-bold text-slate-900 mb-3 text-base">6. Provenance & Auditability</h4>
             <p className="mb-3">
-              Every recommendation produced by VERDIX includes a complete provenance chain. This chain links each output to:
+              Every recommendation produced by ADVERSIQ includes a complete provenance chain. This chain links each output to:
             </p>
             <ul className="list-disc list-inside mb-3 text-slate-700">
               <li><strong>Input Provenance:</strong> Source data, timestamp, and confidence level for each input parameter</li>
@@ -1524,7 +1524,7 @@ const UserManual: React.FC<UserManualProps> = ({ onLaunchOS, onOpenCommandCenter
           <div>
             <h4 className="font-bold text-slate-900 mb-3 text-base">7. Comparative Analysis</h4>
             <p className="mb-4">
-              The following table compares VERDIX capabilities against alternative approaches:
+              The following table compares ADVERSIQ capabilities against alternative approaches:
             </p>
             <div className="overflow-x-auto">
               <table className="w-full text-xs border border-slate-200 rounded overflow-hidden">
@@ -1534,7 +1534,7 @@ const UserManual: React.FC<UserManualProps> = ({ onLaunchOS, onOpenCommandCenter
                     <th className="p-2 text-center font-semibold">Generic LLMs</th>
                     <th className="p-2 text-center font-semibold">Consulting Firms</th>
                     <th className="p-2 text-center font-semibold">BI Dashboards</th>
-                    <th className="p-2 text-center font-semibold bg-slate-300">VERDIX</th>
+                    <th className="p-2 text-center font-semibold bg-slate-300">ADVERSIQ</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1591,7 +1591,7 @@ const UserManual: React.FC<UserManualProps> = ({ onLaunchOS, onOpenCommandCenter
           <div>
             <h4 className="font-bold text-slate-900 mb-3 text-base">9. Conclusion</h4>
             <p className="mb-3">
-              VERDIX represents a novel approach to strategic decision-support that addresses fundamental limitations of both traditional consulting and generic AI tools. By combining neuro-symbolic reasoning, multi-agent adversarial debate, and quantified scoring with full provenance tracking, the system produces outputs that are:
+              ADVERSIQ represents a novel approach to strategic decision-support that addresses fundamental limitations of both traditional consulting and generic AI tools. By combining neuro-symbolic reasoning, multi-agent adversarial debate, and quantified scoring with full provenance tracking, the system produces outputs that are:
             </p>
             <ul className="list-disc list-inside mb-3 text-slate-700">
               <li>Explainable (every score traces to its inputs and reasoning)</li>
@@ -1608,7 +1608,7 @@ const UserManual: React.FC<UserManualProps> = ({ onLaunchOS, onOpenCommandCenter
           {/* References Footer */}
           <div className="border-t border-slate-300 pt-4 mt-6">
             <p className="text-xs text-slate-500 text-center">
-              VERDIX * Technical Architecture Report * Version 3.2 * January 2026<br/>
+              ADVERSIQ * Technical Architecture Report * Version 3.2 * January 2026<br/>
               A(c) 2026 Brayden Walls Global Advisory. All formulas and methodologies are proprietary.
             </p>
           </div>
@@ -1669,7 +1669,7 @@ const UserManual: React.FC<UserManualProps> = ({ onLaunchOS, onOpenCommandCenter
               <p className="mb-2">Dear [Partner Name],</p>
               <p className="mb-2">
                 [Organization] is exploring strategic opportunities in [Target Region] within the [Industry] sector. 
-                Based on our analysis using VERDIX's proprietary scoring framework, we have identified 
+                Based on our analysis using ADVERSIQ's proprietary scoring framework, we have identified 
                 your organization as a high-compatibility partner (SEAM(TM) Score: [XX]/100).
               </p>
               <p className="mb-2">
@@ -1766,7 +1766,7 @@ const UserManual: React.FC<UserManualProps> = ({ onLaunchOS, onOpenCommandCenter
                         <p className="text-slate-600">Market Entry Analysis: Vietnam AgriTech Sector</p>
                       </div>
                       <div className="text-right text-sm">
-                        <div className="font-bold text-slate-900">VERDIX</div>
+                        <div className="font-bold text-slate-900">ADVERSIQ</div>
                         <div className="text-slate-500">Report Generated: {new Date().toLocaleDateString()}</div>
                         <div className="text-slate-500">Classification: CONFIDENTIAL</div>
                       </div>
@@ -1943,7 +1943,7 @@ const UserManual: React.FC<UserManualProps> = ({ onLaunchOS, onOpenCommandCenter
 
                   {/* Footer */}
                   <div className="mt-6 pt-4 border-t border-slate-300 text-xs text-slate-500 text-center">
-                    Generated by VERDIX * ABN: 55 978 113 300 * This report is confidential and intended for internal strategic planning purposes only.
+                    Generated by ADVERSIQ * ABN: 55 978 113 300 * This report is confidential and intended for internal strategic planning purposes only.
                   </div>
                 </div>
                 )}
@@ -2015,7 +2015,7 @@ const UserManual: React.FC<UserManualProps> = ({ onLaunchOS, onOpenCommandCenter
                         <p className="text-slate-600">Manufacturing Expansion: Vietnam Medical Device Sector</p>
                       </div>
                       <div className="text-right text-sm">
-                        <div className="font-bold text-slate-900">VERDIX</div>
+                        <div className="font-bold text-slate-900">ADVERSIQ</div>
                         <div className="text-slate-500">Classification: CONFIDENTIAL</div>
                       </div>
                     </div>
@@ -2065,7 +2065,7 @@ const UserManual: React.FC<UserManualProps> = ({ onLaunchOS, onOpenCommandCenter
                     </ol>
                   </div>
                   <div className="mt-6 pt-4 border-t border-slate-300 text-xs text-slate-500 text-center">
-                    Generated by VERDIX * ABN: 55 978 113 300
+                    Generated by ADVERSIQ * ABN: 55 978 113 300
                   </div>
                 </div>
                 )}
@@ -2148,7 +2148,7 @@ const UserManual: React.FC<UserManualProps> = ({ onLaunchOS, onOpenCommandCenter
                     <h3 className="font-bold mb-2">NEXT STEPS</h3>
                     <ol className="text-sm space-y-1 text-slate-300"><li>1. Engage Irish regulatory counsel and CBI pre-application</li><li>2. GDPR compliance framework development</li><li>3. Dublin office setup and talent acquisition</li></ol>
                   </div>
-                  <div className="mt-6 pt-4 border-t border-slate-300 text-xs text-slate-500 text-center">Generated by VERDIX * ABN: 55 978 113 300</div>
+                  <div className="mt-6 pt-4 border-t border-slate-300 text-xs text-slate-500 text-center">Generated by ADVERSIQ * ABN: 55 978 113 300</div>
                 </div>
                 )}
               </div>
@@ -2230,7 +2230,7 @@ const UserManual: React.FC<UserManualProps> = ({ onLaunchOS, onOpenCommandCenter
                     <h3 className="font-bold mb-2">NEXT STEPS</h3>
                     <ol className="text-sm space-y-1 text-slate-300"><li>1. Industrial park site selection (FINSA/PIMSA)</li><li>2. USMCA Rule of Origin compliance mapping</li><li>3. Engage JETRO Mexico for investment support</li></ol>
                   </div>
-                  <div className="mt-6 pt-4 border-t border-slate-300 text-xs text-slate-500 text-center">Generated by VERDIX * ABN: 55 978 113 300</div>
+                  <div className="mt-6 pt-4 border-t border-slate-300 text-xs text-slate-500 text-center">Generated by ADVERSIQ * ABN: 55 978 113 300</div>
                 </div>
                 )}
               </div>
@@ -2312,7 +2312,7 @@ const UserManual: React.FC<UserManualProps> = ({ onLaunchOS, onOpenCommandCenter
                     <h3 className="font-bold mb-2">NEXT STEPS</h3>
                     <ol className="text-sm space-y-1 text-slate-300"><li>1. Initiate ACWA Power partnership discussions</li><li>2. Develop technology transfer framework</li><li>3. Engage MISA for investment licensing</li></ol>
                   </div>
-                  <div className="mt-6 pt-4 border-t border-slate-300 text-xs text-slate-500 text-center">Generated by VERDIX * ABN: 55 978 113 300</div>
+                  <div className="mt-6 pt-4 border-t border-slate-300 text-xs text-slate-500 text-center">Generated by ADVERSIQ * ABN: 55 978 113 300</div>
                 </div>
                 )}
               </div>
@@ -2394,7 +2394,7 @@ const UserManual: React.FC<UserManualProps> = ({ onLaunchOS, onOpenCommandCenter
                     <h3 className="font-bold mb-2">NEXT STEPS</h3>
                     <ol className="text-sm space-y-1 text-slate-300"><li>1. Engage M&A advisors for target outreach</li><li>2. Conduct commercial due diligence on TestBook</li><li>3. Build vernacular content team in Bangalore</li></ol>
                   </div>
-                  <div className="mt-6 pt-4 border-t border-slate-300 text-xs text-slate-500 text-center">Generated by VERDIX * ABN: 55 978 113 300</div>
+                  <div className="mt-6 pt-4 border-t border-slate-300 text-xs text-slate-500 text-center">Generated by ADVERSIQ * ABN: 55 978 113 300</div>
                 </div>
                 )}
               </div>
@@ -2476,7 +2476,7 @@ const UserManual: React.FC<UserManualProps> = ({ onLaunchOS, onOpenCommandCenter
                     <h3 className="font-bold mb-2">NEXT STEPS</h3>
                     <ol className="text-sm space-y-1 text-slate-300"><li>1. Engage indigenous community liaison specialists</li><li>2. Commission SEIA environmental pre-assessment</li><li>3. Model 40% royalty impact on project economics</li></ol>
                   </div>
-                  <div className="mt-6 pt-4 border-t border-slate-300 text-xs text-slate-500 text-center">Generated by VERDIX * ABN: 55 978 113 300</div>
+                  <div className="mt-6 pt-4 border-t border-slate-300 text-xs text-slate-500 text-center">Generated by ADVERSIQ * ABN: 55 978 113 300</div>
                 </div>
                 )}
               </div>
@@ -2558,7 +2558,7 @@ const UserManual: React.FC<UserManualProps> = ({ onLaunchOS, onOpenCommandCenter
                     <h3 className="font-bold mb-2">NEXT STEPS</h3>
                     <ol className="text-sm space-y-1 text-slate-300"><li>1. EDB Singapore investment negotiation</li><li>2. A*STAR collaboration framework</li><li>3. Pioneer Certificate application</li></ol>
                   </div>
-                  <div className="mt-6 pt-4 border-t border-slate-300 text-xs text-slate-500 text-center">Generated by VERDIX * ABN: 55 978 113 300</div>
+                  <div className="mt-6 pt-4 border-t border-slate-300 text-xs text-slate-500 text-center">Generated by ADVERSIQ * ABN: 55 978 113 300</div>
                 </div>
                 )}
               </div>
@@ -2640,7 +2640,7 @@ const UserManual: React.FC<UserManualProps> = ({ onLaunchOS, onOpenCommandCenter
                     <h3 className="font-bold mb-2">NEXT STEPS</h3>
                     <ol className="text-sm space-y-1 text-slate-300"><li>1. Kenya Ports Authority concession negotiations</li><li>2. TPA Tanzania partnership framework</li><li>3. Corridor feasibility study commissioning</li></ol>
                   </div>
-                  <div className="mt-6 pt-4 border-t border-slate-300 text-xs text-slate-500 text-center">Generated by VERDIX * ABN: 55 978 113 300</div>
+                  <div className="mt-6 pt-4 border-t border-slate-300 text-xs text-slate-500 text-center">Generated by ADVERSIQ * ABN: 55 978 113 300</div>
                 </div>
                 )}
               </div>
@@ -2722,7 +2722,7 @@ const UserManual: React.FC<UserManualProps> = ({ onLaunchOS, onOpenCommandCenter
                     <h3 className="font-bold mb-2">NEXT STEPS</h3>
                     <ol className="text-sm space-y-1 text-slate-300"><li>1. Local publisher partnership (Garena, VNG consideration)</li><li>2. Localization team setup in Jakarta</li><li>3. Payment gateway integration roadmap</li></ol>
                   </div>
-                  <div className="mt-6 pt-4 border-t border-slate-300 text-xs text-slate-500 text-center">Generated by VERDIX * ABN: 55 978 113 300</div>
+                  <div className="mt-6 pt-4 border-t border-slate-300 text-xs text-slate-500 text-center">Generated by ADVERSIQ * ABN: 55 978 113 300</div>
                 </div>
                 )}
               </div>
@@ -2804,7 +2804,7 @@ const UserManual: React.FC<UserManualProps> = ({ onLaunchOS, onOpenCommandCenter
                     <h3 className="font-bold mb-2">NEXT STEPS</h3>
                     <ol className="text-sm space-y-1 text-slate-300"><li>1. Mozambique Ministry of Agriculture engagement</li><li>2. ProSAVANA framework alignment review</li><li>3. Pilot project in Nacala Corridor design</li></ol>
                   </div>
-                  <div className="mt-6 pt-4 border-t border-slate-300 text-xs text-slate-500 text-center">Generated by VERDIX * ABN: 55 978 113 300</div>
+                  <div className="mt-6 pt-4 border-t border-slate-300 text-xs text-slate-500 text-center">Generated by ADVERSIQ * ABN: 55 978 113 300</div>
                 </div>
                 )}
               </div>
@@ -2886,7 +2886,7 @@ const UserManual: React.FC<UserManualProps> = ({ onLaunchOS, onOpenCommandCenter
                     <h3 className="font-bold mb-2">NEXT STEPS</h3>
                     <ol className="text-sm space-y-1 text-slate-300"><li>1. Saudi CITC certification application</li><li>2. Local partner identification (51% ownership structure)</li><li>3. AI/ML center of excellence establishment</li></ol>
                   </div>
-                  <div className="mt-6 pt-4 border-t border-slate-300 text-xs text-slate-500 text-center">Generated by VERDIX * ABN: 55 978 113 300</div>
+                  <div className="mt-6 pt-4 border-t border-slate-300 text-xs text-slate-500 text-center">Generated by ADVERSIQ * ABN: 55 978 113 300</div>
                 </div>
                 )}
               </div>
@@ -2926,7 +2926,7 @@ const UserManual: React.FC<UserManualProps> = ({ onLaunchOS, onOpenCommandCenter
           <div className="bg-gradient-to-br from-slate-900 to-slate-800 text-white p-8 rounded-xl">
             <h3 className="text-2xl font-bold mb-4">Worldwide Intelligence Capability</h3>
             <p className="text-slate-300 mb-6">
-              VERDIX processes strategic scenarios across every continent, leveraging real-time data feeds 
+              ADVERSIQ processes strategic scenarios across every continent, leveraging real-time data feeds 
               from international organizations, government databases, and proprietary research networks. The system can 
               generate one-page executive briefs for rapid assessment, or comprehensive 50+ page strategic dossiers 
               with full due diligence documentation.
@@ -3127,12 +3127,12 @@ const UserManual: React.FC<UserManualProps> = ({ onLaunchOS, onOpenCommandCenter
                   <Brain className="w-6 h-6" />
                 </div>
                 <div>
-                  <span className="font-bold">VERDIX</span>
+                  <span className="font-bold">ADVERSIQ</span>
                   <p className="text-xs text-slate-400">Strategic Partnership Intelligence</p>
                 </div>
               </div>
               <p className="text-sm text-slate-400 leading-relaxed">
-                VERDIX Intelligence is an Australian strategic intelligence firm developing sovereign-grade 
+                ADVERSIQ Intelligence is an Australian strategic intelligence firm developing sovereign-grade 
                 AI systems for cross-border investment and regional economic development.
               </p>
             </div>
@@ -3144,7 +3144,7 @@ const UserManual: React.FC<UserManualProps> = ({ onLaunchOS, onOpenCommandCenter
                   <p className="text-xs text-slate-400 mb-2">CURRENT PHASE</p>
                 <p className="text-sm text-white font-medium mb-3">Research & Development</p>
                 <p className="text-xs text-slate-400 leading-relaxed">
-                  VERDIX is currently in active R&D phase, operating under Brayden Walls as a registered 
+                  ADVERSIQ is currently in active R&D phase, operating under Brayden Walls as a registered 
                   Australian sole trader. The platform is being developed for future commercial deployment 
                   to government and enterprise clients.
                 </p>
@@ -3173,7 +3173,7 @@ const UserManual: React.FC<UserManualProps> = ({ onLaunchOS, onOpenCommandCenter
             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
               <div className="text-center md:text-left">
                 <p className="text-sm text-slate-400">
-                  A(c) 2026 VERDIX Intelligence. All rights reserved. | brayden@bwglobaladvis.info | +63 960 835 4283
+                  A(c) 2026 ADVERSIQ Intelligence. All rights reserved. | brayden@bwglobaladvis.info | +63 960 835 4283
                 </p>
                 <p className="text-xs text-slate-500 mt-1">
                   Trading as Sole Trader (R&D Phase) | ABN 55 978 113 300 | Melbourne, Australia
@@ -3201,7 +3201,7 @@ const UserManual: React.FC<UserManualProps> = ({ onLaunchOS, onOpenCommandCenter
             </div>
             <div>
               <h3 className="text-lg font-semibold text-slate-900 mb-2">2. Decision Support & Authority</h3>
-              <p className="text-slate-600 text-sm">VERDIX Intelligence provides insights for informational purposes only. All Nexus OS outputs are probabilistic and advisory in nature. Strategic decisions remain the sole responsibility of the user. No output should be regarded as deterministic, final, or binding.</p>
+              <p className="text-slate-600 text-sm">ADVERSIQ Intelligence provides insights for informational purposes only. All Nexus OS outputs are probabilistic and advisory in nature. Strategic decisions remain the sole responsibility of the user. No output should be regarded as deterministic, final, or binding.</p>
             </div>
             <div>
               <h3 className="text-lg font-semibold text-slate-900 mb-2">3. Data Privacy & Sovereignty</h3>
@@ -3213,7 +3213,7 @@ const UserManual: React.FC<UserManualProps> = ({ onLaunchOS, onOpenCommandCenter
             </div>
             <div>
               <h3 className="text-lg font-semibold text-slate-900 mb-2">5. Intellectual Property</h3>
-              <p className="text-slate-600 text-sm">All algorithms, formulas, scoring methodologies, and system architecture are the exclusive intellectual property of VERDIX Intelligence. The 27-formula suite, NSIL architecture, and multi-persona reasoning system are proprietary innovations developed during R&D.</p>
+              <p className="text-slate-600 text-sm">All algorithms, formulas, scoring methodologies, and system architecture are the exclusive intellectual property of ADVERSIQ Intelligence. The 27-formula suite, NSIL architecture, and multi-persona reasoning system are proprietary innovations developed during R&D.</p>
             </div>
           </div>
         </div>
@@ -3222,7 +3222,7 @@ const UserManual: React.FC<UserManualProps> = ({ onLaunchOS, onOpenCommandCenter
       {/* Privacy Modal */}
       <Modal isOpen={activeModal === 'privacy'} onClose={() => setActiveModal(null)} title="Privacy Policy">
         <div className="prose prose-slate max-w-none">
-          <p className="text-sm text-slate-500 mb-6">VERDIX Intelligence Privacy Policy</p>
+          <p className="text-sm text-slate-500 mb-6">ADVERSIQ Intelligence Privacy Policy</p>
           
           <div className="space-y-6">
             <div>
@@ -3239,7 +3239,7 @@ const UserManual: React.FC<UserManualProps> = ({ onLaunchOS, onOpenCommandCenter
             </div>
             <div>
               <h3 className="text-lg font-semibold text-slate-900 mb-2">Regulatory Compliance</h3>
-              <p className="text-slate-600 text-sm">VERDIX operates in alignment with GDPR and Australian Privacy Act requirements. Users have the right to request access to, correction of, or deletion of their personal data.</p>
+              <p className="text-slate-600 text-sm">ADVERSIQ operates in alignment with GDPR and Australian Privacy Act requirements. Users have the right to request access to, correction of, or deletion of their personal data.</p>
             </div>
           </div>
         </div>
@@ -3253,11 +3253,11 @@ const UserManual: React.FC<UserManualProps> = ({ onLaunchOS, onOpenCommandCenter
           <div className="space-y-6">
             <div>
               <h3 className="text-lg font-semibold text-slate-900 mb-2">Statement of Commitment</h3>
-              <p className="text-slate-600 text-sm">VERDIX Intelligence is founded upon the principle that artificial intelligence must be developed and deployed with the highest degree of ethical responsibility. We acknowledge that the power of advanced computational systems carries a corresponding obligation to ensure technology is never used in a manner that compromises human rights, privacy, or social stability.</p>
+              <p className="text-slate-600 text-sm">ADVERSIQ Intelligence is founded upon the principle that artificial intelligence must be developed and deployed with the highest degree of ethical responsibility. We acknowledge that the power of advanced computational systems carries a corresponding obligation to ensure technology is never used in a manner that compromises human rights, privacy, or social stability.</p>
             </div>
             <div>
               <h3 className="text-lg font-semibold text-slate-900 mb-2">Human Authority</h3>
-              <p className="text-slate-600 text-sm">VERDIX affirms without qualification that artificial intelligence shall never replace human authority. All outputs produced by the Nexus engine are advisory in nature and exist solely to assist decision-makers. The human user always remains in control.</p>
+              <p className="text-slate-600 text-sm">ADVERSIQ affirms without qualification that artificial intelligence shall never replace human authority. All outputs produced by the Nexus engine are advisory in nature and exist solely to assist decision-makers. The human user always remains in control.</p>
             </div>
             <div>
               <h3 className="text-lg font-semibold text-slate-900 mb-2">Transparency & Explainability</h3>
@@ -3272,7 +3272,7 @@ const UserManual: React.FC<UserManualProps> = ({ onLaunchOS, onOpenCommandCenter
       </Modal>
 
       {/* TERMS OF ENGAGEMENT MODAL */}
-      <Modal isOpen={showTermsModal} onClose={() => setShowTermsModal(false)} title="Terms of Engagement - VERDIX">
+      <Modal isOpen={showTermsModal} onClose={() => setShowTermsModal(false)} title="Terms of Engagement - ADVERSIQ">
         <div className="space-y-6">
           <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
             <div className="flex items-start gap-3">
@@ -3280,7 +3280,7 @@ const UserManual: React.FC<UserManualProps> = ({ onLaunchOS, onOpenCommandCenter
               <div>
                 <h4 className="font-semibold text-amber-800 text-sm">Important Legal Notice</h4>
                 <p className="text-amber-700 text-sm mt-1">
-                  Please read these terms carefully. By accessing the VERDIX OS, you agree to be bound by these terms and conditions.
+                  Please read these terms carefully. By accessing the ADVERSIQ OS, you agree to be bound by these terms and conditions.
                 </p>
               </div>
             </div>
@@ -3305,7 +3305,7 @@ const UserManual: React.FC<UserManualProps> = ({ onLaunchOS, onOpenCommandCenter
                 className="mt-1 w-4 h-4 text-slate-900 border-slate-300 rounded focus:ring-slate-500"
               />
               <label htmlFor="terms-acceptance" className="text-sm text-slate-700 leading-relaxed">
-                I have read, understood, and agree to the Terms of Engagement for the VERDIX OS. I acknowledge that this is a decision support platform and all outputs are advisory in nature.
+                I have read, understood, and agree to the Terms of Engagement for the ADVERSIQ OS. I acknowledge that this is a decision support platform and all outputs are advisory in nature.
               </label>
             </div>
 

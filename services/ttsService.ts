@@ -1,9 +1,9 @@
 /**
  * ─────────────────────────────────────────────────────────────────────────────
- * VERDIX CONSULTANT TTS SERVICE
+ * ADVERSIQ CONSULTANT TTS SERVICE
  * ─────────────────────────────────────────────────────────────────────────────
  *
- * Premium Text-to-Speech for VERDIX Consultant OS.
+ * Premium Text-to-Speech for ADVERSIQ Consultant OS.
  *
  * Strategy (in priority order):
  *   1. OpenAI TTS-HD via server route (/api/ai/tts) - consistent, warm, human

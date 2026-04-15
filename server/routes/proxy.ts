@@ -1,6 +1,6 @@
 /**
  * ═══════════════════════════════════════════════════════════════════════════════
- * VERDIX NEXUS AI — SERVER-SIDE AI PROXY
+ * ADVERSIQ NEXUS AI — SERVER-SIDE AI PROXY
  * ═══════════════════════════════════════════════════════════════════════════════
  *
  * Routes ALL AI calls through the Express server to:

@@ -37,12 +37,12 @@ export const BWConsultantSearchWidget: React.FC<BWConsultantSearchWidgetProps> =
 
     setIsSearching(true);
     setShowResults(true);
-    setSearchProgress({ message: 'Connecting to VERDIX Consultant...', progress: 20 });
+    setSearchProgress({ message: 'Connecting to ADVERSIQ Consultant...', progress: 20 });
 
     try {
       setSearchProgress({ message: 'Researching your query...', progress: 50 });
 
-      const prompt = `You are VERDIX Consultant, a knowledgeable strategic business advisor. A user has asked you a question from a landing page search bar. Provide a helpful, direct answer.
+      const prompt = `You are ADVERSIQ Consultant, a knowledgeable strategic business advisor. A user has asked you a question from a landing page search bar. Provide a helpful, direct answer.
 
 IMPORTANT:
 - Answer the question directly and conversationally, like ChatGPT would
@@ -137,7 +137,7 @@ User query: ${query.trim()}`;
             Meet Your AI Partner
           </p>
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 text-white leading-tight">
-            VERDIX Consultant<br />
+            ADVERSIQ Consultant<br />
             <span className="text-blue-400">Your Strategic Intelligence Partner</span>
           </h2>
           <p className="text-lg md:text-xl text-slate-300 leading-relaxed mb-3 max-w-2xl">
@@ -244,7 +244,7 @@ User query: ${query.trim()}`;
         <div className="max-w-3xl w-full mt-6">
           <div className="bg-slate-900 border border-slate-600 rounded-lg shadow-2xl p-6">
             <div className="mb-6">
-              <p className="text-xs text-blue-400 uppercase tracking-widest font-semibold mb-1">VERDIX Deep Intelligence</p>
+              <p className="text-xs text-blue-400 uppercase tracking-widest font-semibold mb-1">ADVERSIQ Deep Intelligence</p>
               <h3 className="text-lg font-bold text-white">Fact Sheet Analysis</h3>
               <p className="text-xs text-slate-400 mt-0.5">Query: &ldquo;{query}&rdquo;</p>
             </div>

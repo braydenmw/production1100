@@ -1,6 +1,6 @@
 /**
  * ═══════════════════════════════════════════════════════════════════════════════
- * VERDIX NEXUS AI - STRUCTURED LOGGING & MONITORING SERVICE
+ * ADVERSIQ NEXUS AI - STRUCTURED LOGGING & MONITORING SERVICE
  * ═══════════════════════════════════════════════════════════════════════════════
  *
  * Replaces ad-hoc console.log calls with structured, queryable logs.

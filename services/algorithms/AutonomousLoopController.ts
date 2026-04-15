@@ -1,5 +1,5 @@
 /**
- * AUTONOMOUS LOOP CONTROLLER — Adaptive Re-Routing for VERDIX
+ * AUTONOMOUS LOOP CONTROLLER — Adaptive Re-Routing for ADVERSIQ
  * 
  * Wraps the brain pipeline with intelligent loops:
  * - If confidence < threshold → re-run with deeper analysis

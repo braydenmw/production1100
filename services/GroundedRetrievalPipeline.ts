@@ -3,7 +3,7 @@
  * PIPELINE 2: GROUNDED RETRIEVAL — Live Search + Citation Tagging
  * ═══════════════════════════════════════════════════════════════════════════════
  *
- * Grounds VERDIX responses in real-time external data with verifiable citations.
+ * Grounds ADVERSIQ responses in real-time external data with verifiable citations.
  * Detects when internal data is stale, auto-searches, injects results with
  * source URLs, and tags factual claims.
  * ═══════════════════════════════════════════════════════════════════════════════

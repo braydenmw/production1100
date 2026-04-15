@@ -3,7 +3,7 @@
  * PIPELINE 3: MULTIMODAL INPUT — PDF / Image / Audio → Text
  * ═══════════════════════════════════════════════════════════════════════════════
  *
- * Converts non-text inputs into structured text for the VERDIX pipeline.
+ * Converts non-text inputs into structured text for the ADVERSIQ pipeline.
  * Uses Together Vision model for images, Groq Whisper for audio,
  * and text extraction for PDFs.
  * ═══════════════════════════════════════════════════════════════════════════════

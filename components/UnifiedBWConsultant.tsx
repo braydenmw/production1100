@@ -1,5 +1,5 @@
 /**
- * UNIFIED VERDIX CONSULTANT COMPONENT
+ * UNIFIED ADVERSIQ CONSULTANT COMPONENT
  * 
  * Landing Page: Drawer/Modal with A4 fact sheet
  * Live Report: Normal chat interface showing conversational responses
@@ -178,7 +178,7 @@ export const UnifiedBWConsultant: React.FC<UnifiedBWConsultantProps> = ({
             firstSection.includes('api key expired') ||
             firstSection.includes('error fetching');
           const looksLikeGenericFallback =
-            firstSection.includes('VERDIX consultant ai analysis') ||
+            firstSection.includes('ADVERSIQ consultant ai analysis') ||
             firstSection.includes('bw consultant ai analysis') ||
             firstSection.includes('to provide more targeted insights') ||
             firstSection.includes('what i can help with');
@@ -220,7 +220,7 @@ export const UnifiedBWConsultant: React.FC<UnifiedBWConsultantProps> = ({
 
       onQueryProcessed?.(result);
     } catch (error) {
-      console.error('VERDIX Consultant error:', error);
+      console.error('ADVERSIQ Consultant error:', error);
       if (detectedContext === 'live-report') {
         setChatMessages(prev => [...prev, 
           { type: 'user', text: queryText },
@@ -296,7 +296,7 @@ export const UnifiedBWConsultant: React.FC<UnifiedBWConsultantProps> = ({
                         {msg.type === 'bw' && (
                           <div className="flex items-center gap-1.5 mb-1">
                             <Brain size={11} className="text-blue-600" />
-                            <span className="text-[9px] font-semibold text-blue-600 uppercase">VERDIX Consultant</span>
+                            <span className="text-[9px] font-semibold text-blue-600 uppercase">ADVERSIQ Consultant</span>
                           </div>
                         )}
                         <p className="whitespace-pre-wrap">{msg.text}</p>
@@ -379,7 +379,7 @@ export const UnifiedBWConsultant: React.FC<UnifiedBWConsultantProps> = ({
       {/* HEADER */}
       <div className="flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-900 to-blue-800 text-white border-b border-blue-900">
         <Brain size={16} />
-        <span className="font-bold text-sm">VERDIX Consultant</span>
+        <span className="font-bold text-sm">ADVERSIQ Consultant</span>
         <span className="text-xs opacity-75">💬 Live Chat</span>
       </div>
 

@@ -1,5 +1,5 @@
 /**
- * TOOL REGISTRY — Dynamic Tool/Function Calling for VERDIX
+ * TOOL REGISTRY — Dynamic Tool/Function Calling for ADVERSIQ
  * 
  * Provides structured tool schemas so the AI brain can decide
  * WHEN to call WHICH tool based on the situation.

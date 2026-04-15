@@ -131,7 +131,7 @@ const App: React.FC = () => {
     const [selfImprovementSuggestions, setSelfImprovementSuggestions] = useState<string[]>([]);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
     const [activeSubAgents, setActiveSubAgents] = useState<any[]>([]);
-    // VERDIX CONSULTANT AI STATE
+    // ADVERSIQ CONSULTANT AI STATE
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [consultantInsights, setConsultantInsights] = useState<ConsultantInsight[]>([]);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -302,7 +302,7 @@ const App: React.FC = () => {
         return () => clearTimeout(timer);
     }, [agenticKey, autonomousMode, params]);
 
-    // VERDIX Consultant AI - Proactive guidance and automatic search
+    // ADVERSIQ Consultant AI - Proactive guidance and automatic search
     useEffect(() => {
         if (isConsultantActive && (params.organizationName || params.country || params.industry)) {
             const timer = setTimeout(async () => {
@@ -318,7 +318,7 @@ const App: React.FC = () => {
                     await automaticSearchService.proactiveSearchForReport(params);
 
                 } catch (error) {
-                    console.error(' VERDIX Consultant: Error during analysis:', error);
+                    console.error(' ADVERSIQ Consultant: Error during analysis:', error);
                 }
             }, 2000); // 2 second delay to avoid too frequent updates
 
@@ -847,7 +847,7 @@ const App: React.FC = () => {
             <div className="h-screen w-full bg-slate-950 text-white flex items-center justify-center p-6">
                 <div className="max-w-md text-center border border-white/20 rounded-lg p-8 bg-black/60 shadow-lg">
                     <h1 className="text-2xl font-bold mb-4">No Internet Connection</h1>
-                    <p className="text-sm mb-4">You are currently offline. Please reconnect to the internet to use VERDIX Consultant features.</p>
+                    <p className="text-sm mb-4">You are currently offline. Please reconnect to the internet to use ADVERSIQ Consultant features.</p>
                     <p className="text-xs text-slate-300">The app is available here once your network is restored.</p>
                 </div>
             </div>

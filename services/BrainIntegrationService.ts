@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * ═══════════════════════════════════════════════════════════════════════════════
- * VERDIX NEXUS AI - BRAIN INTEGRATION SERVICE
+ * ADVERSIQ NEXUS AI - BRAIN INTEGRATION SERVICE
  * ═══════════════════════════════════════════════════════════════════════════════
  *
  * The unified "always-on" background brain that aggregates every analytical
@@ -1781,7 +1781,7 @@ export class BrainIntegrationService {
     // ── Build the combined prompt block ───────────────────────────────────────
     const promptParts: string[] = [
       `\n\n${'═'.repeat(70)}`,
-      `## VERDIX AI BRAIN CONTEXT - Readiness ${readiness}% - ${new Date().toISOString()}`,
+      `## ADVERSIQ AI BRAIN CONTEXT - Readiness ${readiness}% - ${new Date().toISOString()}`,
       `This block is injected from the background intelligence layer. Use it to inform your response - do not summarise it verbatim, but let it shape the precision and depth of your recommendations.`,
     ];
 

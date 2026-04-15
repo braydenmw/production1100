@@ -1,6 +1,6 @@
 /**
  * ═══════════════════════════════════════════════════════════════════════════════
- * VERDIX Intelligence AI - LIVE SEARCH API ROUTES
+ * ADVERSIQ Intelligence AI - LIVE SEARCH API ROUTES
  * ═══════════════════════════════════════════════════════════════════════════════
  * 
  * Real-time search integrations:
@@ -637,7 +637,7 @@ async function fetchLocationGeocoding(location: string): Promise<{
   try {
     const response = await fetch(
       `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(location)}&format=json&addressdetails=1&limit=1`,
-      { headers: { 'User-Agent': 'VERDIX-Intelligence/1.0' } }
+      { headers: { 'User-Agent': 'ADVERSIQ-Intelligence/1.0' } }
     );
     if (response.ok) {
       const data = await response.json();

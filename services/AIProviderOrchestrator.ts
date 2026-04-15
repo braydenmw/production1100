@@ -1,6 +1,6 @@
 /**
  * ═══════════════════════════════════════════════════════════════════════════════
- * VERDIX NEXUS AI — MULTI-PROVIDER AI ORCHESTRATOR
+ * ADVERSIQ NEXUS AI — MULTI-PROVIDER AI ORCHESTRATOR
  * ═══════════════════════════════════════════════════════════════════════════════
  *
  * Intelligent load balancing across all available AI providers.

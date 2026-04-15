@@ -169,7 +169,7 @@ export const AnalysisModal: React.FC<AnalysisModalProps> = ({ item, region, onCl
               </main>
 
               <footer className="mt-16 pt-8 border-t border-stone-200 text-center text-[10px] text-stone-400 font-mono uppercase tracking-widest">
-                  <p>VERDIX | Generated on {new Date().toLocaleDateString()}</p>
+                  <p>ADVERSIQ | Generated on {new Date().toLocaleDateString()}</p>
               </footer>
           </div>
       );

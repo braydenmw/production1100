@@ -3,9 +3,9 @@
  * PIPELINE 12: MCP SERVER (Model Context Protocol)
  * ═══════════════════════════════════════════════════════════════════════════════
  *
- * Exposes VERDIX tools and capabilities as an MCP-compatible server.
+ * Exposes ADVERSIQ tools and capabilities as an MCP-compatible server.
  * External AI clients (Claude Desktop, OpenClaw, etc.) can discover
- * and call VERDIX tools via the standardized protocol.
+ * and call ADVERSIQ tools via the standardized protocol.
  * ═══════════════════════════════════════════════════════════════════════════════
  */
 
@@ -47,12 +47,12 @@ type ToolHandler = (args: Record<string, unknown>) => Promise<MCPToolResult>;
 
 const toolHandlers: Map<string, ToolHandler> = new Map();
 
-// ─── Register Default VERDIX Tools ───────────────────────────────────────────
+// ─── Register Default ADVERSIQ Tools ───────────────────────────────────────────
 
-export const VERDIX_TOOLS: MCPToolDefinition[] = [
+export const ADVERSIQ_TOOLS: MCPToolDefinition[] = [
   {
-    name: 'VERDIX_consultant_query',
-    description: 'Submit a business consulting query to the VERDIX AI brain. Returns comprehensive analysis using 8-phase pipeline with multi-model routing.',
+    name: 'ADVERSIQ_consultant_query',
+    description: 'Submit a business consulting query to the ADVERSIQ AI brain. Returns comprehensive analysis using 8-phase pipeline with multi-model routing.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -64,7 +64,7 @@ export const VERDIX_TOOLS: MCPToolDefinition[] = [
     },
   },
   {
-    name: 'VERDIX_financial_model',
+    name: 'ADVERSIQ_financial_model',
     description: 'Run financial calculations: NPV, IRR, PMT, FV, CAGR, Monte Carlo simulations.',
     inputSchema: {
       type: 'object',
@@ -76,8 +76,8 @@ export const VERDIX_TOOLS: MCPToolDefinition[] = [
     },
   },
   {
-    name: 'VERDIX_market_search',
-    description: 'Search for real-time market intelligence, news, and data using VERDIX web search gateway.',
+    name: 'ADVERSIQ_market_search',
+    description: 'Search for real-time market intelligence, news, and data using ADVERSIQ web search gateway.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -89,7 +89,7 @@ export const VERDIX_TOOLS: MCPToolDefinition[] = [
     },
   },
   {
-    name: 'VERDIX_risk_assessment',
+    name: 'ADVERSIQ_risk_assessment',
     description: 'Run PESTLE/SWOT risk analysis with quantified risk matrix (likelihood × impact).',
     inputSchema: {
       type: 'object',
@@ -102,7 +102,7 @@ export const VERDIX_TOOLS: MCPToolDefinition[] = [
     },
   },
   {
-    name: 'VERDIX_debate_analysis',
+    name: 'ADVERSIQ_debate_analysis',
     description: 'Run Bayesian debate between AI models — generates pro/con arguments with confidence-weighted synthesis.',
     inputSchema: {
       type: 'object',
@@ -114,8 +114,8 @@ export const VERDIX_TOOLS: MCPToolDefinition[] = [
     },
   },
   {
-    name: 'VERDIX_memory_query',
-    description: 'Query VERDIX vector memory for relevant past analyses and stored knowledge.',
+    name: 'ADVERSIQ_memory_query',
+    description: 'Query ADVERSIQ vector memory for relevant past analyses and stored knowledge.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -126,7 +126,7 @@ export const VERDIX_TOOLS: MCPToolDefinition[] = [
     },
   },
   {
-    name: 'VERDIX_code_execute',
+    name: 'ADVERSIQ_code_execute',
     description: 'Execute sandboxed JavaScript/TypeScript code with built-in financial functions.',
     inputSchema: {
       type: 'object',
@@ -142,11 +142,11 @@ export const VERDIX_TOOLS: MCPToolDefinition[] = [
 // ─── MCP Server Implementation ──────────────────────────────────────────────
 
 export class MCPServer {
-  private tools: MCPToolDefinition[] = [...VERDIX_TOOLS];
+  private tools: MCPToolDefinition[] = [...ADVERSIQ_TOOLS];
 
   getServerInfo(): MCPServerInfo {
     return {
-      name: 'VERDIX-mcp-server',
+      name: 'ADVERSIQ-mcp-server',
       version: '1.0.0',
       protocolVersion: '2024-11-05',
       capabilities: {

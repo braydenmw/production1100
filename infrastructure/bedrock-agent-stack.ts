@@ -1,6 +1,6 @@
 /**
  * ═══════════════════════════════════════════════════════════════════════════════
- * VERDIX NEXUS AI — AWS CDK BEDROCK AGENTS INFRASTRUCTURE STACK
+ * ADVERSIQ NEXUS AI — AWS CDK BEDROCK AGENTS INFRASTRUCTURE STACK
  * ═══════════════════════════════════════════════════════════════════════════════
  *
  * Defines the complete AWS infrastructure for the Bedrock Agents pipeline:
@@ -144,7 +144,7 @@ export class BwNexusBedrockStack extends cdk.Stack {
       code: lambda.Code.fromAsset(path.join(__dirname, '../dist/lambda')),
       timeout: cdk.Duration.seconds(60),
       memorySize: 512,
-      description: 'VERDIX NEXUS: Country & market intelligence research action',
+      description: 'ADVERSIQ NEXUS: Country & market intelligence research action',
     });
 
     const analysisFn = new lambda.Function(this, 'BwAnalysisFunction', {
@@ -154,7 +154,7 @@ export class BwNexusBedrockStack extends cdk.Stack {
       code: lambda.Code.fromAsset(path.join(__dirname, '../dist/lambda')),
       timeout: cdk.Duration.seconds(120),
       memorySize: 1024,
-      description: 'VERDIX NEXUS: Brain engine multi-dimensional analysis action',
+      description: 'ADVERSIQ NEXUS: Brain engine multi-dimensional analysis action',
     });
 
     const documentFn = new lambda.Function(this, 'BwDocumentFunction', {
@@ -164,7 +164,7 @@ export class BwNexusBedrockStack extends cdk.Stack {
       code: lambda.Code.fromAsset(path.join(__dirname, '../dist/lambda')),
       timeout: cdk.Duration.seconds(300),
       memorySize: 1024,
-      description: 'VERDIX NEXUS: Intelligent document generation action',
+      description: 'ADVERSIQ NEXUS: Intelligent document generation action',
     });
 
     const riskFn = new lambda.Function(this, 'BwRiskFunction', {
@@ -174,7 +174,7 @@ export class BwNexusBedrockStack extends cdk.Stack {
       code: lambda.Code.fromAsset(path.join(__dirname, '../dist/lambda')),
       timeout: cdk.Duration.seconds(60),
       memorySize: 512,
-      description: 'VERDIX NEXUS: Adversarial risk assessment action',
+      description: 'ADVERSIQ NEXUS: Adversarial risk assessment action',
     });
 
     const partnerFn = new lambda.Function(this, 'BwPartnerFunction', {
@@ -184,7 +184,7 @@ export class BwNexusBedrockStack extends cdk.Stack {
       code: lambda.Code.fromAsset(path.join(__dirname, '../dist/lambda')),
       timeout: cdk.Duration.seconds(60),
       memorySize: 512,
-      description: 'VERDIX NEXUS: Partner intelligence identification action',
+      description: 'ADVERSIQ NEXUS: Partner intelligence identification action',
     });
 
     // Allow Bedrock to invoke all Lambda functions
@@ -199,11 +199,11 @@ export class BwNexusBedrockStack extends cdk.Stack {
     // We use CfnAgent (L1) since high-level constructs are still stabilizing
     const cfnAgent = new cdk.aws_bedrock.CfnAgent(this, 'BwNexusSupervisorAgent', {
       agentName: 'BW-NEXUS-Supervisor',
-      description: 'VERDIX NEXUS AI Autonomous Pipeline — Bedrock Agents supervisor routing to 5 action groups',
+      description: 'ADVERSIQ NEXUS AI Autonomous Pipeline — Bedrock Agents supervisor routing to 5 action groups',
       foundationModel: 'anthropic.claude-3-5-sonnet-20241022-v2:0',
       agentResourceRoleArn: agentRole.roleArn,
       idleSessionTtlInSeconds: 1800,
-      instruction: `You are the VERDIX NEXUS AI Supervisor — a strategic intelligence system for VERDIX Intelligence.
+      instruction: `You are the ADVERSIQ NEXUS AI Supervisor — a strategic intelligence system for ADVERSIQ Intelligence.
 
 Your role: Orchestrate comprehensive intelligence reports by sequencing calls to your action groups.
 
@@ -288,13 +288,13 @@ Never refuse to complete a step — if one action group fails, continue with the
     new ssm.StringParameter(this, 'AgentIdParam', {
       parameterName: '/bw-nexus/bedrock-agent-id',
       stringValue: cfnAgent.attrAgentId,
-      description: 'VERDIX NEXUS Bedrock Agent ID',
+      description: 'ADVERSIQ NEXUS Bedrock Agent ID',
     });
 
     new ssm.StringParameter(this, 'AgentAliasParam', {
       parameterName: '/bw-nexus/bedrock-agent-alias-id',
       stringValue: cfnAgentAlias.attrAgentAliasId,
-      description: 'VERDIX NEXUS Bedrock Agent Alias ID',
+      description: 'ADVERSIQ NEXUS Bedrock Agent Alias ID',
     });
 
     // ── Stack Outputs ───────────────────────────────────────────────────────────
@@ -336,6 +336,6 @@ new BwNexusBedrockStack(app, 'BwNexusBedrockStack', {
     account: process.env.CDK_DEFAULT_ACCOUNT,
     region:  process.env.CDK_DEFAULT_REGION || 'us-east-1',
   },
-  description: 'VERDIX NEXUS AI — AWS Bedrock Agents infrastructure (supervisor + 5 action groups)',
+  description: 'ADVERSIQ NEXUS AI — AWS Bedrock Agents infrastructure (supervisor + 5 action groups)',
   stackName: 'BwNexusBedrockStack',
 });
