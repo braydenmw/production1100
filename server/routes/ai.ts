@@ -26,6 +26,11 @@ import { buildPerceptionDeltaIndex } from '../services/PerceptionDeltaIndex.js';
 import { runFiveEngineTribunal } from '../services/FiveEngineTribunal.js';
 import { BrainIntegrationService, type BrainContext } from '../../services/BrainIntegrationService.js';
 import { NSILIntelligenceHub } from '../../services/NSILIntelligenceHub.js';
+import { toolRegistry } from '../../services/algorithms/ToolRegistry.js';
+import { satSolver } from '../../services/algorithms/SATContradictionSolver.js';
+import { bayesianDebateEngine } from '../../services/algorithms/BayesianDebateEngine.js';
+import { dagScheduler } from '../../services/algorithms/DAGScheduler.js';
+import { globalVectorIndex } from '../../services/algorithms/VectorMemoryIndex.js';
 import { validateBody, aiValidation } from '../middleware/validate.js';
 import { callAI, getProviderStatus, availableProviderCount, type TaskType } from '../../services/AIProviderOrchestrator.js';
 import { getDomainSystemInstruction, getDomainConsultantInstruction, type DomainMode } from '../../services/DomainModeService.js';
@@ -790,53 +795,170 @@ const summariseNSILReport = (report: Record<string, unknown>): string => {
   return parts.join('\n');
 };
 
-// Truncate a string to a rough token budget (1 token ≈ 4 chars).
-// Keeps the beginning of the text which has the most important context.
-const truncateToTokenBudget = (text: string, maxTokens: number): string => {
-  const maxChars = maxTokens * 4;
+// ============================================================================
+// SMART CONTEXT WINDOW MANAGEMENT
+// ============================================================================
+
+/** Estimate token count — GPT-style BPE averages ~3.5 chars/token for English */
+const estimateTokens = (text: string): number => Math.ceil(text.length / 3.5);
+
+/** Truncate text intelligently: prefers sentence boundaries, keeps header + tail */
+const smartTruncate = (text: string, maxTokens: number): string => {
+  const maxChars = Math.floor(maxTokens * 3.5);
   if (text.length <= maxChars) return text;
-  return text.slice(0, maxChars) + '\n... [truncated for token budget]';
+
+  // Keep 80% from the beginning (most important) and 20% from the end (recent context)
+  const headBudget = Math.floor(maxChars * 0.8);
+  const tailBudget = maxChars - headBudget - 40; // 40 chars for separator
+
+  let head = text.slice(0, headBudget);
+  // Try to cut at sentence boundary
+  const lastPeriod = head.lastIndexOf('. ');
+  const lastNewline = head.lastIndexOf('\n');
+  const cutPoint = Math.max(lastPeriod, lastNewline);
+  if (cutPoint > headBudget * 0.7) {
+    head = head.slice(0, cutPoint + 1);
+  }
+
+  const tail = tailBudget > 50 ? text.slice(-tailBudget) : '';
+  return head + '\n... [context compressed] ...\n' + tail;
 };
 
-const MAX_PROMPT_TOKENS = 16000; // Expanded for deeper brain analysis — Groq 128K context supports this
+interface PromptSection {
+  label: string;
+  content: string;
+  priority: number; // 1 = must keep full, 2 = important, 3 = nice to have
+  minTokens: number; // minimum tokens to keep even when compressed
+}
+
+/**
+ * Build prompt by allocating token budget proportionally by priority.
+ * Priority 1 sections get full allocation first.
+ * Remaining budget is split between priority 2 and 3.
+ */
+const buildWithTokenBudget = (sections: PromptSection[], maxTokens: number): string => {
+  // Phase 1: Allocate full budget to priority 1 sections
+  let usedTokens = 0;
+  const allocated: { section: PromptSection; tokens: number }[] = [];
+
+  const p1 = sections.filter(s => s.priority === 1);
+  for (const s of p1) {
+    const tokens = estimateTokens(s.content);
+    usedTokens += tokens;
+    allocated.push({ section: s, tokens });
+  }
+
+  // Phase 2: Split remaining budget between p2 and p3
+  const remaining = maxTokens - usedTokens;
+  const p2 = sections.filter(s => s.priority === 2);
+  const p3 = sections.filter(s => s.priority === 3);
+
+  // p2 gets 70% of remaining, p3 gets 30%
+  const p2Budget = Math.floor(remaining * 0.7);
+  const p3Budget = remaining - p2Budget;
+
+  const allocateGroup = (group: PromptSection[], budget: number) => {
+    if (group.length === 0) return;
+    const totalNeeded = group.reduce((sum, s) => sum + estimateTokens(s.content), 0);
+    const ratio = totalNeeded > budget ? budget / totalNeeded : 1;
+
+    for (const s of group) {
+      const needed = estimateTokens(s.content);
+      const alloc = Math.max(Math.floor(needed * ratio), s.minTokens);
+      allocated.push({ section: s, tokens: alloc });
+    }
+  };
+
+  allocateGroup(p2, p2Budget);
+  allocateGroup(p3, p3Budget);
+
+  // Phase 3: Build final prompt with smart truncation
+  const parts: string[] = [];
+  for (const { section, tokens } of allocated) {
+    const truncated = smartTruncate(section.content, tokens);
+    if (truncated.trim()) {
+      parts.push(section.label ? `${section.label}\n${truncated}` : truncated);
+    }
+  }
+
+  return parts.join('\n\n');
+};
+
+const MAX_PROMPT_TOKENS = 16000; // Groq 128K context supports much more
 
 const buildConsultantPrompt = (message: string, intent: ConsultantIntent, context?: unknown, systemPrompt?: string, brainPromptBlock?: string, nsilSummary?: string) => {
-  // Build sections individually, then assemble and truncate
   const capProfile = deriveConsultantCapabilityProfile(message, context).brief;
-  const brain = brainPromptBlock ? `\n═══ BRAIN INTELLIGENCE (summary) ═══\n${brainPromptBlock.slice(0, 6000)}\n═══ END ═══\n` : '';
-  const nsil = nsilSummary ? `\n═══ NSIL ANALYSIS (summary) ═══\n${nsilSummary.slice(0, 1500)}\n═══ END ═══\n` : '';
   const overlooked = JSON.stringify(buildOverlookedIntelligenceSnapshot(message, context));
   const pipeline = JSON.stringify(runStrategicIntelligencePipeline(message, context));
   const ctxStr = context ? JSON.stringify(context) : 'No structured context provided.';
 
-  const raw = `${capProfile}
-${brain}
-${nsil}
-OVERLOOKED-FIRST INTELLIGENCE (compact):
-${overlooked.slice(0, 1500)}
+  const sections: PromptSection[] = [
+    // Priority 1 — always keep full
+    {
+      label: '',
+      content: `USER MESSAGE:\n${message}`,
+      priority: 1,
+      minTokens: 500,
+    },
+    {
+      label: '',
+      content: `INTENT: ${intent}\nINTENT DIRECTIVE: ${buildIntentDirective(intent)}`,
+      priority: 1,
+      minTokens: 100,
+    },
+    {
+      label: '',
+      content: `OUTPUT FORMAT:\n1) Direct response to user request (always first).\n2) Optional next step bullets (max 3) when helpful.\n3) One follow-up question only if it materially improves quality.\n4) Do not force output-format menus unless user explicitly asks for format selection.`,
+      priority: 1,
+      minTokens: 100,
+    },
+    // Priority 2 — important analytical context
+    {
+      label: '═══ BRAIN INTELLIGENCE ═══',
+      content: brainPromptBlock || '',
+      priority: 2,
+      minTokens: 200,
+    },
+    {
+      label: '═══ NSIL ANALYSIS ═══',
+      content: nsilSummary || '',
+      priority: 2,
+      minTokens: 100,
+    },
+    {
+      label: '',
+      content: capProfile,
+      priority: 2,
+      minTokens: 100,
+    },
+    // Priority 3 — supplementary
+    {
+      label: 'OVERLOOKED-FIRST INTELLIGENCE (compact):',
+      content: overlooked,
+      priority: 3,
+      minTokens: 50,
+    },
+    {
+      label: 'STRATEGIC PIPELINE (compact):',
+      content: pipeline,
+      priority: 3,
+      minTokens: 50,
+    },
+    {
+      label: 'CONTEXT:',
+      content: ctxStr,
+      priority: 3,
+      minTokens: 100,
+    },
+    {
+      label: 'SYSTEM CASE PROMPT:',
+      content: typeof systemPrompt === 'string' ? systemPrompt : 'N/A',
+      priority: 3,
+      minTokens: 50,
+    },
+  ];
 
-STRATEGIC PIPELINE (compact):
-${pipeline.slice(0, 1500)}
-
-INTENT: ${intent}
-INTENT DIRECTIVE: ${buildIntentDirective(intent)}
-
-CONTEXT:
-${ctxStr.slice(0, 2000)}
-
-SYSTEM CASE PROMPT:
-${typeof systemPrompt === 'string' ? systemPrompt.slice(0, 500) : 'N/A'}
-
-USER MESSAGE:
-${message}
-
-OUTPUT FORMAT:
-1) Direct response to user request (always first).
-2) Optional next step bullets (max 3) when helpful.
-3) One follow-up question only if it materially improves quality.
-4) Do not force output-format menus unless user explicitly asks for format selection.
-`;
-  return truncateToTokenBudget(raw, MAX_PROMPT_TOKENS);
+  return buildWithTokenBudget(sections.filter(s => s.content.trim()), MAX_PROMPT_TOKENS);
 };
 
 const invokeConsultantWithTogether = async (prompt: string, consultantInstruction?: string): Promise<string> => {
@@ -1153,6 +1275,113 @@ router.get('/control/status', async (_req: Request, res: Response) => {
     learningHint,
     sampleDecision: sample
   });
+});
+
+// ============================================================================
+// STREAMING CONSULTANT — SSE endpoint for intermediate pipeline visibility
+// ============================================================================
+router.post('/consultant/stream', async (req: Request, res: Response) => {
+  const requestId = crypto.randomUUID();
+
+  try {
+    const { message, context } = req.body;
+    if (!message || typeof message !== 'string') {
+      return res.status(400).json({ error: 'message is required' });
+    }
+
+    // Set up SSE
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.flushHeaders();
+
+    const sendEvent = (type: string, data: unknown) => {
+      res.write(`data: ${JSON.stringify({ type, requestId, data })}\n\n`);
+    };
+
+    sendEvent('start', { message: 'Pipeline started', timestamp: new Date().toISOString() });
+
+    const reportParams = extractReportParamsFromContext(message, context);
+
+    // Phase 1: SAT Validation
+    sendEvent('phase', { phase: 'SAT Contradiction Check', status: 'running' });
+    const satResult = satSolver.analyze(reportParams as unknown as import('../../types').ReportParameters);
+    sendEvent('phase_complete', {
+      phase: 'SAT Contradiction Check',
+      result: { isSatisfiable: satResult.isSatisfiable, contradictions: satResult.contradictions.length, confidence: satResult.confidence },
+    });
+
+    // Phase 2: Memory Retrieval (hybrid)
+    sendEvent('phase', { phase: 'Hybrid Memory Search', status: 'running' });
+    const memoryResults = globalVectorIndex.hybridSearch(reportParams as unknown as import('../../types').ReportParameters, {
+      maxResults: 5,
+      enableQueryExpansion: true,
+      reasoningContext: { riskLevel: reportParams.riskTolerance as string, focusAreas: reportParams.strategicIntent as string[] },
+    });
+    sendEvent('phase_complete', {
+      phase: 'Hybrid Memory Search',
+      result: { casesFound: memoryResults.length, topScore: memoryResults[0]?.score ?? 0 },
+    });
+
+    // Phase 3: Parallel Reasoning
+    sendEvent('phase', { phase: 'Adversarial Debate + Formula Scoring', status: 'running' });
+    const [debateResult, formulaResult] = await Promise.all([
+      bayesianDebateEngine.runDebate(reportParams as unknown as import('../../types').ReportParameters),
+      dagScheduler.execute(reportParams as unknown as import('../../types').ReportParameters),
+    ]);
+    sendEvent('phase_complete', {
+      phase: 'Adversarial Debate',
+      result: {
+        recommendation: debateResult.recommendation,
+        consensusStrength: debateResult.consensusStrength,
+        roundsExecuted: debateResult.roundsExecuted,
+      },
+    });
+    sendEvent('phase_complete', {
+      phase: 'Formula Scoring',
+      result: { formulasExecuted: formulaResult.results.size, totalTimeMs: formulaResult.totalTimeMs },
+    });
+
+    // Phase 4: Tool calling (if low confidence)
+    if (debateResult.consensusStrength < 0.65) {
+      sendEvent('phase', { phase: 'Autonomous Loop — Low Confidence Detected', status: 'running' });
+      const tools = toolRegistry.matchTools(message, reportParams as unknown as Record<string, unknown>);
+      if (tools.length > 0) {
+        const topTool = tools[0];
+        sendEvent('tool_call', { tool: topTool.toolName, reason: topTool.reason });
+        const toolResult = await toolRegistry.call(topTool.toolName, reportParams as unknown as Record<string, unknown>);
+        sendEvent('tool_result', {
+          tool: topTool.toolName,
+          success: toolResult.success,
+          timeMs: toolResult.executionTimeMs,
+        });
+      }
+      sendEvent('phase_complete', { phase: 'Autonomous Loop', result: { toolsMatched: tools.length } });
+    }
+
+    // Phase 5: Brain enrichment
+    sendEvent('phase', { phase: 'Full Brain Enrichment', status: 'running' });
+    try {
+      const brainResult = await Promise.race([
+        BrainIntegrationService.enrich(reportParams, 50, message),
+        new Promise<null>((resolve) => setTimeout(() => resolve(null), 10000)),
+      ]);
+      sendEvent('phase_complete', {
+        phase: 'Full Brain Enrichment',
+        result: brainResult ? { engines: Object.keys(brainResult).length, readiness: (brainResult as BrainContext).readiness } : { timeout: true },
+      });
+    } catch {
+      sendEvent('phase_complete', { phase: 'Full Brain Enrichment', result: { error: 'Brain enrichment failed' } });
+    }
+
+    sendEvent('done', { message: 'Pipeline complete', requestId });
+    res.write('data: [DONE]\n\n');
+    res.end();
+  } catch (error) {
+    console.error('[Consultant Stream] Error:', error);
+    res.write(`data: ${JSON.stringify({ type: 'error', error: 'Stream failed' })}\n\n`);
+    res.end();
+  }
 });
 
 // Unified BW Consultant endpoint with model-broker fallback (Bedrock -> Gemini -> OpenAI)

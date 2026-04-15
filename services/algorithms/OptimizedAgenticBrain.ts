@@ -39,6 +39,8 @@ import { gradientRankingEngine, RankedCase } from './GradientRankingEngine';
 import { computeFrontierIntelligence } from './FrontierIntelligenceEngine';
 import { CompositeScoreService } from '../CompositeScoreService';
 import { HumanCognitionEngine, HumanCognitionResult } from './HumanCognitionEngine';
+import { type ToolResult } from './ToolRegistry';
+import { AutonomousLoopController, type LoopResult, type LoopIteration } from './AutonomousLoopController';
 
 // ============================================================================
 // TYPES
@@ -51,9 +53,14 @@ export interface AgenticBrainConfig {
   enableFormulaExecution: boolean;
   enableTemplateSelection: boolean;
   enableHumanCognition: boolean;
+  enableAutonomousLoop: boolean;
+  enableToolCalling: boolean;
+  enableHybridSearch: boolean;
   maxSimilarCases: number;
   debateEarlyStopThreshold: number;
   parallelExecution: boolean;
+  loopMaxIterations: number;
+  loopConfidenceThreshold: number;
 }
 
 export interface AgenticBrainResult {
@@ -117,6 +124,12 @@ export interface AgenticBrainResult {
   
   // Frontier intelligence
   frontierIntelligence?: Awaited<ReturnType<typeof computeFrontierIntelligence>>;
+
+  // Autonomous loop results
+  autonomousLoop?: LoopResult;
+  
+  // Tool calls made during this run
+  toolCalls?: ToolResult[];
 }
 
 // ============================================================================
@@ -130,9 +143,14 @@ const DEFAULT_CONFIG: AgenticBrainConfig = {
   enableFormulaExecution: true,
   enableTemplateSelection: true,
   enableHumanCognition: true,
+  enableAutonomousLoop: true,
+  enableToolCalling: true,
+  enableHybridSearch: true,
   maxSimilarCases: 5,
   debateEarlyStopThreshold: 0.75,
-  parallelExecution: true
+  parallelExecution: true,
+  loopMaxIterations: 3,
+  loopConfidenceThreshold: 0.65,
 };
 
 // ============================================================================
@@ -143,10 +161,18 @@ export class OptimizedAgenticBrain {
   private config: AgenticBrainConfig;
   private reportCorpus: ReportParameters[] = [];
   private humanCognitionEngine: HumanCognitionEngine;
+  private _onIterationCallback?: (iteration: LoopIteration) => void;
 
   constructor(config: Partial<AgenticBrainConfig> = {}) {
     this.config = { ...DEFAULT_CONFIG, ...config };
     this.humanCognitionEngine = new HumanCognitionEngine();
+  }
+
+  /**
+   * Set callback for streaming autonomous loop progress
+   */
+  onLoopIteration(cb: (iteration: LoopIteration) => void): void {
+    this._onIterationCallback = cb;
   }
 
   /**
@@ -202,8 +228,21 @@ export class OptimizedAgenticBrain {
     let rankedCases: RankedCase[] = [];
 
     if (this.config.enableMemoryRetrieval) {
-      // Fast ANN-based similarity search
-      similarCases = globalVectorIndex.findSimilar(params, this.config.maxSimilarCases);
+      // Use hybrid search (vector + keyword + temporal decay + query expansion)
+      if (this.config.enableHybridSearch) {
+        similarCases = globalVectorIndex.hybridSearch(params, {
+          maxResults: this.config.maxSimilarCases,
+          enableQueryExpansion: true,
+          temporalDecayDays: 365,
+          reasoningContext: {
+            riskLevel: params.riskTolerance,
+            focusAreas: params.strategicIntent,
+          },
+        });
+      } else {
+        // Fallback to basic ANN search
+        similarCases = globalVectorIndex.findSimilar(params, this.config.maxSimilarCases);
+      }
       
       // Apply gradient-boosted ranking for final ordering
       if (similarCases.length > 0) {
@@ -316,6 +355,56 @@ export class OptimizedAgenticBrain {
     );
 
     // ========================================================================
+    // PHASE 8: AUTONOMOUS LOOP — Re-analyze if confidence is low
+    // ========================================================================
+    let loopResult: LoopResult | undefined;
+    let toolCalls: ToolResult[] = [];
+
+    if (this.config.enableAutonomousLoop && executiveBrief.consensusStrength < this.config.loopConfidenceThreshold) {
+      const loopController = new AutonomousLoopController({
+        maxIterations: this.config.loopMaxIterations,
+        confidenceThreshold: this.config.loopConfidenceThreshold,
+        contradictionThreshold: 0.3,
+        enableToolCalls: this.config.enableToolCalling,
+        timeBudgetMs: 15000,
+      });
+
+      // Stream iteration progress
+      if (this._onIterationCallback) {
+        loopController.onIteration(this._onIterationCallback);
+      }
+
+      loopResult = await loopController.run(
+        params.problemStatement || 'general analysis',
+        params as unknown as Record<string, unknown>,
+        async (enrichedCtx, iteration) => {
+          // Re-run debate with enriched context on deeper iterations
+          if (iteration > 0 && this.config.enableDebate) {
+            const reDebate = await bayesianDebateEngine.runDebate(params);
+            return {
+              confidence: reDebate.consensusStrength,
+              contradictions: contradictions.contradictions.length / 10,
+              result: reDebate,
+            };
+          }
+          return {
+            confidence: executiveBrief.consensusStrength,
+            contradictions: contradictions.contradictions.length / 10,
+            result: executiveBrief,
+          };
+        }
+      );
+
+      toolCalls = loopResult.toolResults;
+
+      // If loop improved confidence, update the executive brief
+      if (loopResult.finalConfidence > executiveBrief.consensusStrength) {
+        executiveBrief.consensusStrength = loopResult.finalConfidence;
+        executiveBrief.headline = `[Loop-verified: ${loopResult.totalIterations} passes] ${executiveBrief.headline}`;
+      }
+    }
+
+    // ========================================================================
     // FINALIZE
     // ========================================================================
     const completedAt = new Date().toISOString();
@@ -342,7 +431,9 @@ export class OptimizedAgenticBrain {
       insights,
       performance,
       humanCognition,
-      frontierIntelligence
+      frontierIntelligence,
+      autonomousLoop: loopResult,
+      toolCalls,
     };
   }
 

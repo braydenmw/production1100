@@ -427,6 +427,277 @@ export class VectorMemoryIndex {
     }
     return overlap / Math.max(setA.size, setB.size);
   }
+
+  // ============================================================================
+  // ENHANCED RAG — Query Expansion, Re-Ranking, Temporal Decay, Hybrid Search
+  // ============================================================================
+
+  /**
+   * Expand a query into multiple related queries for better recall.
+   * Uses synonym generation, hypernym/hyponym expansion, and contextual variants.
+   */
+  private expandQuery(params: ReportParameters): ReportParameters[] {
+    const variants: ReportParameters[] = [params];
+
+    // Variant 1: Industry expansion (add related industries)
+    if (params.industry?.length) {
+      const industryRelations: Record<string, string[]> = {
+        'technology': ['software', 'IT', 'digital', 'tech'],
+        'finance': ['banking', 'financial services', 'fintech', 'investment'],
+        'healthcare': ['health', 'medical', 'pharma', 'biotech'],
+        'energy': ['oil', 'gas', 'renewable', 'power', 'utilities'],
+        'manufacturing': ['production', 'industrial', 'factory'],
+        'retail': ['commerce', 'e-commerce', 'consumer', 'CPG'],
+        'government': ['public sector', 'federal', 'municipal', 'defense'],
+        'education': ['academic', 'university', 'training', 'edtech'],
+        'real estate': ['property', 'construction', 'REIT'],
+        'agriculture': ['farming', 'agtech', 'food production'],
+      };
+
+      const expanded = [...params.industry];
+      for (const ind of params.industry) {
+        const key = ind.toLowerCase();
+        for (const [category, synonyms] of Object.entries(industryRelations)) {
+          if (key.includes(category) || synonyms.some(s => key.includes(s))) {
+            expanded.push(category, ...synonyms.filter(s => !expanded.includes(s)));
+          }
+        }
+      }
+      if (expanded.length > params.industry.length) {
+        variants.push({ ...params, industry: [...new Set(expanded)] });
+      }
+    }
+
+    // Variant 2: Strategic intent expansion
+    if (params.strategicIntent?.length) {
+      const intentRelations: Record<string, string[]> = {
+        'expansion': ['growth', 'scale', 'enter new markets'],
+        'innovation': ['R&D', 'technology adoption', 'digital transformation'],
+        'cost reduction': ['efficiency', 'optimization', 'lean operations'],
+        'risk management': ['compliance', 'governance', 'mitigation'],
+        'partnerships': ['joint ventures', 'alliances', 'M&A'],
+      };
+
+      const expanded = [...params.strategicIntent];
+      for (const intent of params.strategicIntent) {
+        const key = intent.toLowerCase();
+        for (const [category, synonyms] of Object.entries(intentRelations)) {
+          if (key.includes(category) || synonyms.some(s => key.includes(s))) {
+            expanded.push(...synonyms.filter(s => !expanded.includes(s)));
+          }
+        }
+      }
+      if (expanded.length > params.strategicIntent.length) {
+        variants.push({ ...params, strategicIntent: [...new Set(expanded)] });
+      }
+    }
+
+    // Variant 3: Region-based expansion (same region, different country)
+    if (params.region && !params.country) {
+      variants.push({ ...params, country: undefined });
+    }
+
+    return variants;
+  }
+
+  /**
+   * Apply temporal decay to scores — more recent cases get higher weight.
+   * Uses exponential decay with configurable half-life.
+   */
+  private applyTemporalDecay(results: SimilarityResult[], halfLifeDays: number = 365): SimilarityResult[] {
+    const now = Date.now();
+    const halfLifeMs = halfLifeDays * 24 * 60 * 60 * 1000;
+    const ln2 = Math.log(2);
+
+    return results.map(r => {
+      const timestamp = r.embedding.metadata.timestamp
+        ? new Date(r.embedding.metadata.timestamp).getTime()
+        : now - halfLifeMs; // Default to half-life age if no timestamp
+
+      const ageMs = Math.max(0, now - timestamp);
+      const decayFactor = Math.exp(-ln2 * ageMs / halfLifeMs);
+      // Blend: 70% similarity, 30% recency
+      const decayedScore = r.score * 0.7 + r.score * decayFactor * 0.3;
+
+      return {
+        ...r,
+        score: Math.min(decayedScore, 1),
+        matchReasons: [...r.matchReasons, `recency: ${(decayFactor * 100).toFixed(0)}%`],
+      };
+    });
+  }
+
+  /**
+   * Re-rank results using reasoning context from the current analysis.
+   * Boosts results that are relevant to the specific analytical need.
+   */
+  reRankWithContext(
+    results: SimilarityResult[],
+    reasoningContext: {
+      contradictions?: string[];
+      debateConsensus?: string;
+      riskLevel?: string;
+      focusAreas?: string[];
+    }
+  ): SimilarityResult[] {
+    return results.map(r => {
+      let boost = 0;
+      const reasons = [...r.matchReasons];
+
+      // Boost cases that had similar risk outcomes
+      if (reasoningContext.riskLevel && r.embedding.metadata.outcome) {
+        const outcome = r.embedding.metadata.outcome.toLowerCase();
+        if (reasoningContext.riskLevel === 'conservative' && outcome.includes('proceed')) {
+          boost += 0.05;
+          reasons.push('low-risk outcome precedent');
+        }
+        if (reasoningContext.riskLevel === 'aggressive' && (outcome.includes('restructure') || outcome.includes('reject'))) {
+          boost += 0.08;
+          reasons.push('high-risk warning precedent');
+        }
+      }
+
+      // Boost cases matching focus areas
+      if (reasoningContext.focusAreas?.length) {
+        const features = [
+          ...(r.embedding.metadata.industry || []),
+          ...(r.embedding.metadata.strategicIntent || []),
+          r.embedding.metadata.country || '',
+        ].map(s => s.toLowerCase());
+
+        const focusMatches = reasoningContext.focusAreas.filter(
+          f => features.some(feat => feat.includes(f.toLowerCase()))
+        );
+        if (focusMatches.length > 0) {
+          boost += 0.05 * focusMatches.length;
+          reasons.push(`focus match: ${focusMatches.join(', ')}`);
+        }
+      }
+
+      return { ...r, score: Math.min(r.score + boost, 1), matchReasons: reasons };
+    }).sort((a, b) => b.score - a.score);
+  }
+
+  /**
+   * Keyword search — exact string matching against metadata fields.
+   * Complements vector similarity for exact-match needs.
+   */
+  keywordSearch(query: string, maxResults: number = 10): SimilarityResult[] {
+    const terms = query.toLowerCase().split(/\s+/).filter(t => t.length > 2);
+    const results: SimilarityResult[] = [];
+
+    for (const [id, embedding] of this.embeddings) {
+      const fields = [
+        embedding.metadata.country,
+        embedding.metadata.region,
+        embedding.metadata.organizationName,
+        ...(embedding.metadata.industry || []),
+        ...(embedding.metadata.strategicIntent || []),
+        embedding.metadata.outcome,
+      ].filter(Boolean).map(s => s!.toLowerCase());
+
+      const allText = fields.join(' ');
+      const matchedTerms = terms.filter(t => allText.includes(t));
+
+      if (matchedTerms.length > 0) {
+        const score = matchedTerms.length / terms.length;
+        results.push({
+          id,
+          score,
+          embedding,
+          matchReasons: [`keyword: ${matchedTerms.join(', ')}`],
+        });
+      }
+    }
+
+    return results.sort((a, b) => b.score - a.score).slice(0, maxResults);
+  }
+
+  /**
+   * HYBRID SEARCH — Combines vector similarity + keyword matching + temporal decay.
+   * This is the primary enhanced retrieval method.
+   */
+  hybridSearch(
+    params: ReportParameters,
+    options: {
+      maxResults?: number;
+      minScore?: number;
+      temporalDecayDays?: number;
+      enableQueryExpansion?: boolean;
+      reasoningContext?: {
+        contradictions?: string[];
+        debateConsensus?: string;
+        riskLevel?: string;
+        focusAreas?: string[];
+      };
+    } = {}
+  ): SimilarityResult[] {
+    const {
+      maxResults = 10,
+      minScore = 0.1,
+      temporalDecayDays = 365,
+      enableQueryExpansion = true,
+      reasoningContext,
+    } = options;
+
+    // Step 1: Query expansion
+    const queries = enableQueryExpansion ? this.expandQuery(params) : [params];
+
+    // Step 2: Vector similarity search across all query variants
+    const vectorResults = new Map<string, SimilarityResult>();
+    for (const q of queries) {
+      const results = this.findSimilar(q, maxResults * 2, minScore * 0.5);
+      for (const r of results) {
+        const existing = vectorResults.get(r.id);
+        if (!existing || r.score > existing.score) {
+          vectorResults.set(r.id, r);
+        }
+      }
+    }
+
+    // Step 3: Keyword search for exact matches
+    const keywordQuery = [
+      params.country,
+      params.organizationName,
+      ...(params.industry || []),
+      ...(params.strategicIntent || []),
+    ].filter(Boolean).join(' ');
+
+    const keywordResults = this.keywordSearch(keywordQuery, maxResults);
+
+    // Step 4: Merge results (reciprocal rank fusion)
+    const merged = new Map<string, SimilarityResult>();
+
+    // Add vector results
+    for (const [id, r] of vectorResults) {
+      merged.set(id, { ...r, score: r.score * 0.6 }); // 60% weight for semantic
+    }
+
+    // Merge keyword results
+    for (const r of keywordResults) {
+      const existing = merged.get(r.id);
+      if (existing) {
+        existing.score += r.score * 0.4; // 40% weight for keyword
+        existing.matchReasons.push(...r.matchReasons);
+      } else {
+        merged.set(r.id, { ...r, score: r.score * 0.4 });
+      }
+    }
+
+    // Step 5: Temporal decay
+    let finalResults = this.applyTemporalDecay(Array.from(merged.values()), temporalDecayDays);
+
+    // Step 6: Re-rank with reasoning context
+    if (reasoningContext) {
+      finalResults = this.reRankWithContext(finalResults, reasoningContext);
+    }
+
+    // Step 7: Filter and return top results
+    return finalResults
+      .filter(r => r.score >= minScore)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, maxResults);
+  }
 }
 
 // Singleton instance for global use
