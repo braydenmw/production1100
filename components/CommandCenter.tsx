@@ -782,9 +782,9 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                         {[
                             { label: 'Starter Access', period: '5 Days', note: 'Full Access Pass', price: 'Free', features: ['Full 10-layer pipeline', 'All 50+ engines active', '247 document templates', 'Entity verification', 'No credit card required'] },
-                            { label: 'Subscription', period: '3 Months', note: 'Full Access', price: '$239 to $439', features: ['Everything in Starter', 'Unlimited analyses', 'Priority processing', 'Audit trail exports', 'Email support'] },
-                            { label: 'Subscription', period: '6 Months', note: 'Full Access', price: '$429 to $810', features: ['Everything in 3-Month', 'Monte Carlo parameters', 'Formula weight access', 'Custom document templates', 'Save $49 vs quarterly'] },
-                            { label: 'Subscription', period: '12 Months', note: 'Full Access', price: '$610 to $1288', features: ['Everything in 6-Month', 'Direct developer access', 'Feature request priority', 'Multi-user workspace', 'Save $348 vs quarterly'] },
+                            { label: 'Subscription', period: '3 Months', note: 'Full Access', price: '$439', features: ['Everything in Starter', 'Unlimited analyses', 'Priority processing', 'Audit trail exports', 'Email support'] },
+                            { label: 'Subscription', period: '6 Months', note: 'Full Access', price: '$810', features: ['Everything in 3-Month', 'Monte Carlo parameters', 'Formula weight access', 'Custom document templates', 'Save $49 vs quarterly'] },
+                            { label: 'Subscription', period: '12 Months', note: 'Full Access', price: '$1288', features: ['Everything in 6-Month', 'Direct developer access', 'Feature request priority', 'Multi-user workspace', 'Save $348 vs quarterly'] },
                         ].map((plan) => (
                             <div key={plan.period} className="border-t-2 border-slate-300 pt-6">
                                 <p className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">{plan.label}</p>
