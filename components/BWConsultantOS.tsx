@@ -3341,7 +3341,7 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, onNavi
         id: crypto.randomUUID(),
         role: 'assistant',
         content: [
-          'Welcome to ADVOS.',
+          'Welcome to VERDIX.',
           '',
           'Tell me what you\'re working on — a deal, a market, a region, a partner, a project — in your own words. The system will handle the rest.',
           '',
@@ -7882,7 +7882,7 @@ CRITICAL RULES:
           <div className="px-4 md:px-8 pt-4 md:pt-5 pb-3 flex items-center justify-between">
             <div className="flex items-center gap-3 min-w-0">
               <div className="min-w-0">
-                <p className="text-xs font-bold text-blue-600 uppercase tracking-[0.2em]">ADVOS</p>
+                <p className="text-xs font-bold text-blue-600 uppercase tracking-[0.2em]">VERDIX</p>
                 <h1 className="text-lg md:text-xl font-light text-slate-900 tracking-wide leading-tight truncate">Decision Verification System</h1>
               </div>
             </div>
@@ -8068,7 +8068,7 @@ CRITICAL RULES:
                         {msg.role === 'assistant' && (
                           <div className="flex items-center gap-1.5 mb-2">
                             <span className="inline-block w-1.5 h-1.5 bg-blue-600" />
-                            <span className="text-blue-600 text-xs font-bold uppercase tracking-[0.15em]">ADVOS</span>
+                            <span className="text-blue-600 text-xs font-bold uppercase tracking-[0.15em]">VERDIX</span>
                           </div>
                         )}
                         <div className={`whitespace-pre-wrap ${msg.role === 'assistant' ? 'text-[13px] leading-[1.7] text-slate-800' : ''}`}>
@@ -8150,7 +8150,7 @@ CRITICAL RULES:
                           <span className="text-[13px] font-medium text-slate-700">
                             {isStreamingResponse ? 'Streaming response...' : currentPhase === 'generation' ? 'Generating documents...' : 'Processing...'}
                           </span>
-                          <span className="text-[11px] text-slate-400 mt-0.5">ADVOS is thinking</span>
+                          <span className="text-[11px] text-slate-400 mt-0.5">VERDIX is thinking</span>
                         </div>
                       </div>
                     </div>
@@ -8614,7 +8614,7 @@ CRITICAL RULES:
             {/* NSIL Footer */}
             <div className="px-4 md:px-8 py-2.5 bg-white border-t border-slate-200 text-[10px] text-slate-500 flex items-center justify-between">
               <span>
-                <strong className="text-slate-700">ADVOS</strong> &mdash; Adversarial Decision Verification OS &bull; Locale: {locale.toUpperCase()}
+                <strong className="text-slate-700">VERDIX</strong> &mdash; Verified Decision Intelligence Exchange &bull; Locale: {locale.toUpperCase()}
               </span>
               <span className="text-[10px] text-slate-400">
                 Learning: {OutcomeLearningService.getState().records.length} sessions logged

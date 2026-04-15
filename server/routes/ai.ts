@@ -101,7 +101,7 @@ const generateWithAI = async (input: string | AIMessage[], systemInstruction?: s
 // System instruction for the AI — domain-switchable
 // Legacy default kept for backward compatibility; active instruction resolved via domainMode.
 const SYSTEM_INSTRUCTION_DEFAULT = `
-You are "BWGA Intelligence AI" (NEXUS_OS_v4.1), the world's premier Economic Intelligence Operating System.
+You are "VERDIX Intelligence AI" (NEXUS_OS_v4.1), the world's premier Verified Decision Intelligence Exchange.
 You are NOT a standard chatbot. You are a deterministic economic modeling engine.
 
 YOUR CORE FUNCTIONS:
@@ -131,7 +131,7 @@ TONE & STYLE:
 - Reference specific data sources when providing market intelligence.
 
 CONTEXT:
-- You represent BW Global Advisory.
+- You represent VERDIX Intelligence.
 - You operate to close the "100-Year Confidence Gap".
 - Your output should feel like a high-level intelligence dossier backed by real data.
 `;
@@ -144,7 +144,7 @@ const _getSystemInstructionForDomain = (domainMode?: DomainMode): string => {
 };
 
 const CONSULTANT_SYSTEM_INSTRUCTION_DEFAULT = `
-You are BW Consultant AI for Nexus Intelligence OS v7.0.
+You are VERDIX Consultant AI for Nexus Intelligence OS v7.0.
 
 Operating mode:
 - Be direct, practical, and client-facing.
@@ -1569,7 +1569,7 @@ router.post('/consultant/stream', async (req: Request, res: Response) => {
   }
 });
 
-// Unified BW Consultant endpoint with model-broker fallback (Bedrock -> Gemini -> OpenAI)
+// Unified VERDIX Consultant endpoint with model-broker fallback (Bedrock -> Gemini -> OpenAI)
 router.post('/consultant', async (req: Request, res: Response) => {
   const requestId = crypto.randomUUID();
   const start = Date.now();
@@ -1653,7 +1653,7 @@ router.post('/consultant', async (req: Request, res: Response) => {
       return res.json({
         requestId,
         taskType: normalizedTaskType,
-        text: `No AI provider is currently configured on this server. To activate the BW Consultant, add at least one of the following environment variables to your server and restart it:\n\n• GOOGLE_AI_API_KEY — free at aistudio.google.com/apikey (recommended — generous free tier)\n• GROQ_API_KEY — free at console.groq.com (fast inference)\n• OPENAI_API_KEY — platform.openai.com/api-keys\n• TOGETHER_API_KEY — api.together.xyz\n• ANTHROPIC_API_KEY — console.anthropic.com\n\nOnce a key is added and the server is restarted, the consultant will be fully operational.`,
+        text: `No AI provider is currently configured on this server. To activate the VERDIX Consultant, add at least one of the following environment variables to your server and restart it:\n\n• GOOGLE_AI_API_KEY — free at aistudio.google.com/apikey (recommended — generous free tier)\n• GROQ_API_KEY — free at console.groq.com (fast inference)\n• OPENAI_API_KEY — platform.openai.com/api-keys\n• TOGETHER_API_KEY — api.together.xyz\n• ANTHROPIC_API_KEY — console.anthropic.com\n\nOnce a key is added and the server is restarted, the consultant will be fully operational.`,
         provider: 'rule-engine',
         attempts: [],
         confidence: 1,
@@ -3064,7 +3064,7 @@ Return as JSON array.`;
 });
 
 const MULTI_AGENT_SYSTEM_INSTRUCTION = `
-You are the BWGA Intelligence AI Multi-Agent Brain v6.0 (Nexus Intelligence OS) - a self-learning economic intelligence system with NSIL v3.2 and Human Cognition Engine Active.
+You are the VERDIX Intelligence AI Multi-Agent Brain v6.0 (Nexus Intelligence OS) - a self-learning economic intelligence system with NSIL v3.2 and Human Cognition Engine Active.
 
 CORE CAPABILITIES:
 1. Analyze 200+ years of global economic patterns (1820-2025)

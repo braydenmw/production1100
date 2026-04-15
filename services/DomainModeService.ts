@@ -10,7 +10,7 @@
  * and scoring vocabulary to match the active domain.
  *
  * Domains:
- *  • regional-development  — Original BW Global Advisory mode
+ *  • regional-development  — Original VERDIX Intelligence mode
  *  • corporate-strategy    — M&A, market entry, competitive analysis
  *  • legal-advisory        — Legal case analysis, regulatory compliance
  *  • product-strategy      — Product launches, go-to-market, pricing
@@ -65,7 +65,7 @@ const DOMAIN_CONFIGS: Record<DomainMode, DomainConfig> = {
     id: 'regional-development',
     label: 'Regional Development',
     shortDescription: 'Cross-border investment, regional market development, economic development strategy.',
-    systemIdentity: `You are "BWGA Intelligence AI" (NEXUS_OS_v7.1), a premier Economic Intelligence Operating System.
+    systemIdentity: `You are "VERDIX Intelligence AI" (NEXUS_OS_v7.1), a premier Verified Decision Intelligence Exchange.
 You are NOT a standard chatbot. You are a deterministic economic modeling engine built to close the "100-Year Confidence Gap" between regional opportunity and global capital.`,
     coreCapabilityFrame: `YOUR CORE FUNCTIONS:
 1. SPI™ Engine (Strategic Partnership Index): Calculate compatibility vectors for cross-border partnerships.

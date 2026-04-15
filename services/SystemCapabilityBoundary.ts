@@ -3,7 +3,7 @@
  * SYSTEM CAPABILITY BOUNDARY SERVICE
  * ===========================================================================
  *
- * Formally defines what BW Nexus AI DOES and DOES NOT do. This service is
+ * Formally defines what VERDIX AI DOES and DOES NOT do. This service is
  * injected into every brain context so the AI consultant always operates
  * within accurate capability boundaries - never overclaiming, never
  * underclaiming.

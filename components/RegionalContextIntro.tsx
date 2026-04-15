@@ -33,7 +33,7 @@ export const RegionalContextIntro: React.FC = () => {
                 </div>
               </div>
               <p className="mt-5 text-xs text-slate-600 italic">
-                The rest of this page walks you through how the Adversarial Decision Verification OS works &mdash; from the core protocol, to the five engines, to the Workbench you use every day.
+                The rest of this page walks you through how the Verified Decision Intelligence Exchange works &mdash; from the core protocol, to the five engines, to the Workbench you use every day.
               </p>
             </div>
           </div>
@@ -64,7 +64,7 @@ export const RegionalContextIntro: React.FC = () => {
             <div className="w-12 h-12 rounded-xl bg-white/10 border border-white/10 flex items-center justify-center">
               <ShieldCheck className="w-6 h-6 text-bw-gold" />
             </div>
-            <h3 className="mt-5 text-lg font-bold">The Solution: Adversarial Decision Verification</h3>
+            <h3 className="mt-5 text-lg font-bold">The Solution: Verified Decision Intelligence</h3>
             <p className="mt-3 text-sm text-white/80 leading-relaxed">
               Five independent AI minds argue every claim. A SAT solver catches contradictions. Monte Carlo simulations stress-test every projection. The result: verified decisions, not generated opinions.
             </p>
@@ -84,7 +84,7 @@ export const RegionalContextIntro: React.FC = () => {
               This system began boots-on-the-ground and was built through 16 months of field observation and synthesis - mapping how the last 200 years of business growth repeatedly fails when translation, trust, and execution capacity are ignored.
             </p>
             <p className="text-base md:text-lg text-slate-700 leading-[1.85]">
-              It is not a passive report generator. It is an always-on Adversarial Decision Verification OS that sits between your mandate and the world&rsquo;s data: it ingests your intent, runs five independent AI minds against it, catches contradictions with a SAT solver, stress-tests projections through Monte Carlo simulation, and returns a strategy that has already been formally verified &mdash; so your documents match what you actually need, not what you&rsquo;re told you should want.
+              It is not a passive report generator. It is an always-on Verified Decision Intelligence Exchange that sits between your mandate and the world&rsquo;s data: it ingests your intent, runs five independent AI minds against it, catches contradictions with a SAT solver, stress-tests projections through Monte Carlo simulation, and returns a strategy that has already been formally verified &mdash; so your documents match what you actually need, not what you&rsquo;re told you should want.
             </p>
           </div>
           <div className="lg:col-span-5 rounded-2xl border border-black/5 bg-bw-light p-7">

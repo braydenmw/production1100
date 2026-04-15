@@ -8,13 +8,13 @@ const AttractWorkspace = () => {
       <header className="bg-slate-900 text-white py-20 px-6">
         <div className="max-w-6xl mx-auto text-center">
           <h1 className="text-4xl md:text-6xl font-bold mb-6 tracking-tight">
-            The BWGA Difference
+            The VERDIX Difference
           </h1>
           <p className="text-xl md:text-2xl text-blue-200 mb-8 max-w-3xl mx-auto">
             From "Search" to "Strategic Reasoning"
           </p>
           <p className="text-lg text-slate-400 max-w-3xl mx-auto mb-10 leading-relaxed">
-            Most tools help you find documents. Some help you write them. BWGA AI is different because it helps you reason about them. We built a system that behaves like a senior investment committee member - not a passive search engine.
+            Most tools help you find documents. Some help you write them. VERDIX is different because it helps you reason about them. We built a system that behaves like a senior investment committee member - not a passive search engine.
           </p>
           <div className="flex flex-col md:flex-row gap-4 justify-center">
             <button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-lg font-bold text-lg transition-all flex items-center justify-center gap-2">
@@ -54,12 +54,12 @@ const AttractWorkspace = () => {
             </div>
             <h3 className="text-xl font-bold mb-3">Actionable Documentation</h3>
             <p className="text-slate-600 leading-relaxed">
-              BWGA AI is designed to help you generate the kinds of structured documents - memos, risk registers, compliance matrices - that support real-world decision making and capital allocation.
+              VERDIX is designed to help you generate the kinds of structured documents - memos, risk registers, compliance matrices - that support real-world decision making and capital allocation.
             </p>
           </div>
         </div>
         <p className="text-center text-slate-400 text-sm mt-12 max-w-4xl mx-auto">
-          * The information and outputs provided by BWGA AI are for general guidance only and do not constitute formal financial, legal, or investment advice. Users should seek professional advice for specific decisions.
+          * The information and outputs provided by VERDIX are for general guidance only and do not constitute formal financial, legal, or investment advice. Users should seek professional advice for specific decisions.
         </p>
       </section>
 
@@ -67,7 +67,7 @@ const AttractWorkspace = () => {
       <section className="py-20 px-6">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold mb-4">How BWGA AI Works</h2>
+            <h2 className="text-3xl font-bold mb-4">How VERDIX Works</h2>
             <p className="text-xl text-slate-600">Intelligence That Bridges Local Opportunity to Global Capital</p>
           </div>
 
@@ -75,7 +75,7 @@ const AttractWorkspace = () => {
             <div>
               <h3 className="text-2xl font-bold mb-4">The Attract Workspace: Your Live Intelligence Partner</h3>
               <p className="text-slate-600 mb-6 leading-relaxed">
-                At the heart of BWGA AI is Attract - a reactive workspace that works alongside you like a seasoned investment advisor. Unlike static forms or one-way submissions, Attract operates as an active collaborator.
+                At the heart of VERDIX is Attract - a reactive workspace that works alongside you like a seasoned investment advisor. Unlike static forms or one-way submissions, Attract operates as an active collaborator.
               </p>
               
               <div className="space-y-6">
@@ -269,7 +269,7 @@ const AttractWorkspace = () => {
             </p>
             <footer className="text-slate-900 font-bold">
               Brayden Walls
-              <span className="block text-slate-500 font-normal text-sm mt-1">Founder, BW Global Advisory</span>
+              <span className="block text-slate-500 font-normal text-sm mt-1">Founder, VERDIX Intelligence</span>
             </footer>
           </blockquote>
 
@@ -322,11 +322,11 @@ const AttractWorkspace = () => {
       <footer className="bg-slate-900 text-slate-400 py-12 px-6 text-sm">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
           <div>
-            <div className="font-bold text-white text-lg mb-1">BW Global Advisory</div>
+            <div className="font-bold text-white text-lg mb-1">VERDIX Intelligence</div>
             <div>Melbourne, Australia | ABN 55 978 113 300</div>
           </div>
           <div className="text-right">
-            <div>&copy; 2025 BW Global Advisory Pty Ltd. All rights reserved.</div>
+            <div>&copy; 2025 VERDIX Intelligence. All rights reserved.</div>
           </div>
         </div>
       </footer>

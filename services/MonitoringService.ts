@@ -1,6 +1,6 @@
 /**
  * ═══════════════════════════════════════════════════════════════════════════════
- * BW NEXUS AI - STRUCTURED LOGGING & MONITORING SERVICE
+ * VERDIX NEXUS AI - STRUCTURED LOGGING & MONITORING SERVICE
  * ═══════════════════════════════════════════════════════════════════════════════
  *
  * Replaces ad-hoc console.log calls with structured, queryable logs.

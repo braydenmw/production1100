@@ -11,16 +11,16 @@ const PrivacyContent: React.FC = () => (
         <div className="space-y-4 text-sm text-gray-300">
           <div>
             <h4 className="font-bold text-white mb-1">1. Our Commitment to Responsible AI & Ethical Data Stewardship</h4>
-            <p>At BW Global Advisory (BWGA), we believe that Artificial Intelligence holds immense potential to unlock regional economic opportunities and foster inclusive, sustainable development globally. However, we recognize that this power must be wielded with profound responsibility. Our developing BWGA Nexus(TM) AI platform is being built upon a foundation of strong ethical principles and robust data governance practices. We are committed to ensuring our technology serves humanity, respects individual rights, and promotes equitable outcomes.</p>
-            <p className="mt-2">This framework outlines our guiding principles for the ethical development and deployment of AI and the responsible management of data within the BWGA Nexus ecosystem. It is a living document and will evolve as AI technologies and global best practices advance.</p>
+            <p>At VERDIX Intelligence, we believe that Artificial Intelligence holds immense potential to unlock regional economic opportunities and foster inclusive, sustainable development globally. However, we recognize that this power must be wielded with profound responsibility. Our VERDIX platform is being built upon a foundation of strong ethical principles and robust data governance practices. We are committed to ensuring our technology serves humanity, respects individual rights, and promotes equitable outcomes.</p>
+            <p className="mt-2">This framework outlines our guiding principles for the ethical development and deployment of AI and the responsible management of data within the VERDIX ecosystem. It is a living document and will evolve as AI technologies and global best practices advance.</p>
           </div>
           
           <div>
             <h4 className="font-bold text-white mb-1">2. Core Ethical Principles for AI Development & Application</h4>
-            <p><strong className="text-bw-gold/80">Human-Centricity & Beneficial Purpose:</strong> The primary objective of BWGA's AI is to augment human intelligence and support decisions that lead to positive socio-economic outcomes, particularly for underserved regional communities. We prioritize applications of AI that aim to alleviate poverty, enhance inclusive growth, promote environmental sustainability, and improve governance, in alignment with the UN Sustainable Development Goals (SDGs).</p>
+            <p><strong className="text-bw-gold/80">Human-Centricity & Beneficial Purpose:</strong> The primary objective of VERDIX is to augment human intelligence and support decisions that lead to positive socio-economic outcomes, particularly for underserved regional communities. We prioritize applications of AI that aim to alleviate poverty, enhance inclusive growth, promote environmental sustainability, and improve governance, in alignment with the UN Sustainable Development Goals (SDGs).</p>
             <p className="mt-2"><strong className="text-bw-gold/80">Fairness & Non-Discrimination (Bias Mitigation):</strong> We acknowledge the potential for biases in data and algorithms. BWGA is committed to proactively identifying and mitigating such biases throughout the AI lifecycle - from data collection and model training to deployment and monitoring.</p>
-            <p className="mt-2"><strong className="text-bw-gold/80">Transparency & Explainability (Appropriate to Context):</strong> While the deepest algorithmic complexities of our proprietary "BW Ai" may remain trade secrets, we are committed to transparency regarding Data Sourcing, Methodological Approach (High-Level), and the Limitations of AI.</p>
-            <p className="mt-2"><strong className="text-bw-gold/80">Accountability & Human Oversight (Human-in-the-Loop):</strong> BWGA operates on an AI-Human Symbiosis Model. Critical strategic recommendations are always subject to review, validation, and contextualization by qualified human experts.</p>
+            <p className="mt-2"><strong className="text-bw-gold/80">Transparency & Explainability (Appropriate to Context):</strong> While the deepest algorithmic complexities of our proprietary VERDIX engine may remain trade secrets, we are committed to transparency regarding Data Sourcing, Methodological Approach (High-Level), and the Limitations of AI.</p>
+            <p className="mt-2"><strong className="text-bw-gold/80">Accountability & Human Oversight (Human-in-the-Loop):</strong> VERDIX operates on an AI-Human Symbiosis Model. Critical strategic recommendations are always subject to review, validation, and contextualization by qualified human experts.</p>
             <p className="mt-2"><strong className="text-bw-gold/80">Security & Safety:</strong> We are committed to developing AI systems that are robust, secure, and operate safely within their intended parameters, minimizing risks of unintended consequences.</p>
           </div>
         </div>
@@ -29,10 +29,10 @@ const PrivacyContent: React.FC = () => (
       <div className="border-t border-gray-700 pt-6">
         <h3 className="text-xl font-serif font-bold text-bw-gold mb-4">3. Data Governance & Privacy Principles</h3>
         <div className="space-y-4 text-sm text-gray-300">
-          <p><strong className="text-white">Lawfulness, Fairness, and Transparency:</strong> BWGA will process data in compliance with applicable data protection laws and regulations in the jurisdictions where we operate, including principles aligned with GDPR and other relevant national frameworks.</p>
-          <p><strong className="text-white">Data Minimization & Purpose Limitation:</strong> We strive to collect and process only the data necessary for the specific, legitimate purposes of regional economic analysis, investment matchmaking, and providing strategic insights. Primarily, BWGA leverages publicly available data, official government statistics, and third-party licensed data.</p>
-          <p><strong className="text-white">Confidentiality & Security:</strong> Confidential information shared with BWGA by clients or partners will be protected through appropriate technical and organizational security measures and governed by strict Non-Disclosure Agreements (NDAs).</p>
-          <p><strong className="text-white">Consent (Where Applicable):</strong> While BWGA primarily deals with aggregated or publicly available data, should any personal data be involved, its processing will be subject to explicit consent and clear information regarding its use.</p>
+          <p><strong className="text-white">Lawfulness, Fairness, and Transparency:</strong> VERDIX will process data in compliance with applicable data protection laws and regulations in the jurisdictions where we operate, including principles aligned with GDPR and other relevant national frameworks.</p>
+          <p><strong className="text-white">Data Minimization & Purpose Limitation:</strong> We strive to collect and process only the data necessary for the specific, legitimate purposes of regional economic analysis, investment matchmaking, and providing strategic insights. Primarily, VERDIX leverages publicly available data, official government statistics, and third-party licensed data.</p>
+          <p><strong className="text-white">Confidentiality & Security:</strong> Confidential information shared with VERDIX by clients or partners will be protected through appropriate technical and organizational security measures and governed by strict Non-Disclosure Agreements (NDAs).</p>
+          <p><strong className="text-white">Consent (Where Applicable):</strong> While VERDIX primarily deals with aggregated or publicly available data, should any personal data be involved, its processing will be subject to explicit consent and clear information regarding its use.</p>
         </div>
       </div>
 
@@ -82,7 +82,7 @@ const TermsContent: React.FC = () => (
         <p className="text-sm text-gray-400 mb-4">Legal Agreement | Terms and Conditions of Service | Effective May 2025</p>
 
         <div className="space-y-6 text-sm text-gray-300">
-          <p><strong className="text-white block mb-1">1. Intelligence Layer, Not a CRM:</strong> The Nexus OS is an "Early-Stage Intelligence Layer" designed to operate upstream of your CRM, ERP, or Investment Committee. It provides the initial "Go/No-Go" signals and strategic frameworks for regional engagement.</p>
+          <p><strong className="text-white block mb-1">1. Intelligence Layer, Not a CRM:</strong> The VERDIX is an "Early-Stage Intelligence Layer" designed to operate upstream of your CRM, ERP, or Investment Committee. It provides the initial "Go/No-Go" signals and strategic frameworks for regional engagement.</p>
           <p><strong className="text-white block mb-1">2. Decision Support, Not Authority:</strong> The system provides probabilistic insights and data-driven recommendations. Users, especially at 'Novice' levels, should verify critical outputs with 'Expert' domain holders. Final strategic decisions remain your sole responsibility.</p>
           <p><strong className="text-white block mb-1">3. Data Sovereignty & Isolation:</strong> The system adheres to strict GDPR and local data sovereignty protocols. Your custom operational data and strategic intents are cryptographically isolated and are never used to train public models.</p>
           <p><strong className="text-white block mb-1">4. Financial & Operational Simulations:</strong> All financial models (ROI, IRR, etc.) are simulations based on the data you provide and historical benchmarks. They are not to be construed as financial advice. The accuracy of these models scales dynamically with the granularity of your inputs.</p>
@@ -101,11 +101,11 @@ const TermsContent: React.FC = () => (
       <div className="space-y-6 text-sm text-gray-300">
         <div>
           <h4 className="font-bold text-white mb-1">Company Profile</h4>
-          <p>BW Global Advisory (BWGA) envisions a world where the latent economic potential of every regional city and community is unlocked, understood, and connected to strategic global opportunities. Our core mission is to bridge the critical "understanding gap" between regional potential and global capital through our proprietary AI-Human intelligence platform, BWGA Nexus.</p>
+          <p>VERDIX (Verified Decision Intelligence Exchange) envisions a world where the latent economic potential of every regional city and community is unlocked, understood, and connected to strategic global opportunities. Our core mission is to bridge the critical "understanding gap" between regional potential and global capital through our proprietary AI intelligence platform.</p>
         </div>
         <div>
           <h4 className="font-bold text-white mb-1">Origin Story: Why This System Exists</h4>
-          <p>Founded by Brayden Walls, BWGA was born from over 12 months of intensive, "boots-on-the-ground" immersion in diverse regional economies. This firsthand experience revealed systemic challenges that traditional approaches often fail to address. BWGA Nexus is engineered to be different, combining a globally unique AI engine with founder-led insight.</p>
+          <p>Founded by Brayden Walls, VERDIX was born from over 12 months of intensive, "boots-on-the-ground" immersion in diverse regional economies. This firsthand experience revealed systemic challenges that traditional approaches often fail to address. VERDIX is engineered to be different, combining a globally unique AI engine with founder-led insight.</p>
         </div>
       </div>
     </div>
@@ -125,10 +125,10 @@ export const Footer: React.FC = () => {
               <div className="flex items-center space-x-2 mb-2">
                   <Cpu className="h-6 w-6 text-bw-gold" />
                   <span className="text-xl font-serif font-bold">
-                  BW <span className="text-bw-gold">Ai</span>
+                  VERDIX <span className="text-bw-gold">Intelligence</span>
                   </span>
               </div>
-              <p className="text-xs text-gray-500">Economic Intelligence Operating System</p>
+              <p className="text-xs text-gray-500">Verified Decision Intelligence Exchange</p>
             </div>
 
             <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-8 text-sm text-gray-400">
@@ -142,7 +142,7 @@ export const Footer: React.FC = () => {
           </div>
           
           <div className="mt-8 border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-gray-500">
-            <p>&copy; {new Date().getFullYear()} BW Global Advisory. All rights reserved.</p>
+            <p>&copy; {new Date().getFullYear()} VERDIX Intelligence. All rights reserved.</p>
             <p className="mt-2 md:mt-0 font-mono text-gray-600">ABN: 55 978 113 300</p>
           </div>
         </div>

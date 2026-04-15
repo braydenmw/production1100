@@ -117,7 +117,7 @@ const CatalogModal: React.FC<CatalogModalProps> = ({ isOpen, onClose }) => {
               </ul>
             </div>
           </div>
-          <p className="text-xs text-stone-600">For the full sectora'specific catalog and letter templates, contact BW Consultant support.</p>
+          <p className="text-xs text-stone-600">For the full sectora'specific catalog and letter templates, contact VERDIX Consultant support.</p>
         </div>
       </div>
     </div>

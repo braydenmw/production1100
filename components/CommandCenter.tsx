@@ -1,9 +1,9 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { ArrowRight, Shield, Users, Zap, CheckCircle2, Scale, Building2, Globe, Mail, Phone, Briefcase, TrendingUp, FileCheck, X, Info } from 'lucide-react';
 import DocumentModal, { type DocumentType } from './LegalDocuments';
 // OSINT search removed - using unified location research
 
-// Command Center - Complete BWGA Landing Page
+// Command Center - Complete VERDIX Landing Page
 
 interface CommandCenterProps {
     onEnterPlatform?: (payload?: { query?: string; results?: Record<string, unknown>[] }) => void;
@@ -161,7 +161,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                     <div className="border-l-2 border-emerald-600 pl-4">
                         <h4 className="font-semibold text-slate-900 text-sm mb-1">Geopolitical Arbitrage Engine &mdash; Disruption-to-Opportunity Analysis</h4>
                         <p className="text-sm text-slate-600 leading-relaxed">Scans live global news for active disruptions &mdash; wars, sanctions, trade fractures, supply-chain breaks, currency crises, energy shocks, regulatory shifts &mdash; and maps them against a pattern library of 10 disruption types with 25+ historical precedents. When a crisis hurts a major market, the engine identifies where regional cities, small islands, and lesser-known jurisdictions can capture displaced demand, talent, capital, or supply-chain links. Scores each arbitrage opportunity on severity, contextual relevance, and historical validation. Vietnam replacing China in textiles post-tariff (2018), Dubai absorbing Gulf War capital (1991), Georgia&rsquo;s tech boom from Russian IT worker relocation (2022) &mdash; these patterns repeat. The engine spots them proactively.</p>
-                        <p className="text-xs text-slate-500 mt-1 italic">Role in the OS: Feeds into the BW Consultant system prompt on every query. Ensures the user is always informed how current world events &mdash; good or bad &mdash; create structural openings for their market or jurisdiction.</p>
+                        <p className="text-xs text-slate-500 mt-1 italic">Role in the OS: Feeds into the VERDIX Consultant system prompt on every query. Ensures the user is always informed how current world events &mdash; good or bad &mdash; create structural openings for their market or jurisdiction.</p>
                     </div>
                 </div>
             ),
@@ -315,10 +315,10 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
             <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
                 <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-700 rounded-lg flex items-center justify-center font-bold text-white text-sm">
-                            BW
+                        <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-700 rounded-lg flex items-center justify-center font-bold text-white text-[7px] tracking-tight">
+                            ADV
                         </div>
-                        <span className="text-lg font-light tracking-wide hidden sm:block text-slate-800">BWGA Intelligence</span>
+                        <span className="text-lg font-light tracking-wide hidden sm:block text-slate-800">VERDIX Intelligence</span>
                     </div>
                     <div className="hidden lg:flex items-center gap-6 text-sm text-slate-600 font-medium">
                         <button onClick={() => scrollToSection('launch-platform')} className="ml-2 px-4 py-1.5 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-sm">Launch Consultant</button>
@@ -332,16 +332,19 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
             <section id="mission" className="relative pt-36 pb-20 px-4 overflow-hidden">
                 <img 
                     src="https://images.unsplash.com/photo-1639322537228-f710d846310a?w=1920&h=1080&fit=crop&q=80" 
-                    alt="Adversarial Decision Verification" 
+                    alt="Verified Decision Intelligence" 
                     className="absolute inset-0 w-full h-full object-cover" 
                 />
                 <div className="absolute inset-0 bg-gradient-to-b from-slate-900/70 via-slate-900/50 to-slate-900/80" />
                 <div className="relative z-10 max-w-5xl mx-auto text-center">
-                    <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-light leading-tight mb-8 text-white">
-                        Every satisfying answer<br />deserves to be verified.
+                    <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-light leading-tight mb-4 text-white">
+                        <span className="font-bold tracking-wide">VERDIX</span>
                     </h1>
+                    <p className="text-xl sm:text-2xl md:text-3xl font-light text-slate-200 mb-6 tracking-wide uppercase">
+                        Verified Decision Intelligence Exchange
+                    </p>
                     <p className="text-lg md:text-xl text-slate-300 max-w-3xl mx-auto leading-relaxed mb-4">
-                        The world&rsquo;s first Adversarial Decision Verification OS &mdash; institutional-grade intelligence that formally verifies every conclusion through adversarial debate, contradiction detection, and stress-testing before any output reaches you.
+                        Every satisfying answer deserves to be verified. VERDIX is the world&rsquo;s first intelligence OS that formally verifies every conclusion through adversarial debate, contradiction detection, and stress-testing before any output reaches you.
                     </p>
                     <p className="text-base md:text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed">
                         Built from regional development. Architected for every high-stakes decision.
@@ -357,16 +360,16 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-16">
                         {/* Left — Statement */}
                         <div>
-                            <p className="text-xs font-bold text-blue-600 uppercase tracking-[0.2em] mb-4">The Core Idea</p>
+                            <p className="text-xs font-bold text-blue-600 uppercase tracking-[0.2em] mb-4">What Is VERDIX</p>
                             <h2 className="text-3xl md:text-4xl lg:text-5xl font-light text-slate-900 leading-tight mb-6">
                                 Every AI system on the market generates answers.<br className="hidden md:block" />
-                                This one verifies them first.
+                                VERDIX verifies them first.
                             </h2>
                             <p className="text-lg text-slate-500 leading-relaxed mb-4">
-                                This isn&rsquo;t a chatbot with a business skin. It&rsquo;s an operating system that formally attacks its own conclusions, debates them across competing engines, stress-tests them mathematically, and scores every claim before it reaches you.
+                                VERDIX &mdash; the <strong className="text-slate-900">Verified Decision Intelligence Exchange</strong> &mdash; isn&rsquo;t a chatbot with a business skin. It&rsquo;s an operating system that formally attacks its own conclusions, debates them across competing engines, stress-tests them mathematically, and scores every claim before it reaches you.
                             </p>
                             <p className="text-sm text-slate-600 leading-relaxed">
-                                Ten proven mathematical systems &mdash; SAT solvers, Monte Carlo simulation, Bayesian inference, computational neuroscience, self-evolving algorithms &mdash; each used in isolation across chip design, Wall Street, medical diagnostics, and research labs. We built the architecture that forces all ten into a single adversarial pipeline where every layer challenges every other layer. No one has done this before. That&rsquo;s what ADVOS is.
+                                Ten proven mathematical systems &mdash; SAT solvers, Monte Carlo simulation, Bayesian inference, computational neuroscience, self-evolving algorithms &mdash; each used in isolation across chip design, Wall Street, medical diagnostics, and research labs. We built the architecture that forces all ten into a single adversarial pipeline where every layer challenges every other layer. No one has done this before. That&rsquo;s what VERDIX is.
                             </p>
                         </div>
 
@@ -405,7 +408,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                         {/* Right — Text */}
                         <div className="order-1 lg:order-2">
                             <p className="text-xs font-bold text-blue-600 uppercase tracking-[0.2em] mb-4">What Makes This a First</p>
-                            <h2 className="text-3xl md:text-4xl lg:text-5xl font-light text-slate-900 leading-tight mb-6">The world&rsquo;s first Adversarial Decision Verification Operating System.</h2>
+                            <h2 className="text-3xl md:text-4xl lg:text-5xl font-light text-slate-900 leading-tight mb-6">The world&rsquo;s first Verified Decision Intelligence Exchange.</h2>
                             <p className="text-sm text-slate-600 leading-relaxed mb-4">
                                 Every technology in this pipeline is proven independently &mdash; but they&rsquo;ve never been connected. We built the integration layer: the adversarial debate protocol between reasoning engines, the formal logic checker that catches contradictions across them, the stress tester that breaks their projections, the cognition model that predicts how you&rsquo;ll process the output, and the reflexive layer that watches the entire system for drift and overconfidence.
                             </p>
@@ -471,7 +474,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
             </section>
 
             {/* ═══════════════════════════════════════════════════════════════
-                WHY ADVOS — Every Word Is Precise
+                WHY VERDIX — Every Word Is Precise
             ═══════════════════════════════════════════════════════════════ */}
             <section className="py-20 px-4 bg-white">
                 <div className="max-w-6xl mx-auto">
@@ -489,7 +492,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
 
                         {/* Right — Text */}
                         <div>
-                            <p className="text-xs font-bold text-blue-600 uppercase tracking-[0.2em] mb-4">Why &ldquo;ADVOS&rdquo;</p>
+                            <p className="text-xs font-bold text-blue-600 uppercase tracking-[0.2em] mb-4">Why &ldquo;VERDIX&rdquo;</p>
                             <h2 className="text-3xl md:text-4xl lg:text-5xl font-light text-slate-900 leading-tight mb-6">Every word is precise.</h2>
                             <p className="text-sm text-slate-600 leading-relaxed mb-6">
                                 The name isn&rsquo;t marketing. It&rsquo;s a technical description. Each component maps directly to what the system does &mdash; and what makes it fundamentally different from anything else on the market.
@@ -497,19 +500,23 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                         </div>
                     </div>
 
-                    {/* Three columns below */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+                    {/* Four columns below — V·E·R·D·I·X */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
                         <div className="border-t-2 border-blue-600 pt-6">
-                            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide mb-3">Adversarial</h3>
-                            <p className="text-sm text-slate-500 leading-relaxed">The system is designed to be its own adversary. Every conclusion is challenged by competing engines. Every logical chain is checked for contradictions. Every projection is stress-tested against worst-case scenarios. The output isn&rsquo;t what the AI thinks is right &mdash; it&rsquo;s what survived the attack.</p>
+                            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide mb-3">Verified</h3>
+                            <p className="text-sm text-slate-500 leading-relaxed">Every conclusion is formally verified before it reaches you. Five competing reasoning engines challenge each claim, a SAT solver catches logical contradictions, and Monte Carlo simulations stress-test every projection. The output isn&rsquo;t what the AI thinks is right &mdash; it&rsquo;s what survived the attack.</p>
                         </div>
                         <div className="border-t-2 border-blue-600 pt-6">
-                            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide mb-3">Decision Verification</h3>
+                            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide mb-3">Decision</h3>
                             <p className="text-sm text-slate-500 leading-relaxed">It doesn&rsquo;t make the decision for you. It verifies the decision before you make it. You remain the decision-maker. The system ensures that when you commit capital, sign a contract, or submit to a regulator, the position underneath has been formally tested to fiduciary standard.</p>
                         </div>
                         <div className="border-t-2 border-blue-600 pt-6">
-                            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide mb-3">Operating System</h3>
-                            <p className="text-sm text-slate-500 leading-relaxed">Not a single tool &mdash; an operating system for decisions. 50+ engines, multi-provider AI with automatic failover, 20+ live external APIs, a full compliance framework (IFC PS1&ndash;PS8, UN SDGs), and a 247-template document pipeline. The complete infrastructure for verified decision-making.</p>
+                            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide mb-3">Intelligence</h3>
+                            <p className="text-sm text-slate-500 leading-relaxed">44 engines, multi-provider AI with automatic failover, 20+ live external APIs, a full compliance framework (IFC PS1&ndash;PS8, UN SDGs), and a 247-template document pipeline. Intelligence that reasons, not just retrieves.</p>
+                        </div>
+                        <div className="border-t-2 border-blue-600 pt-6">
+                            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide mb-3">Exchange</h3>
+                            <p className="text-sm text-slate-500 leading-relaxed">Not a one-way output &mdash; an exchange. Ten mathematical systems connected in a single adversarial pipeline where every layer challenges every other layer. Information flows, collides, and refines until only defensible conclusions remain.</p>
                         </div>
                     </div>
                 </div>
@@ -907,8 +914,8 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                     {/* Footer Info */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16 pt-12 border-t border-slate-200">
                         <div>
-                            <h5 className="text-xs font-bold text-slate-900 uppercase tracking-wide mb-2">BWGA Ai</h5>
-                            <p className="text-xs text-slate-500 leading-relaxed mb-2">BW Global Advisory is an Australian strategic intelligence firm developing sovereign-grade AI systems for cross-border investment and regional economic development.</p>
+                            <h5 className="text-xs font-bold text-slate-900 uppercase tracking-wide mb-2">VERDIX</h5>
+                            <p className="text-xs text-slate-500 leading-relaxed mb-2">VERDIX (Verified Decision Intelligence Exchange) is an Australian-developed sovereign-grade AI intelligence platform for cross-border investment and regional economic development.</p>
                             <div className="space-y-0.5 text-xs text-slate-400">
                                 <p className="flex items-center gap-1"><Mail size={10} /> brayden@bwglobaladvis.info</p>
                                 <p className="flex items-center gap-1"><Phone size={10} /> +63 960 835 4283</p>
@@ -1460,14 +1467,14 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                         <section className="py-8 px-6 md:px-8 bg-slate-50 border-b border-slate-200">
                             <div className="max-w-4xl mx-auto">
 
-                                {/* BW Consultant intro */}
+                                {/* VERDIX Consultant intro */}
                                     <div className="bg-white border border-blue-200 rounded-xl p-6 mb-6 shadow-sm">
                                         <div className="flex items-start gap-4 mb-4">
                                             <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl flex items-center justify-center flex-shrink-0">
-                                                <span className="text-white font-bold text-sm">BW</span>
+                                                <span className="text-white font-bold text-[7px] tracking-tight">ADV</span>
                                             </div>
                                             <div>
-                                                <h3 className="text-lg font-semibold text-slate-900 leading-tight">BW Consultant</h3>
+                                                <h3 className="text-lg font-semibold text-slate-900 leading-tight">VERDIX Consultant</h3>
                                                 <p className="text-xs text-blue-600 font-medium mt-0.5">Powered by NSIL Agentic Runtime &bull; Case Study Builder</p>
                                             </div>
                                         </div>
@@ -1490,7 +1497,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
 
                                         <p className="text-sm text-slate-700 leading-relaxed mb-3">
                                             Hello &mdash; welcome, and thank you for being here.<br /><br />
-                                            I'm your BW AI Consultant. I'm here to assist you in any way I can to help you better connect with those who wish to do business or invest in regional areas, no matter where they are in the world. Whether it's preparing the right documents, understanding a new market, building a compelling case, or simply working through an idea &mdash; this is what I do.<br /><br />
+                                            I'm your VERDIX Consultant. I'm here to assist you in any way I can to help you better connect with those who wish to do business or invest in regional areas, no matter where they are in the world. Whether it's preparing the right documents, understanding a new market, building a compelling case, or simply working through an idea &mdash; this is what I do.<br /><br />
                                             Are you looking to know more about something? Need help writing a letter or proposal? Want to build a case study for a project you're working on? Or do you just need some guidance on where to start?<br /><br />
                                             Let me know what you need and we'll get to work.
                                         </p>
@@ -1510,7 +1517,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                                             <span className="text-xs text-blue-600 uppercase tracking-wider font-bold">STAGE ONE</span>
                                         </div>
                                         <h4 className="text-base font-semibold text-slate-900 mb-2 group-hover:text-blue-700">Adaptive Intake</h4>
-                                        <p className="text-xs text-slate-600">BW Consultant captures 10 dimensions through conversation &mdash; scope, financials, risk, compliance, and partnership terms</p>
+                                        <p className="text-xs text-slate-600">VERDIX Consultant captures 10 dimensions through conversation &mdash; scope, financials, risk, compliance, and partnership terms</p>
                                         <p className="text-xs text-blue-600 mt-3 font-medium group-hover:underline">Click to explore &rarr;</p>
                                     </button>
 
@@ -1546,9 +1553,9 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                         {/* The 10 Steps Grid */}
                         <section className="py-8 px-6 md:px-8 bg-white">
                             <div className="max-w-4xl mx-auto">
-                                <p className="text-blue-600 uppercase tracking-[0.2em] text-xs mb-3 font-bold">BW CONSULTANT &mdash; INTAKE PHASE</p>
+                                <p className="text-blue-600 uppercase tracking-[0.2em] text-xs mb-3 font-bold">VERDIX CONSULTANT &mdash; INTAKE PHASE</p>
                                 <h3 className="text-xl font-semibold text-slate-900 mb-2">What Gets Captured Across 10 Dimensions</h3>
-                                <p className="text-sm text-slate-600 mb-1">Most users complete this in 30&ndash;45 minutes. BW Consultant builds this picture through conversation &mdash; asking the right questions in sequence so you never face a blank form. By the end, the system has clear scope, quantified assumptions, full risk visibility, and a consistent dataset the reasoning engine can trust.</p>
+                                <p className="text-sm text-slate-600 mb-1">Most users complete this in 30&ndash;45 minutes. VERDIX Consultant builds this picture through conversation &mdash; asking the right questions in sequence so you never face a blank form. By the end, the system has clear scope, quantified assumptions, full risk visibility, and a consistent dataset the reasoning engine can trust.</p>
                                 <p className="text-sm text-slate-500 mb-6">Click any dimension to see what gets captured:</p>
 
                                 <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
@@ -2098,7 +2105,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                                     onClick={() => setUnifiedActiveTab('protocol')}
                                     className={`px-4 py-3 text-sm font-semibold transition-all border-b-2 ${unifiedActiveTab === 'protocol' ? 'border-slate-900 text-slate-900' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
                                 >
-                                    BW Consultant
+                                    VERDIX Consultant
                                 </button>
                                 <button 
                                     onClick={() => setUnifiedActiveTab('documents')}
@@ -2128,10 +2135,10 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                             <div className="bg-white border border-blue-200 rounded-xl p-5 shadow-sm">
                                 <div className="flex items-start gap-4 mb-4">
                                     <div className="w-11 h-11 bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl flex items-center justify-center flex-shrink-0">
-                                        <span className="text-white font-bold text-xs">BW</span>
+                                        <span className="text-white font-bold text-[7px] tracking-tight">ADV</span>
                                     </div>
                                     <div>
-                                        <p className="font-bold text-slate-900">BW Consultant</p>
+                                        <p className="font-bold text-slate-900">VERDIX Consultant</p>
                                         <p className="text-xs text-blue-600 font-medium mt-0.5">Powered by NSIL Agentic Runtime &bull; Case Study Builder</p>
                                     </div>
                                 </div>
@@ -2150,15 +2157,15 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                                     ))}
                                 </div>
                                 <p className="text-sm text-slate-700 leading-relaxed">
-                                    BW Consultant is the conversational intelligence layer that feeds the full analysis engine. Instead of a form, you talk. The system listens, asks the highest-value follow-up questions, builds the structured case brief in the background, and routes it through three stages: <strong className="text-slate-900">Adaptive Intake</strong> (10 dimensions captured through natural conversation with case-method gating), <strong className="text-slate-900">Adversarial Analysis</strong> (54+ formulas, 5 personas, Monte Carlo across 5,000 scenarios, Regional Development Kernel with partner intelligence and causal graphs), and <strong className="text-slate-900">Institutional Output</strong> (247+ document types across 15 categories and 156+ letter templates, all populated with your actual scores and traceable reasoning &mdash; not AI placeholder text). Plus <strong className="text-slate-900">Case Study Intelligence</strong> &mdash; upload any report, proposal, or mandate and the system reads, scores, debates, and diagnoses it instantly.
+                                    VERDIX Consultant is the conversational intelligence layer that feeds the full analysis engine. Instead of a form, you talk. The system listens, asks the highest-value follow-up questions, builds the structured case brief in the background, and routes it through three stages: <strong className="text-slate-900">Adaptive Intake</strong> (10 dimensions captured through natural conversation with case-method gating), <strong className="text-slate-900">Adversarial Analysis</strong> (54+ formulas, 5 personas, Monte Carlo across 5,000 scenarios, Regional Development Kernel with partner intelligence and causal graphs), and <strong className="text-slate-900">Institutional Output</strong> (247+ document types across 15 categories and 156+ letter templates, all populated with your actual scores and traceable reasoning &mdash; not AI placeholder text). Plus <strong className="text-slate-900">Case Study Intelligence</strong> &mdash; upload any report, proposal, or mandate and the system reads, scores, debates, and diagnoses it instantly.
                                 </p>
                             </div>
 
                             {/* TAB CONTENT: Protocol */}
                             {unifiedActiveTab === 'protocol' && (
                                 <>
-                                    <h4 className="text-lg font-bold text-slate-900 pt-2">What BW Consultant Captures &mdash; 10 Dimensions</h4>
-                                    <p>BW Consultant builds the case brief through conversation, not a form. It asks the highest-value question at each point, infers facts from context, and structures the intake across 10 dimensions. Most sessions complete this in 30&ndash;45 minutes. By the end, the reasoning engine has clear scope, quantified assumptions, full risk visibility, and a consistent dataset it can trust.</p>
+                                    <h4 className="text-lg font-bold text-slate-900 pt-2">What VERDIX Consultant Captures &mdash; 10 Dimensions</h4>
+                                    <p>VERDIX Consultant builds the case brief through conversation, not a form. It asks the highest-value question at each point, infers facts from context, and structures the intake across 10 dimensions. Most sessions complete this in 30&ndash;45 minutes. By the end, the reasoning engine has clear scope, quantified assumptions, full risk visibility, and a consistent dataset it can trust.</p>
 
                                     <div className="border-l-2 border-blue-200 pl-4 space-y-4">
                                         <div>
@@ -2552,7 +2559,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                                 </p>
                             </div>
                             <p className="text-sm text-slate-700 leading-relaxed mb-3">
-                                No other platform  -  not Palantir, not Bloomberg Terminal, not McKinsey's analytics  -  implements any of these models. BWGA Ai implements all seven. And they work because the NSIL was built to accommodate exactly this kind of extension  -  I just didn't know these models existed when I designed it. They fit perfectly into what I'd already created.
+                                No other platform  -  not Palantir, not Bloomberg Terminal, not McKinsey's analytics  -  implements any of these models. VERDIX implements all seven. And they work because the NSIL was built to accommodate exactly this kind of extension  -  I just didn't know these models existed when I designed it. They fit perfectly into what I'd already created.
                             </p>
                             <p className="text-xs text-slate-600 leading-relaxed italic">
                                 That's what makes this a world first. Not just the neuroscience. Not just the formulas. Not just the debate engine or the autonomous engines. It's the fact that one person built an architecture flexible enough to unify all of them  -  and then discovered the missing piece that made it complete.
@@ -2791,7 +2798,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                                     <div>
                                         <div className="flex items-center gap-2 mb-2">
                                             <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-700 rounded-lg flex items-center justify-center font-bold text-white text-xs">BW</div>
-                                            <span className="text-xs text-slate-400 uppercase tracking-wider font-medium">BWGA Ai &mdash; Live Report</span>
+                                            <span className="text-xs text-slate-400 uppercase tracking-wider font-medium">VERDIX &mdash; Live Report</span>
                                         </div>
                                         <h2 className="text-xl font-semibold text-slate-900">Strategic Partnership Viability Assessment</h2>
                                         <p className="text-sm text-slate-500 mt-1">Northland Regional Council &times; Vestas Energy Solutions</p>
@@ -3241,7 +3248,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                         <div className="p-6 md:p-8 space-y-6 text-sm text-slate-700 leading-relaxed">
 
                             <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-sm mb-6">
-                                <p className="text-sm text-slate-900 font-semibold mb-2">BW AI: Current Intelligence Architecture</p>
+                                <p className="text-sm text-slate-900 font-semibold mb-2">VERDIX: Current Intelligence Architecture</p>
                                 <p className="text-sm text-slate-700">
                                     This is <strong>how the system thinks today.</strong> Every input enters a deterministic 10-layer pipeline with adaptive multi-phase intake, a Regional Development Kernel, partner intelligence scoring, causal problem-to-solution graphs, and case-method gating. The current runtime now adds <strong>streaming responses</strong>, <strong>reactive draft analysis while users type</strong>, a <strong>concurrent planner/executor timeline</strong>, and <strong>confidence + source provenance</strong> on outputs. It validates, debates, scores, stress-tests, and synthesises analysis with explicit logic and auditability.
                                 </p>
@@ -3701,7 +3708,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                 <div className="max-w-4xl mx-auto">
                     <div className="flex flex-col md:flex-row justify-between items-center gap-4">
                         <div className="text-center md:text-left">
-                            <p className="text-xs text-white/40">(c) 2026 BW Global Advisory. All rights reserved.</p>
+                            <p className="text-xs text-white/40">(c) 2026 VERDIX Intelligence. All rights reserved.</p>
                             <p className="text-xs text-white/30">Trading as Sole Trader (R&D Phase) | ABN 55 978 113 300 | Melbourne, Australia</p>
                         </div>
                         <div className="flex items-center gap-3 text-xs text-white/40">

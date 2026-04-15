@@ -1,4 +1,4 @@
-﻿/**
+/**
  *
  * Location Intelligence Service Logic
  *
@@ -299,7 +299,7 @@ async function fetchLocationIntelligenceClientSide(
     // 1. Geocoding from OpenStreetMap Nominatim (free, no API key)
     const geoResponse = await fetch(
       `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=1`,
-      { headers: { 'User-Agent': 'BWGA-Intelligence/1.0' } }
+      { headers: { 'User-Agent': 'VERDIX-Intelligence/1.0' } }
     );
     const geoData = await geoResponse.json();
     console.log('[Client] Geo data:', geoData);

@@ -470,7 +470,7 @@ export const platformStats = {
 export const termsOfEngagement = [
     {
         title: "1. Strategic Decision Support",
-        content: "BW AI is a decision support platform. All outputs are advisory and must be validated by qualified professionals before binding commitments."
+        content: "VERDIX is a decision support platform. All outputs are advisory and must be validated by qualified professionals before binding commitments."
     },
     {
         title: "2. Reasoning Governance (NSIL)",
@@ -490,7 +490,7 @@ export const termsOfEngagement = [
     },
     {
         title: "6. Liability & IP Protection",
-        content: "All intellectual property, methodologies, orchestration primitives, and the 27-formula suite are owned by BW Global Advisory Pty Ltd (BWGA). Access or evaluation does not grant any license or transfer of rights. You agree to keep non-public materials confidential, use them solely for evaluation, and not disclose, copy, reverse-engineer, or use the system to build a competing product."
+        content: "All intellectual property, methodologies, orchestration primitives, and the 27-formula suite are owned by VERDIX Intelligence (Brayden Walls, ABN 55 978 113 300). Access or evaluation does not grant any license or transfer of rights. You agree to keep non-public materials confidential, use them solely for evaluation, and not disclose, copy, reverse-engineer, or use the system to build a competing product."
     }
 ];
 

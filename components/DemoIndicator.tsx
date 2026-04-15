@@ -9,7 +9,7 @@ interface DemoIndicatorProps {
 }
 
 const DemoIndicator: React.FC<DemoIndicatorProps> = ({
-  message = "ADVOS Intelligence Platform — API key required for live AI",
+  message = "VERDIX Intelligence Platform — API key required for live AI",
   className = "",
   showIcon = true
 }) => {

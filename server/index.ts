@@ -363,7 +363,7 @@ app.use(globalErrorHandler);
 const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`
 ╔════════════════════════════════════════════════════════════╗
-║  BWGA Intelligence AI Backend Server                                ║
+║  VERDIX Intelligence AI Backend Server                                ║
 ║  ──────────────────────────────────────────────────────────║
 ║  Status:    ONLINE                                         ║
 ║  Port:      ${PORT}                                            ║

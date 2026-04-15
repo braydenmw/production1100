@@ -58,7 +58,7 @@ export const Contact: React.FC = () => {
                 </div>
                 <h4 className="text-2xl font-serif font-bold text-bw-navy mb-4">Message Sent</h4>
                 <p className="text-gray-600 mb-8">
-                  Thank you for contacting BW Global Advisory. A member of our executive team will review your inquiry and respond shortly.
+                  Thank you for contacting VERDIX Intelligence. A member of our executive team will review your inquiry and respond shortly.
                 </p>
                 <button 
                   onClick={() => setFormState('idle')}

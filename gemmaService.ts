@@ -1,6 +1,6 @@
 /**
  * ═══════════════════════════════════════════════════════════════════════════════
- * BW NEXUS AI - GOOGLE GEMMA SERVICE
+ * VERDIX NEXUS AI - GOOGLE GEMMA SERVICE
  * ═══════════════════════════════════════════════════════════════════════════════
  *
  * Direct Google AI integration — calls Gemma models through Google's own
