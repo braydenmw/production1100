@@ -315,10 +315,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
             <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
                 <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-700 rounded-lg flex items-center justify-center font-bold text-white text-[7px] tracking-tight">
-                            ADV
-                        </div>
-                        <span className="text-lg font-light tracking-wide hidden sm:block text-slate-800">ADVERSIQ Intelligence</span>
+                        <span className="text-lg font-light tracking-wide text-slate-800">ADVERSIQ Intelligence</span>
                     </div>
                     <div className="hidden lg:flex items-center gap-6 text-sm text-slate-600 font-medium">
                         <button onClick={() => scrollToSection('launch-platform')} className="ml-2 px-4 py-1.5 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-sm">Launch Consultant</button>
@@ -769,7 +766,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                         {/* Left — Photo */}
                         <div className="order-2 lg:order-1">
                             <div className="h-80 lg:h-[28rem] overflow-hidden">
-                                <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=900&fit=crop&q=80" alt="Accessible intelligence pricing" className="w-full h-full object-cover" />
+                                <img src="https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=800&h=900&fit=crop&q=80" alt="Accessible intelligence pricing" className="w-full h-full object-cover" />
                             </div>
                         </div>
 
@@ -785,9 +782,9 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                         {[
                             { label: 'Starter Access', period: '5 Days', note: 'Full Access Pass', price: 'Free', features: ['Full 10-layer pipeline', 'All 50+ engines active', '247 document templates', 'Entity verification', 'No credit card required'] },
-                            { label: 'Subscription', period: '3 Months', note: 'Full Access', price: '$239', features: ['Everything in Starter', 'Unlimited analyses', 'Priority processing', 'Audit trail exports', 'Email support'] },
-                            { label: 'Subscription', period: '6 Months', note: 'Full Access', price: '$429', features: ['Everything in 3-Month', 'Monte Carlo parameters', 'Formula weight access', 'Custom document templates', 'Save $49 vs quarterly'] },
-                            { label: 'Subscription', period: '12 Months', note: 'Full Access', price: '$610', features: ['Everything in 6-Month', 'Direct developer access', 'Feature request priority', 'Multi-user workspace', 'Save $348 vs quarterly'] },
+                            { label: 'Subscription', period: '3 Months', note: 'Full Access', price: '$239 to $439', features: ['Everything in Starter', 'Unlimited analyses', 'Priority processing', 'Audit trail exports', 'Email support'] },
+                            { label: 'Subscription', period: '6 Months', note: 'Full Access', price: '$429 to $810', features: ['Everything in 3-Month', 'Monte Carlo parameters', 'Formula weight access', 'Custom document templates', 'Save $49 vs quarterly'] },
+                            { label: 'Subscription', period: '12 Months', note: 'Full Access', price: '$610 to $1288', features: ['Everything in 6-Month', 'Direct developer access', 'Feature request priority', 'Multi-user workspace', 'Save $348 vs quarterly'] },
                         ].map((plan) => (
                             <div key={plan.period} className="border-t-2 border-slate-300 pt-6">
                                 <p className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">{plan.label}</p>
