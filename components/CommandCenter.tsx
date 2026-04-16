@@ -395,9 +395,10 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                         </div>
                     </div>
 
-                    {/* Business decision description */}
-                    <div className="max-w-6xl mx-auto text-center mt-16 mb-16">
-                        <p className="text-2xl md:text-3xl lg:text-4xl font-bold text-slate-900 leading-snug">
+                    {/* Business decision description — Feature Script */}
+                    <div className="border-t-2 border-slate-300 pt-12 mt-16 mb-16 max-w-6xl mx-auto">
+                        <h4 className="text-4xl md:text-5xl lg:text-6xl font-black text-slate-900 uppercase tracking-tight mb-8">The Promise</h4>
+                        <p className="text-xl md:text-2xl lg:text-3xl text-slate-700 leading-relaxed mb-6">
                             Describe a business decision &mdash; an investment, an expansion, a partnership, a market entry &mdash; and the system produces a fully verified analysis with financial projections, risk assessments, compliance checks, and board-ready documents.
                         </p>
                     </div>
@@ -433,8 +434,8 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                         <div>
                             <div className="h-80 lg:h-[28rem] overflow-hidden">
                                 <img
-                                    src="https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=800&h=900&fit=crop&q=80"
-                                    alt="Adversarial reasoning tribunal"
+                                    src="https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=800&h=900&fit=crop&q=80"
+                                    alt="Robot in a beautiful garden"
                                     className="w-full h-full object-cover"
                                 />
                             </div>
@@ -466,10 +467,15 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                         </div>
                     </div>
 
-                    {/* Synthesis */}
-                    <div className="border-t border-slate-200 pt-8 max-w-3xl">
-                        <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wide mb-3">The Synthesis</h4>
-                        <p className="text-sm text-slate-500 leading-relaxed">After all three judges deliver their verdict, the system identifies where they agree, where they disagree, and produces a unified answer with a confidence score. You see everything &mdash; not just the conclusion, but the debate that produced it.</p>
+                    {/* Synthesis — Feature Script */}
+                    <div className="border-t-2 border-slate-300 pt-12 mt-16 max-w-6xl">
+                        <h4 className="text-4xl md:text-5xl lg:text-6xl font-black text-slate-900 uppercase tracking-tight mb-8">The Synthesis</h4>
+                        <p className="text-xl md:text-2xl lg:text-3xl text-slate-700 leading-relaxed mb-6">
+                            After all three judges deliver their verdict, the system identifies where they agree, where they disagree, and produces a unified answer with a confidence score.
+                        </p>
+                        <p className="text-xl md:text-2xl lg:text-3xl text-slate-900 font-semibold leading-relaxed">
+                            You see everything &mdash; not just the conclusion, but the debate that produced it.
+                        </p>
                     </div>
                 </div>
             </section>
