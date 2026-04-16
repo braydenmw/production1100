@@ -388,32 +388,45 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
             </section>
 
             {/* ═══════════════════════════════════════════════════════════════
-                WHAT MAKES THIS A FIRST — The Verification Pipeline
+                WHAT NO ONE HAS ATTEMPTED — Reasoning Tribunal + Pipeline
             ═══════════════════════════════════════════════════════════════ */}
             <section className="py-20 px-4 bg-slate-50">
                 <div className="max-w-6xl mx-auto">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-16">
-                        {/* Left — Photo */}
-                        <div className="order-2 lg:order-1">
-                            <div className="h-80 lg:h-[28rem] overflow-hidden">
-                                <img
-                                    src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800&h=900&fit=crop&q=80"
-                                    alt="Verification pipeline architecture"
-                                    className="w-full h-full object-cover"
-                                />
-                            </div>
-                        </div>
-
-                        {/* Right — Text */}
-                        <div className="order-1 lg:order-2">
-                            <p className="text-xs font-bold text-blue-600 uppercase tracking-[0.2em] mb-4">What Makes This a First</p>
-                            <h2 className="text-3xl md:text-4xl lg:text-5xl font-light text-slate-900 leading-tight mb-6">Ten layers of verification. Nothing like it exists.</h2>
+                        {/* Left — Text */}
+                        <div>
+                            <p className="text-xs font-bold text-blue-600 uppercase tracking-[0.2em] mb-4">What No One Has Attempted</p>
+                            <h2 className="text-3xl md:text-4xl lg:text-5xl font-light text-slate-900 leading-tight mb-6">Three AI architectures. One question. They fight it out.</h2>
                             <p className="text-sm text-slate-600 leading-relaxed mb-4">
-                                Each piece of this system exists in isolation somewhere. What&rsquo;s new is connecting all ten into one pipeline where they challenge each other. AI systems that debate. A logic checker that catches when conclusions contradict. A stress tester that breaks optimistic projections. A layer that understands how you think, so the output actually lands. And a watchdog that monitors the whole system for overconfidence.
+                                Most AI tools use one model to generate an answer. We use three fundamentally different reasoning systems &mdash; each built by a different company, each thinking in a different way &mdash; and make them argue with each other over the same question.
+                            </p>
+                            <p className="text-sm text-slate-600 leading-relaxed mb-4">
+                                These aren&rsquo;t chatbots giving quick opinions. These are reasoning models that think internally for up to 30 seconds before they even respond. Then they&rsquo;re forced to defend their position against the other two.
                             </p>
                             <p className="text-sm text-slate-600 leading-relaxed">
-                                Then we went further. When the pipeline can&rsquo;t reach consensus, three independent reasoning models &mdash; each from a different AI lab, each thinking differently &mdash; are brought in to break the deadlock. No one has built this. No one has tried.
+                                Where they agree, you can trust the answer. Where they disagree, you see exactly what&rsquo;s uncertain and why. No other platform does this. No one has tried.
                             </p>
+                        </div>
+
+                        {/* Right — The Three Judges */}
+                        <div>
+                            <div className="space-y-6">
+                                {[
+                                    { label: 'Judge 1', name: 'Extended Thinking', desc: 'Careful, safety-aware reasoning. Thinks through consequences and edge cases before responding. Excels at identifying what could go wrong.', color: 'border-blue-500' },
+                                    { label: 'Judge 2', name: 'Logical Reasoning', desc: 'Mathematical chain-of-thought. Breaks problems into steps, tests each one, builds conclusions from proof. The most precise of the three.', color: 'border-slate-900' },
+                                    { label: 'Judge 3', name: 'Broad-Knowledge Reasoning', desc: 'Draws from the widest knowledge base. Finds patterns across domains \u2014 what worked in similar industries, countries, and conditions. Sees what the others miss.', color: 'border-emerald-500' },
+                                ].map((judge) => (
+                                    <div key={judge.label} className={`border-l-4 ${judge.color} pl-6 py-2`}>
+                                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wide">{judge.label}</p>
+                                        <h4 className="text-sm font-bold text-slate-900 mt-1">{judge.name}</h4>
+                                        <p className="text-xs text-slate-500 leading-relaxed mt-1">{judge.desc}</p>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="mt-8 border-t-2 border-slate-200 pt-4">
+                                <p className="text-xs font-bold text-slate-900 uppercase tracking-wide mb-1">The Synthesis</p>
+                                <p className="text-xs text-slate-500 leading-relaxed">After all three judges deliver their verdict, the system identifies where they agree, where they disagree, and produces a unified answer with a confidence score. You see everything &mdash; not just the conclusion, but the debate that produced it.</p>
+                            </div>
                         </div>
                     </div>
 
@@ -467,52 +480,6 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                             >
                                 Full Architecture &rarr;
                             </button>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-
-            {/* ═══════════════════════════════════════════════════════════════
-                THE REASONING TRIBUNAL — What No One Has Attempted
-            ═══════════════════════════════════════════════════════════════ */}
-            <section className="py-20 px-4 bg-white">
-                <div className="max-w-6xl mx-auto">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-16">
-                        {/* Left — Text */}
-                        <div>
-                            <p className="text-xs font-bold text-blue-600 uppercase tracking-[0.2em] mb-4">What No One Has Attempted</p>
-                            <h2 className="text-3xl md:text-4xl lg:text-5xl font-light text-slate-900 leading-tight mb-6">Three AI architectures. One question. They fight it out.</h2>
-                            <p className="text-sm text-slate-600 leading-relaxed mb-4">
-                                Most AI tools use one model to generate an answer. We use three fundamentally different reasoning systems &mdash; each built by a different company, each thinking in a different way &mdash; and make them argue with each other over the same question.
-                            </p>
-                            <p className="text-sm text-slate-600 leading-relaxed mb-4">
-                                These aren&rsquo;t chatbots giving quick opinions. These are reasoning models that think internally for up to 30 seconds before they even respond. Then they&rsquo;re forced to defend their position against the other two.
-                            </p>
-                            <p className="text-sm text-slate-600 leading-relaxed">
-                                Where they agree, you can trust the answer. Where they disagree, you see exactly what&rsquo;s uncertain and why. No other platform does this. No one has tried.
-                            </p>
-                        </div>
-
-                        {/* Right — The Three Judges */}
-                        <div>
-                            <div className="space-y-6">
-                                {[
-                                    { label: 'Judge 1', name: 'Extended Thinking', desc: 'Careful, safety-aware reasoning. Thinks through consequences and edge cases before responding. Excels at identifying what could go wrong.', color: 'border-blue-500' },
-                                    { label: 'Judge 2', name: 'Logical Reasoning', desc: 'Mathematical chain-of-thought. Breaks problems into steps, tests each one, builds conclusions from proof. The most precise of the three.', color: 'border-slate-900' },
-                                    { label: 'Judge 3', name: 'Broad-Knowledge Reasoning', desc: 'Draws from the widest knowledge base. Finds patterns across domains — what worked in similar industries, countries, and conditions. Sees what the others miss.', color: 'border-emerald-500' },
-                                ].map((judge) => (
-                                    <div key={judge.label} className={`border-l-4 ${judge.color} pl-6 py-2`}>
-                                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wide">{judge.label}</p>
-                                        <h4 className="text-sm font-bold text-slate-900 mt-1">{judge.name}</h4>
-                                        <p className="text-xs text-slate-500 leading-relaxed mt-1">{judge.desc}</p>
-                                    </div>
-                                ))}
-                            </div>
-                            <div className="mt-8 border-t-2 border-slate-200 pt-4">
-                                <p className="text-xs font-bold text-slate-900 uppercase tracking-wide mb-1">The Synthesis</p>
-                                <p className="text-xs text-slate-500 leading-relaxed">After all three judges deliver their verdict, the system identifies where they agree, where they disagree, and produces a unified answer with a confidence score. You see everything &mdash; not just the conclusion, but the debate that produced it.</p>
-                            </div>
                         </div>
                     </div>
                 </div>
