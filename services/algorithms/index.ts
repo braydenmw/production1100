@@ -125,6 +125,16 @@ export {
   type WorkingMemoryState
 } from './HumanCognitionEngine';
 
+// Reasoning Tribunal - Multi-model deep reasoning escalation
+export {
+  runTribunal,
+  getAvailableJudges,
+  type TribunalSynthesis,
+  type TribunalVerdict,
+  type TribunalJudge,
+  type TribunalOptions
+} from '../ReasoningTribunal';
+
 // ============================================================================
 // CONVENIENCE FUNCTIONS
 // ============================================================================

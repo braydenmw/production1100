@@ -41,6 +41,7 @@ import { CompositeScoreService } from '../CompositeScoreService';
 import { HumanCognitionEngine, HumanCognitionResult } from './HumanCognitionEngine';
 import { type ToolResult } from './ToolRegistry';
 import { AutonomousLoopController, type LoopResult, type LoopIteration } from './AutonomousLoopController';
+import { runTribunal, getAvailableJudges, type TribunalSynthesis } from '../ReasoningTribunal';
 
 // ============================================================================
 // TYPES
@@ -56,6 +57,10 @@ export interface AgenticBrainConfig {
   enableAutonomousLoop: boolean;
   enableToolCalling: boolean;
   enableHybridSearch: boolean;
+  /** Escalate to multi-model Reasoning Tribunal when debate consensus is weak. */
+  enableTribunalEscalation: boolean;
+  /** Tribunal fires when consensus strength is below this threshold. */
+  tribunalThreshold: number;
   maxSimilarCases: number;
   debateEarlyStopThreshold: number;
   parallelExecution: boolean;
@@ -127,6 +132,9 @@ export interface AgenticBrainResult {
 
   // Autonomous loop results
   autonomousLoop?: LoopResult;
+
+  // Reasoning Tribunal escalation (when debate consensus is weak)
+  tribunalEscalation?: TribunalSynthesis;
   
   // Tool calls made during this run
   toolCalls?: ToolResult[];
@@ -146,6 +154,8 @@ const DEFAULT_CONFIG: AgenticBrainConfig = {
   enableAutonomousLoop: true,
   enableToolCalling: true,
   enableHybridSearch: true,
+  enableTribunalEscalation: true,
+  tribunalThreshold: 0.60,
   maxSimilarCases: 5,
   debateEarlyStopThreshold: 0.75,
   parallelExecution: true,
@@ -405,6 +415,45 @@ export class OptimizedAgenticBrain {
     }
 
     // ========================================================================
+    // TRIBUNAL ESCALATION (when consensus remains weak after debate + loop)
+    // ========================================================================
+    let tribunalEscalation: TribunalSynthesis | undefined;
+
+    if (
+      this.config.enableTribunalEscalation &&
+      executiveBrief.consensusStrength < this.config.tribunalThreshold &&
+      getAvailableJudges().length > 0
+    ) {
+      console.log(`[AgenticBrain] Debate consensus weak (${(executiveBrief.consensusStrength * 100).toFixed(0)}%) — escalating to Reasoning Tribunal`);
+      try {
+        const tribunalQuestion = [
+          `CONTEXT: A strategic analysis has been conducted but the 5-persona debate could not reach consensus (strength: ${(executiveBrief.consensusStrength * 100).toFixed(0)}%).`,
+          `PROBLEM: ${params.problemStatement || 'No problem statement provided'}`,
+          `COUNTRY: ${params.country || 'Not specified'}`,
+          `INDUSTRY: ${(params.industry || []).join(', ') || 'Not specified'}`,
+          `TOP RISKS: ${executiveBrief.topRisks.join('; ')}`,
+          `TOP DRIVERS: ${executiveBrief.topDrivers.join('; ')}`,
+          `DEBATE RESULT: ${executiveBrief.proceedSignal} — ${executiveBrief.headline}`,
+          `\nPlease provide a deep analysis: Should this proceed, pause, restructure, or be rejected? What are the second-order effects being missed?`,
+        ].join('\n');
+
+        tribunalEscalation = await runTribunal(tribunalQuestion, {
+          claudeThinkingBudget: 10000,
+          geminiThinkingBudget: 8192,
+          judgeTimeout: 90000,
+        });
+
+        // If tribunal reached higher confidence, upgrade the brief
+        if (tribunalEscalation.confidence > executiveBrief.consensusStrength) {
+          executiveBrief.consensusStrength = tribunalEscalation.confidence;
+          executiveBrief.headline = `[Tribunal-verified: ${tribunalEscalation.judgesAvailable} judges] ${executiveBrief.headline}`;
+        }
+      } catch (err) {
+        console.warn('[AgenticBrain] Tribunal escalation failed:', err instanceof Error ? err.message : err);
+      }
+    }
+
+    // ========================================================================
     // FINALIZE
     // ========================================================================
     const completedAt = new Date().toISOString();
@@ -433,6 +482,7 @@ export class OptimizedAgenticBrain {
       humanCognition,
       frontierIntelligence,
       autonomousLoop: loopResult,
+      tribunalEscalation,
       toolCalls,
     };
   }

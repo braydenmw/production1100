@@ -22,6 +22,7 @@ export type TaskType =
   | 'quick-analysis'    // Short analytical response — Groq preferred
   | 'long-generation'   // Reports, case studies — needs high max_tokens
   | 'deep-reasoning'    // Complex multi-step reasoning — OpenAI/Anthropic
+  | 'extended-thinking' // Maximum-depth reasoning — Anthropic extended thinking / OpenAI o3
   | 'research'          // External research synthesis — any provider
   | 'consensus'         // Multi-agent debate — spread across providers
   | 'general';          // Default — use whatever has capacity
@@ -97,7 +98,7 @@ function getProviderConfigs(): ProviderConfig[] {
       maxOutputTokens: 16384,
       requestsPerMinute: 500,
       tokensPerMinute: 200000,
-      strengths: ['deep-reasoning', 'long-generation', 'consensus', 'general'],
+      strengths: ['deep-reasoning', 'extended-thinking', 'long-generation', 'consensus', 'general'],
       costWeight: 5,
     });
   }
@@ -112,7 +113,7 @@ function getProviderConfigs(): ProviderConfig[] {
       maxOutputTokens: 8192,
       requestsPerMinute: 50,
       tokensPerMinute: 100000,
-      strengths: ['deep-reasoning', 'long-generation', 'general'],
+      strengths: ['deep-reasoning', 'extended-thinking', 'long-generation', 'general'],
       costWeight: 6,
     });
   }
@@ -220,6 +221,11 @@ interface AICallOptions {
   maxTokens?: number;
   temperature?: number;
   systemPrompt?: string;
+  /** Enable extended thinking (Anthropic) or reasoning effort (OpenAI o3). */
+  extendedThinking?: {
+    enabled: boolean;
+    budgetTokens?: number; // Anthropic: max thinking tokens (default 10000)
+  };
 }
 
 interface AICallResult {
@@ -227,6 +233,8 @@ interface AICallResult {
   provider: AIProvider;
   tokensUsed: number;
   latencyMs: number;
+  /** Internal reasoning trace from extended thinking (when available). */
+  thinkingTrace?: string;
 }
 
 async function callProvider(config: ProviderConfig, options: AICallOptions): Promise<AICallResult> {
@@ -235,26 +243,39 @@ async function callProvider(config: ProviderConfig, options: AICallOptions): Pro
   const temperature = options.temperature ?? 0.4;
 
   if (config.name === 'anthropic') {
-    // Anthropic has a different API format
+    // Anthropic API — supports extended thinking mode
     const systemContent = options.messages.find(m => m.role === 'system')?.content || options.systemPrompt || '';
     const nonSystemMessages = options.messages
       .filter(m => m.role !== 'system')
       .map(m => ({ role: m.role === 'assistant' ? 'assistant' as const : 'user' as const, content: m.content }));
 
+    const useThinking = options.extendedThinking?.enabled &&
+      (options.taskType === 'extended-thinking' || options.taskType === 'deep-reasoning');
+    const thinkingBudget = options.extendedThinking?.budgetTokens ?? 10000;
+
+    const body: Record<string, unknown> = {
+      model: config.model,
+      max_tokens: useThinking ? maxTokens + thinkingBudget : maxTokens,
+      system: systemContent,
+      messages: nonSystemMessages,
+    };
+
+    if (useThinking) {
+      // Extended thinking requires temperature=1 and uses a thinking budget
+      body.thinking = { type: 'enabled', budget_tokens: thinkingBudget };
+      body.temperature = 1;
+    } else {
+      body.temperature = temperature;
+    }
+
     const res = await fetch(config.apiUrl, {
       method: 'POST',
       headers: {
         'x-api-key': config.getKey(),
-        'anthropic-version': '2023-06-01',
+        'anthropic-version': '2025-04-14',
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        model: config.model,
-        max_tokens: maxTokens,
-        temperature,
-        system: systemContent,
-        messages: nonSystemMessages,
-      }),
+      body: JSON.stringify(body),
     });
 
     if (!res.ok) {
@@ -263,18 +284,41 @@ async function callProvider(config: ProviderConfig, options: AICallOptions): Pro
     }
 
     const data = await res.json();
-    const text = (data.content?.[0]?.text || '').trim();
+
+    // Extended thinking returns multiple content blocks: thinking + text
+    let text = '';
+    let thinkingTrace: string | undefined;
+    const contentBlocks = data.content || [];
+    for (const block of contentBlocks) {
+      if (block.type === 'thinking') {
+        thinkingTrace = block.thinking;
+      } else if (block.type === 'text') {
+        text = (block.text || '').trim();
+      }
+    }
+
     const tokensUsed = (data.usage?.input_tokens || 0) + (data.usage?.output_tokens || 0);
-    return { text, provider: 'anthropic', tokensUsed, latencyMs: Date.now() - start };
+    return { text, provider: 'anthropic', tokensUsed, latencyMs: Date.now() - start, thinkingTrace };
   }
 
   // OpenAI-compatible format (Groq, Together, OpenAI)
+  const useO3 = config.name === 'openai' && options.extendedThinking?.enabled &&
+    (options.taskType === 'extended-thinking' || options.taskType === 'deep-reasoning');
+  const o3Model = useO3 ? 'o3' : config.model;
+
   const body: Record<string, unknown> = {
-    model: config.model,
+    model: o3Model,
     messages: options.messages,
-    max_tokens: maxTokens,
-    temperature,
   };
+
+  if (useO3) {
+    // o3 reasoning models: use reasoning_effort instead of temperature, max_completion_tokens instead of max_tokens
+    body.reasoning_effort = 'high';
+    body.max_completion_tokens = maxTokens;
+  } else {
+    body.max_tokens = maxTokens;
+    body.temperature = temperature;
+  }
 
   const res = await fetch(config.apiUrl, {
     method: 'POST',

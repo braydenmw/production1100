@@ -14,6 +14,7 @@
  * Models:
  *   GEMMA_DEFAULT  - gemma-4-26b-a4b-it  (reasoning, analysis — Gemma 4 flagship)
  *   GEMMA_FAST     - gemma-3-12b-it      (classification, extraction)
+ *   GEMINI_THINKING - gemini-2.5-pro      (deep reasoning with thinking mode)
  * ═══════════════════════════════════════════════════════════════════════════════
  */
 
@@ -24,6 +25,7 @@ import { monitoringService } from './services/MonitoringService';
 export const GEMMA_API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
 export const GEMMA_DEFAULT_MODEL = 'gemma-4-26b-a4b-it';
 export const GEMMA_FAST_MODEL = 'gemma-3-12b-it';
+export const GEMINI_THINKING_MODEL = 'gemini-2.5-pro';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -39,6 +41,8 @@ export interface GemmaOptions {
   stream?: boolean;
   topP?: number;
   topK?: number;
+  /** Enable thinking mode (Gemini 2.5 Pro). Budget in tokens. */
+  thinkingBudget?: number;
 }
 
 // Google Generative Language API types
@@ -170,6 +174,12 @@ export async function callGemma(
   };
   if (systemInstruction) {
     requestBody.system_instruction = systemInstruction;
+  }
+  // Gemini 2.5 Pro thinking mode
+  if (options.thinkingBudget && options.thinkingBudget > 0) {
+    (requestBody.generationConfig as Record<string, unknown>).thinkingConfig = {
+      thinkingBudget: options.thinkingBudget,
+    };
   }
 
   const action = useStream ? 'streamGenerateContent' : 'generateContent';
@@ -328,12 +338,35 @@ export async function callGemmaJSON<T = unknown>(
   return JSON.parse(cleaned) as T;
 }
 
+/**
+ * Deep reasoning via Gemini 2.5 Pro with thinking mode enabled.
+ * The model reasons internally before responding — produces higher-quality
+ * outputs for complex analytical and adversarial reasoning tasks.
+ */
+export async function callGeminiThinking(
+  messages: GemmaMessage[],
+  options: Omit<GemmaOptions, 'model' | 'stream'> = {},
+  onToken?: (token: string) => void
+): Promise<string> {
+  return callGemma(
+    messages,
+    {
+      ...options,
+      model: GEMINI_THINKING_MODEL,
+      thinkingBudget: options.thinkingBudget ?? 8192,
+    },
+    onToken
+  );
+}
+
 export default {
   callGemma,
   callGemmaFast,
   callGemmaJSON,
+  callGeminiThinking,
   generateWithGemma,
   isGemmaAvailable,
   GEMMA_DEFAULT_MODEL,
   GEMMA_FAST_MODEL,
+  GEMINI_THINKING_MODEL,
 };
