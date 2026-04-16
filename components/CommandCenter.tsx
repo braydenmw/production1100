@@ -341,10 +341,10 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                         Adversarial Intelligence Quorum
                     </p>
                     <p className="text-lg md:text-xl text-slate-300 max-w-3xl mx-auto leading-relaxed mb-4">
-                        Every satisfying answer deserves to be verified. ADVERSIQ is the world&rsquo;s first intelligence OS that formally verifies every conclusion through adversarial debate, contradiction detection, and stress-testing before any output reaches you.
+                        Before any conclusion reaches you, it gets challenged, stress-tested, and verified by competing AI systems that are designed to find what&rsquo;s wrong with it. If the answer survives, you can trust it.
                     </p>
                     <p className="text-base md:text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed">
-                        Built from regional development. Architected for every high-stakes decision.
+                        Built for anyone making decisions that matter.
                     </p>
                 </div>
             </section>
@@ -359,11 +359,11 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                         <div>
                             <p className="text-xs font-bold text-blue-600 uppercase tracking-[0.2em] mb-4">What Is ADVERSIQ</p>
                             <h2 className="text-3xl md:text-4xl lg:text-5xl font-light text-slate-900 leading-tight mb-6">
-                                Every AI system on the market generates answers.<br className="hidden md:block" />
-                                ADVERSIQ verifies them first.
+                                Other AI gives you answers.<br className="hidden md:block" />
+                                This one checks if they&rsquo;re right.
                             </h2>
                             <p className="text-lg text-slate-500 leading-relaxed mb-4">
-                                ADVERSIQ &mdash; the <strong className="text-slate-900">Adversarial Intelligence Quorum</strong> &mdash; isn&rsquo;t a chatbot with a business skin. It&rsquo;s an operating system that formally attacks its own conclusions, debates them across competing engines, stress-tests them mathematically, and scores every claim before it reaches you.
+                                ADVERSIQ &mdash; the <strong className="text-slate-900">Adversarial Intelligence Quorum</strong> &mdash; doesn&rsquo;t just generate a response and hope it&rsquo;s correct. It forces multiple independent AI systems to argue with each other, finds the contradictions, stress-tests the numbers, and scores how confident you should be in every claim &mdash; before you ever see the result.
                             </p>
                             <div className="mt-8 space-y-1">
                                 {['Adversarial', 'Verified', 'Autonomous', 'Mathematical', 'Defensible'].map((word) => (
@@ -407,12 +407,12 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                         {/* Right — Text */}
                         <div className="order-1 lg:order-2">
                             <p className="text-xs font-bold text-blue-600 uppercase tracking-[0.2em] mb-4">What Makes This a First</p>
-                            <h2 className="text-3xl md:text-4xl lg:text-5xl font-light text-slate-900 leading-tight mb-6">The world&rsquo;s first Adversarial Intelligence Quorum.</h2>
+                            <h2 className="text-3xl md:text-4xl lg:text-5xl font-light text-slate-900 leading-tight mb-6">Ten layers of verification. Nothing like it exists.</h2>
                             <p className="text-sm text-slate-600 leading-relaxed mb-4">
-                                Every technology in this pipeline is proven independently &mdash; but they&rsquo;ve never been connected. We built the integration layer: the adversarial debate protocol between reasoning engines, the formal logic checker that catches contradictions across them, the stress tester that breaks their projections, the cognition model that predicts how you&rsquo;ll process the output, and the reflexive layer that watches the entire system for drift and overconfidence.
+                                Each piece of this system exists in isolation somewhere. What&rsquo;s new is connecting all ten into one pipeline where they challenge each other. AI systems that debate. A logic checker that catches when conclusions contradict. A stress tester that breaks optimistic projections. A layer that understands how you think, so the output actually lands. And a watchdog that monitors the whole system for overconfidence.
                             </p>
                             <p className="text-sm text-slate-600 leading-relaxed">
-                                We searched academia, commercial products, and government. Nothing comparable exists. The closest parallels handle one or two of these in isolation. None merge all ten. None make them adversarial. That&rsquo;s the invention.
+                                We looked everywhere &mdash; research, commercial products, government tools. Nothing does all ten. Nothing makes them fight each other to find the truth. That&rsquo;s the breakthrough.
                             </p>
                         </div>
                     </div>
@@ -420,22 +420,22 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                     {/* Section subheading */}
                     <div className="mb-10">
                         <p className="text-xs font-bold text-blue-600 uppercase tracking-[0.2em] mb-2">The 10-Layer Pipeline</p>
-                        <p className="text-sm text-slate-500 max-w-3xl">Each layer was built to do one thing with mathematical precision. The breakthrough is the integration architecture that makes all ten operate as one adversarial system.</p>
+                        <p className="text-sm text-slate-500 max-w-3xl">Each layer handles one specific job. The breakthrough is making all ten work together &mdash; challenging each other, catching each other&rsquo;s mistakes, and building on each other&rsquo;s strengths.</p>
                     </div>
 
                     {/* 5×2 Pipeline Grid */}
                     <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-12">
                         {[
-                            { n: '01', title: 'Adversarial Reasoning', desc: 'Five AI personas with independent reasoning chains compete via Bayesian inference and Nash bargaining. They don\u2019t cooperate \u2014 they challenge. The strongest argument wins.' },
-                            { n: '02', title: 'Contradiction Detection', desc: 'DPLL satisfiability converts engine conclusions into formal logic and checks whether they can all be simultaneously true. Contradictions are caught mathematically, not by pattern matching.' },
-                            { n: '03', title: 'Probabilistic Stress Testing', desc: 'Monte Carlo simulation replaces every single-point estimate with a probability distribution. Thousands of scenarios test what happens when assumptions fail.' },
-                            { n: '04', title: 'Cognitive Modelling', desc: 'Wilson-Cowan neural equations and Friston\u2019s Free Energy Principle model how decision-makers actually think \u2014 detecting hidden priorities, attention limits, and cognitive blind spots.' },
-                            { n: '05', title: 'Self-Optimising Pipeline', desc: 'Thompson Sampling and online gradient descent teach the system which analytical methods work best per problem type. The pipeline evolves with every case.' },
-                            { n: '06', title: 'Reflexive Oversight', desc: 'Seven background engines monitor the system\u2019s own performance: drift detection, backtesting, metacognition, and continuous recalibration. The pipeline audits itself.' },
-                            { n: '07', title: 'Entity Verification', desc: 'Every entity mentioned triggers seven parallel verification streams \u2014 registry, ownership, sanctions, financial health, sentiment, litigation, relationship mapping.' },
-                            { n: '08', title: 'Confidence Provenance', desc: 'Every claim carries a numerical confidence score built from engine convergence, Monte Carlo stability, and evidence quality. Every number traces to its source.' },
-                            { n: '09', title: 'Parallel Orchestration', desc: '47+ interdependent tasks across 23 parallel workstreams, scheduled by directed acyclic graph. Dependency-aware execution \u2014 nothing runs before its prerequisites.' },
-                            { n: '10', title: 'Document Generation', desc: '247 templates across 15 categories. Every document is grounded in the verified pipeline output \u2014 not generated from thin air. Board-ready on day one.' },
+                            { n: '01', title: 'Adversarial Reasoning', desc: 'Five independent AI systems analyse your situation separately, then debate each other. They\u2019re designed to disagree. The strongest argument wins \u2014 not the first answer.' },
+                            { n: '02', title: 'Contradiction Detection', desc: 'Before you see any result, the system checks whether its own conclusions are logically consistent. If one part contradicts another, it gets caught and flagged automatically.' },
+                            { n: '03', title: 'Stress Testing', desc: 'Instead of giving you one number, the system runs thousands of scenarios \u2014 what if costs rise, partners fall through, regulations change? You see the range of outcomes, not just the best case.' },
+                            { n: '04', title: 'Cognitive Modelling', desc: 'The system understands how people actually make decisions \u2014 what grabs attention, what gets overlooked, where hidden biases sit. Output is structured so the right information lands where it matters.' },
+                            { n: '05', title: 'Self-Improving Pipeline', desc: 'The system learns which analytical approaches work best for each type of problem. It gets smarter with every case, automatically adjusting to deliver better results over time.' },
+                            { n: '06', title: 'Reflexive Oversight', desc: 'Background systems continuously monitor for overconfidence, outdated assumptions, and missed risks. The system audits itself so you don\u2019t have to.' },
+                            { n: '07', title: 'Entity Verification', desc: 'Mention a company or person and the system runs automatic background checks \u2014 corporate registries, sanctions lists, news, ownership, litigation. You get a verified trust profile, not a guess.' },
+                            { n: '08', title: 'Confidence Scoring', desc: 'Every claim comes with a confidence score. You can see how sure the system is, what evidence supports it, and where uncertainty remains. No black boxes.' },
+                            { n: '09', title: 'Parallel Orchestration', desc: 'The system runs dozens of analysis tasks simultaneously, automatically handling dependencies. Work that traditionally takes months happens in minutes \u2014 without cutting corners.' },
+                            { n: '10', title: 'Document Generation', desc: '247 ready-to-use templates across 15 categories. Board papers, investor briefs, compliance filings \u2014 all built from verified analysis, not generated from thin air.' },
                         ].map((item) => (
                             <div key={item.n} className="border-t-2 border-slate-200 pt-4">
                                 <span className="text-2xl font-light text-slate-300">{item.n}</span>
@@ -495,7 +495,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                             <p className="text-xs font-bold text-blue-600 uppercase tracking-[0.2em] mb-4">Who This Is For</p>
                             <h2 className="text-3xl md:text-4xl lg:text-5xl font-light text-slate-900 leading-tight mb-6">You don&rsquo;t need to be an expert. The system already is.</h2>
                             <p className="text-sm text-slate-600 leading-relaxed mb-6">
-                                The same engine serves first-time exporters and seasoned investment boards. Beginners get guided walkthroughs and plain-language explanations. Experts get direct formula access, adjustable Monte Carlo parameters, audit trail exports, and raw confidence distributions. Same engine &mdash; different depth.
+                                The same engine serves first-time exporters and seasoned investment boards. Beginners get guided walkthroughs and plain-language explanations. Experts get full control over advanced settings, detailed audit trails, and granular data breakdowns. Same engine &mdash; different depth.
                             </p>
                         </div>
                     </div>
@@ -503,7 +503,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                     {/* Four audience cards */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                         {[
-                            { title: 'Regional Councils & Development Agencies', desc: 'Get the same analytical depth as tier-one advisory \u2014 risk-adjusted ROI models, supply chain mapping, workforce analysis \u2014 without the consulting invoice.', photo: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=250&fit=crop&q=80' },
+                            { title: 'Regional Councils & Development Agencies', desc: 'Get the same depth of analysis as a top-tier advisory firm \u2014 financial projections, supply chain mapping, workforce analysis \u2014 without the consulting invoice.', photo: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=250&fit=crop&q=80' },
                             { title: 'Government Agencies & Investment Boards', desc: 'Defensible decision trails. Stress-tested assumptions, surfaced deal-killers, and documented rationale you can stand behind.', photo: 'https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?w=400&h=250&fit=crop&q=80' },
                             { title: 'Businesses Expanding Into New Regions', desc: 'Research any location instantly \u2014 regulatory landscape, real cost of entry, partner credibility \u2014 and flag what will go wrong before you commit capital.', photo: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=400&h=250&fit=crop&q=80' },
                             { title: 'First-Time Exporters & Entrepreneurs', desc: 'Never written an investment prospectus? The guided 10-step intake asks the right questions and produces the documents that open doors.', photo: 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=400&h=250&fit=crop&q=80' },
@@ -664,7 +664,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                         </div>
                         <div className="border-t-2 border-slate-300 pt-6">
                             <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wide mb-2">Adaptive Depth</h4>
-                            <p className="text-sm text-slate-500 leading-relaxed">First-time users get guided walkthroughs and plain-language explanations. Experienced analysts get direct formula access, adjustable Monte Carlo parameters, audit trail exports, and raw confidence distributions.</p>
+                            <p className="text-sm text-slate-500 leading-relaxed">First-time users get guided walkthroughs and plain-language explanations. Experienced analysts get full control over advanced settings, detailed audit trails, and granular data breakdowns.</p>
                         </div>
                         <div className="border-t-2 border-slate-300 pt-6">
                             <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wide mb-2">Guided 10-Step Intake</h4>
@@ -685,7 +685,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                             <p className="text-xs font-bold text-blue-600 uppercase tracking-[0.2em] mb-4">Deliverables</p>
                             <h2 className="text-3xl md:text-4xl lg:text-5xl font-light text-slate-900 leading-tight mb-6">What you walk away with.</h2>
                             <p className="text-sm text-slate-600 leading-relaxed mb-6">
-                                A verified operating position &mdash; a defensible strategy that has survived five competing reasoning engines, SAT contradiction detection, confidence scoring on every claim, and DAG-sequenced execution logic. Ready for board presentations, investor conversations, and regulator submissions on day one.
+                                A verified strategy &mdash; one that has been challenged by five independent AI systems, checked for contradictions, scored for confidence on every claim, and assembled in the right order automatically. Ready for board presentations, investor conversations, and regulator submissions on day one.
                             </p>
                         </div>
 
@@ -783,7 +783,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                         {[
                             { label: 'Starter Access', period: '5 Days', note: 'Full Access Pass', price: 'Free', features: ['Full 10-layer pipeline', 'All 50+ engines active', '247 document templates', 'Entity verification', 'No credit card required'] },
                             { label: 'Subscription', period: '3 Months', note: 'Full Access', price: '$439', features: ['Everything in Starter', 'Unlimited analyses', 'Priority processing', 'Audit trail exports', 'Email support'] },
-                            { label: 'Subscription', period: '6 Months', note: 'Full Access', price: '$810', features: ['Everything in 3-Month', 'Monte Carlo parameters', 'Formula weight access', 'Custom document templates', 'Save $49 vs quarterly'] },
+                            { label: 'Subscription', period: '6 Months', note: 'Full Access', price: '$810', features: ['Everything in 3-Month', 'Advanced scenario controls', 'Full engine transparency', 'Custom document templates', 'Save $49 vs quarterly'] },
                             { label: 'Subscription', period: '12 Months', note: 'Full Access', price: '$1288', features: ['Everything in 6-Month', 'Direct developer access', 'Feature request priority', 'Multi-user workspace', 'Save $348 vs quarterly'] },
                         ].map((plan) => (
                             <div key={plan.period} className="border-t-2 border-slate-300 pt-6">
@@ -822,7 +822,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                                 <p className="text-xs text-slate-500"><strong className="text-slate-700">Strategic Decision Support</strong> &mdash; All outputs are advisory.</p>
                             </div>
                             <div className="border-t border-slate-200 pt-3">
-                                <p className="text-xs text-slate-500"><strong className="text-slate-700">Reasoning Governance</strong> &mdash; NSIL layer governs via adversarial screening.</p>
+                                <p className="text-xs text-slate-500"><strong className="text-slate-700">Reasoning Governance</strong> &mdash; Built-in safety layer screens every output before delivery.</p>
                             </div>
                             <div className="border-t border-slate-200 pt-3">
                                 <p className="text-xs text-slate-500"><strong className="text-slate-700">Data Privacy</strong> &mdash; Strict GDPR and Australian Privacy Act compliance.</p>
@@ -865,7 +865,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16 pt-12 border-t border-slate-200">
                         <div>
                             <h5 className="text-xs font-bold text-slate-900 uppercase tracking-wide mb-2">ADVERSIQ</h5>
-                            <p className="text-xs text-slate-500 leading-relaxed mb-2">ADVERSIQ (Adversarial Intelligence Quorum) is an Australian-developed sovereign-grade AI intelligence platform for cross-border investment and regional economic development.</p>
+                            <p className="text-xs text-slate-500 leading-relaxed mb-2">ADVERSIQ is an Australian-developed AI platform that verifies strategic decisions for cross-border investment and regional economic development.</p>
                             <div className="space-y-0.5 text-xs text-slate-400">
                                 <p className="flex items-center gap-1"><Mail size={10} /> brayden@bwglobaladvis.info</p>
                                 <p className="flex items-center gap-1"><Phone size={10} /> +63 960 835 4283</p>
