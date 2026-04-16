@@ -1,5 +1,5 @@
 /**
- * BW CONSULTANT OS - Case Study Builder
+ * ADVERSIQ Intelligence OS - Decision Verification System
  * @version 2
  * Flow:
  * 1. Baseline Intake - Who are you? What do you need?
@@ -2688,7 +2688,7 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, onNavi
         {
           id: crypto.randomUUID(),
           role: 'system',
-          content: `Live Research synced to BW Consultant context${topicLabel ? ` (topic: ${topicLabel})` : ''}. This has been added to the live draft report inputs.`,
+          content: `Live Research synced to ADVERSIQ verification context${topicLabel ? ` (topic: ${topicLabel})` : ''}. This has been added to the active pipeline inputs.`,
           timestamp: new Date(),
           phase: 'discovery'
         }
@@ -2947,7 +2947,7 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, onNavi
       {
         id: crypto.randomUUID(),
         role: 'assistant',
-        content: 'Quick lines converted into BW Consultant baseline context and added to the live draft report.',
+        content: 'Quick lines converted into ADVERSIQ baseline context and added to the verification pipeline.','
         timestamp: new Date(),
         phase: 'discovery'
       }
@@ -5264,15 +5264,15 @@ When advising ANY user on ANY market, country, or investment:
 You NEVER say "I need more context before answering" - you answer with what you know, then gather context.`;
 
         const openingInstruction = isOpeningTurn
-          ? `You are BW Consultant - a world-class strategic advisory AI backed by the NSIL Agentic Runtime.
+          ? `You are ADVERSIQ — an autonomous decision verification system backed by the NSIL Agentic Runtime and 10-Layer Verification Pipeline.
 
 CRITICAL RULES - READ BEFORE RESPONDING:
+- You are a verification system, NOT a chatbot. Every response must assess, verify, or challenge the decision under review.
 - Do NOT say "I've captured the key elements of your input" - this phrase is BANNED.
-- Do NOT mention "Energy Transition" or "Advance new markets" unless the user explicitly said those words.
 - Do NOT list numbered intake questions ("1) Name 2) Country 3) Decision") - that is scripted chatbot behaviour.
 - Do NOT invent case context that wasn't in the user's message.
 - Do NOT ask for context before answering - ANSWER FIRST, then optionally ask ONE follow-up.
-- If they ask a simple question, give a simple answer. If they ask for a letter, write the letter. If they want a report, produce the report. Match your output to what they actually need.
+- Structure responses with: Situation Assessment → Verification Status → Analysis → Risk Flags → Recommended Actions.
 
 ${worldKnowledgeInstruction}
 
@@ -5287,7 +5287,7 @@ BEHAVIOUR:
 - Always attribute where your key facts came from at the end of substantive responses
 - Ask at most ONE follow-up - the single most valuable missing detail
 - Be concise, direct, and confident`
-          : `You are BW Consultant - autonomous mixed-initiative advisory mode. BANNED: "I've captured the key elements", numbered intake lists, asking for context before answering. ALWAYS answer the user's question directly and substantively FIRST. If they ask for a document, letter, case study, or report - PRODUCE IT immediately. Think beyond the obvious scope. Attribute your sources.
+          : `You are ADVERSIQ — autonomous decision verification mode. BANNED: "I've captured the key elements", numbered intake lists, asking for context before answering. You are a verification system, NOT a chatbot. ALWAYS answer the user's question directly with verification-grade analysis FIRST. Structure outputs with situation assessment, verification status, risk flags, and recommended actions. Think beyond the obvious scope. Attribute your sources.
 
 ${worldKnowledgeInstruction}
 
@@ -7518,7 +7518,7 @@ CRITICAL RULES:
       </tbody>
     </table>
 
-    <p class="footer">Exported from BW Consultant OS autonomous mission audit timeline.</p>
+    <p class="footer">Exported from ADVERSIQ Intelligence autonomous verification audit timeline.</p>
   </body>
 </html>`;
 
@@ -7844,7 +7844,7 @@ CRITICAL RULES:
       setMessages(prev => [...prev, {
         id: crypto.randomUUID(),
         role: 'assistant',
-        content: 'Unable to import learning profile. Please use a valid JSON file exported from BW Consultant.',
+        content: 'Unable to import learning profile. Please use a valid JSON file exported from ADVERSIQ Intelligence.','
         timestamp: new Date(),
         phase: 'recommendations'
       }]);
@@ -8044,17 +8044,19 @@ CRITICAL RULES:
             <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 md:p-8 space-y-4 md:space-y-6">
               {messages.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-center">
-                  <Bot size={40} className="text-slate-300 mb-4" />
-                  <h3 className="text-lg font-light text-slate-900 mb-2">How can I help you today?</h3>
+                  <div className="w-12 h-12 border-2 border-slate-200 flex items-center justify-center mb-4">
+                    <div className="w-3 h-3 bg-blue-600 animate-pulse" />
+                  </div>
+                  <h3 className="text-lg font-light text-slate-900 mb-1">Verification pipeline standing by.</h3>
                   <p className="text-sm text-slate-500 max-w-md leading-relaxed mb-6">
-                    I'll guide you through building a comprehensive case study and generate the professional documents you need.
+                    Describe your situation. The system activates the relevant verification layers automatically.
                   </p>
                   <div className="grid grid-cols-2 gap-3 max-w-lg">
                     {[
-                      { label: 'Research', example: 'Research a market or opportunity' },
-                      { label: 'Compare', example: 'Compare two partnership options' },
-                      { label: 'Case Study', example: 'Build a case study for my project' },
-                      { label: 'Letter / Proposal', example: 'Draft a professional letter' },
+                      { label: 'Verify a Decision', example: 'Stress-test an investment in Southeast Asia' },
+                      { label: 'Assess Risk', example: 'Evaluate risk for a cross-border partnership' },
+                      { label: 'Entity Intelligence', example: 'Verify counterparty and regulatory exposure' },
+                      { label: 'Market Analysis', example: 'Analyse market entry conditions for a new region' },
                     ].map((hint, idx) => (
                       <button
                         key={idx}
@@ -8356,10 +8358,10 @@ CRITICAL RULES:
                   }}
                   placeholder={
                     currentPhase === 'intake' 
-                      ? "Type your response..." 
+                      ? "Describe your situation..."
                       : currentPhase === 'recommendations'
-                        ? "Select documents or describe what you need..."
-                        : "Share more details or ask questions..."
+                        ? "What needs to be verified next..."
+                        : "Continue the verification..."
                   }
                   className="flex-1 resize-none border border-slate-200 px-4 py-3 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-600 min-h-[44px] max-h-[120px] leading-normal"
                   rows={1}
@@ -8487,14 +8489,14 @@ CRITICAL RULES:
                   </button>
                   <p className="text-[11px] font-semibold text-indigo-900 flex items-center gap-1 mb-2">
                     <CheckCircle2 size={12} className="text-indigo-600" />
-                    Quick Start - Try one of these:
+                    Quick Start \u2014 Verification Scenarios:
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {[
-                      'I need to enter a new market in Southeast Asia',
-                      'Help me prepare a government submission in Australia',
-                      'I\'m structuring a cross-border partnership in the EU',
-                      'I need a risk and compliance framework for MENA'
+                      'Verify market entry conditions for Southeast Asia',
+                      'Stress-test a government submission for Australia',
+                      'Assess risk on a cross-border partnership in the EU',
+                      'Run compliance verification for MENA operations'
                     ].map((prompt) => (
                       <button
                         key={prompt}
@@ -8656,18 +8658,18 @@ CRITICAL RULES:
             <div className="p-4 border-b border-slate-200 bg-white">
               <h2 className="text-xs font-bold text-blue-600 uppercase tracking-[0.15em] flex items-center gap-2">
                 <FileText size={14} className="text-blue-600" />
-                Live Case Study Workspace
+                Verification Intelligence
               </h2>
               <div className="mt-2 grid grid-cols-1 gap-1 text-[11px]">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="px-2 py-1 bg-blue-100 text-blue-700 border border-blue-200 font-semibold">
-                    Stage: {liveDraftStatus}
+                    Pipeline: {liveDraftStatus}
                   </span>
                   <span className="px-2 py-1 bg-white text-slate-700 border border-stone-300">
-                    Readiness: {liveDraftReadiness}%
+                    Confidence: {liveDraftReadiness}%
                   </span>
                   <span className="px-2 py-1 bg-slate-100 text-slate-600 border border-slate-200">
-                    Pack: {resolvePolicyPack(caseStudy).id === 'global-default' ? 'Pending selection' : resolvePolicyPack(caseStudy).label}
+                    Jurisdiction: {resolvePolicyPack(caseStudy).id === 'global-default' ? 'Pending' : resolvePolicyPack(caseStudy).label}
                   </span>
                 </div>
                 <div className="h-1.5 bg-stone-200 border border-stone-300 overflow-hidden">
@@ -8677,27 +8679,53 @@ CRITICAL RULES:
                   />
                 </div>
               </div>
-              <p className="mt-2 text-[11px] text-slate-600">This is your live working draft. Report structure is established after baseline inputs are captured.</p>
+              <p className="mt-2 text-[11px] text-slate-600">Real-time verification status. The pipeline builds context as the conversation develops.</p>
               <p className="mt-1 text-[10px] text-slate-500">
                 {!isCaseStudyComplete
-                  ? 'Evaluation and recommended action steps unlock only after the case study reaches 100% readiness.'
-                  : 'Case complete: evaluation and recommended action steps are now active.'}
+                  ? 'Full pipeline assessment unlocks when sufficient context has been verified.'
+                  : 'All verification layers active. Full intelligence output available.'}
               </p>
 
               <div className="mt-3 border border-stone-200 bg-white p-3 min-h-[760px]">
                 {!hasLiveDraftSignals ? (
                   <div className="border border-stone-200 bg-white px-4 py-4 min-h-[700px]">
-                    <p className="text-[11px] font-semibold text-slate-800">Case Study Report - Live Draft (Page 1)</p>
-                    <p className="mt-1 text-[10px] text-slate-500">Start with baseline details. The system will establish report sections only after enough context is provided.</p>
-                    <div className="mt-3 border border-blue-200 bg-blue-50 px-2 py-2">
-                      <p className="text-[10px] font-semibold text-blue-800">Baseline needed first:</p>
-                      <ul className="mt-1 space-y-0.5">
-                        <li className="text-[10px] text-blue-800">• Who you are (role + organisation)</li>
-                        <li className="text-[10px] text-blue-800">• Country / jurisdiction</li>
-                        <li className="text-[10px] text-blue-800">• Decision needed and objective</li>
-                        <li className="text-[10px] text-blue-800">• Constraints and deadline</li>
-                        <li className="text-[10px] text-blue-800">• Target audience (board, regulator, investor, partner)</li>
-                      </ul>
+                    <p className="text-[11px] font-semibold text-slate-800">Verification Profile — Awaiting Input</p>
+                    <p className="mt-1 text-[10px] text-slate-500">The pipeline extracts these signals from your conversation automatically. No forms required.</p>
+                    <div className="mt-3 space-y-2">
+                      {[
+                        { label: 'Entity', desc: 'Who you are and who you\'re dealing with', icon: '○' },
+                        { label: 'Jurisdiction', desc: 'Country, regulatory framework, compliance zone', icon: '○' },
+                        { label: 'Decision', desc: 'What needs to be verified or stress-tested', icon: '○' },
+                        { label: 'Risk Surface', desc: 'Constraints, deadlines, threat vectors', icon: '○' },
+                        { label: 'Audience', desc: 'Board, regulator, investor, counterparty', icon: '○' },
+                      ].map((item, idx) => (
+                        <div key={idx} className="flex items-start gap-2 border border-stone-200 px-3 py-2">
+                          <span className="text-[10px] text-slate-300 mt-0.5">{item.icon}</span>
+                          <div>
+                            <p className="text-[10px] font-semibold text-slate-700">{item.label}</p>
+                            <p className="text-[9px] text-slate-400">{item.desc}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-4 border-t border-stone-200 pt-3">
+                      <p className="text-[10px] font-semibold text-slate-600">10-Layer Pipeline Status</p>
+                      <div className="mt-2 grid grid-cols-2 gap-1">
+                        {[
+                          'Adversarial Reasoning', 'Contradiction Detection',
+                          'Stress Testing', 'Cognitive Modelling',
+                          'Self-Optimisation', 'Reflexive Oversight',
+                          'Entity Verification', 'Confidence Scoring',
+                          'Parallel Orchestration', 'Document Generation'
+                        ].map((layer, idx) => (
+                          <div key={idx} className="flex items-center gap-1.5 px-2 py-1 border border-stone-100 bg-stone-50">
+                            <span className="w-1.5 h-1.5 bg-slate-300 rounded-full flex-shrink-0" />
+                            <span className="text-[9px] text-slate-400">{layer}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
                     </div>
                     <div className="mt-3 space-y-3">
                       {Array.from({ length: 20 }).map((_, index) => (
@@ -8707,61 +8735,91 @@ CRITICAL RULES:
                   </div>
                 ) : (
                   <div className="border border-stone-200 bg-white px-4 py-4 min-h-[700px]">
-                    <p className="text-[11px] font-semibold text-slate-800">Case Study Notes - Live Notepad (Page 1)</p>
-                    <p className="mt-1 text-[10px] text-slate-500">BW Consultant side notes — auto-captured from conversation.</p>
+                    <p className="text-[11px] font-semibold text-slate-800">Verification Profile — Live</p>
+                    <p className="mt-1 text-[10px] text-slate-500">Auto-captured from conversation. Pipeline layers activate as context builds.</p>
                     <div className="mt-3 space-y-2 text-[10px] text-slate-700">
-                      {/* Identity & Context */}
+                      {/* Entity Profile */}
                       {(caseStudy.userName || caseStudy.contactRole || caseStudy.organizationName) && (
-                        <div className="border-b border-stone-200 pb-2">
-                          <p className="font-semibold text-slate-800 mb-0.5">Client Identity</p>
-                          {caseStudy.userName && <p>• Name: {caseStudy.userName}</p>}
-                          {caseStudy.contactRole && <p>• Role: {caseStudy.contactRole}</p>}
-                          {caseStudy.organizationName && <p>• Organisation: {caseStudy.organizationName}</p>}
-                          {caseStudy.organizationType && <p>• Type: {caseStudy.organizationType}</p>}
+                        <div className="border border-stone-200 px-3 py-2">
+                          <p className="font-semibold text-slate-800 mb-0.5 flex items-center gap-1.5">
+                            <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
+                            Entity Profile
+                          </p>
+                          {caseStudy.userName && <p className="text-[9px] text-slate-600">• {caseStudy.userName}</p>}
+                          {caseStudy.contactRole && <p className="text-[9px] text-slate-600">• {caseStudy.contactRole}</p>}
+                          {caseStudy.organizationName && <p className="text-[9px] text-slate-600">• {caseStudy.organizationName}</p>}
+                          {caseStudy.organizationType && <p className="text-[9px] text-slate-600">• {caseStudy.organizationType}</p>}
                         </div>
                       )}
-                      {/* Location & Jurisdiction */}
+                      {/* Jurisdiction */}
                       {(caseStudy.country || caseStudy.jurisdiction) && (
-                        <div className="border-b border-stone-200 pb-2">
-                          <p className="font-semibold text-slate-800 mb-0.5">Jurisdiction</p>
-                          {caseStudy.country && <p>• Country: {caseStudy.country}</p>}
-                          {caseStudy.jurisdiction && <p>• Jurisdiction: {caseStudy.jurisdiction}</p>}
+                        <div className="border border-stone-200 px-3 py-2">
+                          <p className="font-semibold text-slate-800 mb-0.5 flex items-center gap-1.5">
+                            <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
+                            Jurisdiction Verified
+                          </p>
+                          {caseStudy.country && <p className="text-[9px] text-slate-600">• {caseStudy.country}</p>}
+                          {caseStudy.jurisdiction && <p className="text-[9px] text-slate-600">• {caseStudy.jurisdiction}</p>}
                         </div>
                       )}
-                      {/* Matter & Objectives */}
+                      {/* Decision & Risk Surface */}
                       {(caseStudy.currentMatter || caseStudy.objectives) && (
-                        <div className="border-b border-stone-200 pb-2">
-                          <p className="font-semibold text-slate-800 mb-0.5">Matter & Objectives</p>
-                          {caseStudy.currentMatter && <p>• Matter: {caseStudy.currentMatter}</p>}
-                          {caseStudy.objectives && <p>• Objective: {caseStudy.objectives}</p>}
-                          {caseStudy.targetAudience && <p>• Audience: {caseStudy.targetAudience}</p>}
-                          {caseStudy.constraints && <p>• Constraints: {caseStudy.constraints}</p>}
-                          {caseStudy.decisionDeadline && <p>• Deadline: {caseStudy.decisionDeadline}</p>}
+                        <div className="border border-stone-200 px-3 py-2">
+                          <p className="font-semibold text-slate-800 mb-0.5 flex items-center gap-1.5">
+                            <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
+                            Decision Under Verification
+                          </p>
+                          {caseStudy.currentMatter && <p className="text-[9px] text-slate-600">• {caseStudy.currentMatter}</p>}
+                          {caseStudy.objectives && <p className="text-[9px] text-slate-600">• Objective: {caseStudy.objectives}</p>}
+                          {caseStudy.targetAudience && <p className="text-[9px] text-slate-600">• Audience: {caseStudy.targetAudience}</p>}
+                          {caseStudy.constraints && <p className="text-[9px] text-slate-600">• Constraints: {caseStudy.constraints}</p>}
+                          {caseStudy.decisionDeadline && <p className="text-[9px] text-slate-600">• Deadline: {caseStudy.decisionDeadline}</p>}
                         </div>
                       )}
-                      {/* AI Insights — side notes captured during conversation */}
+                      {/* Pipeline Intelligence */}
                       {caseStudy.aiInsights.length > 0 && (
-                        <div className="border-b border-stone-200 pb-2">
-                          <p className="font-semibold text-slate-800 mb-0.5">Consultant Observations ({caseStudy.aiInsights.length})</p>
+                        <div className="border border-stone-200 px-3 py-2">
+                          <p className="font-semibold text-slate-800 mb-0.5 flex items-center gap-1.5">
+                            <span className="w-1.5 h-1.5 bg-amber-500 rounded-full" />
+                            Pipeline Intelligence ({caseStudy.aiInsights.length})
+                          </p>
                           {caseStudy.aiInsights.slice(-8).map((insight, idx) => (
                             <p key={`note-${idx}`} className="text-[9px] text-slate-600 leading-tight">• {insight.length > 200 ? insight.slice(0, 200) + '...' : insight}</p>
                           ))}
                         </div>
                       )}
-                      {/* Additional context from conversation history */}
+                      {/* Conversation Signals */}
                       {caseStudy.additionalContext.length > 0 && (
-                        <div className="border-b border-stone-200 pb-2">
-                          <p className="font-semibold text-slate-800 mb-0.5">Conversation Notes ({caseStudy.additionalContext.length})</p>
+                        <div className="border border-stone-200 px-3 py-2">
+                          <p className="font-semibold text-slate-800 mb-0.5 flex items-center gap-1.5">
+                            <span className="w-1.5 h-1.5 bg-blue-500 rounded-full" />
+                            Signal Extraction ({caseStudy.additionalContext.length})
+                          </p>
                           {caseStudy.additionalContext.slice(-6).map((ctx, idx) => (
                             <p key={`ctx-${idx}`} className="text-[9px] text-slate-600 leading-tight">• {ctx.length > 200 ? ctx.slice(0, 200) + '...' : ctx}</p>
                           ))}
                         </div>
                       )}
-                      {/* Remaining blank lines for future notes */}
-                      <div className="mt-2 space-y-3">
-                        {Array.from({ length: Math.max(5, 15 - caseStudy.aiInsights.length - caseStudy.additionalContext.length) }).map((_, index) => (
-                          <div key={`a4-line-live-${index}`} className="border-b border-stone-200 h-5" />
-                        ))}
+                      {/* Pipeline Layer Status */}
+                      <div className="border-t border-stone-200 pt-2">
+                        <p className="font-semibold text-slate-600 mb-1">Active Layers</p>
+                        <div className="grid grid-cols-2 gap-1">
+                          {[
+                            'Adversarial Reasoning', 'Contradiction Detection',
+                            'Stress Testing', 'Cognitive Modelling',
+                            'Self-Optimisation', 'Reflexive Oversight',
+                            'Entity Verification', 'Confidence Scoring',
+                            'Parallel Orchestration', 'Document Generation'
+                          ].map((layer, idx) => {
+                            const isActive = liveDraftReadiness > (idx + 1) * 10;
+                            return (
+                              <div key={idx} className="flex items-center gap-1.5 px-2 py-1 border border-stone-100 bg-stone-50">
+                                <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${isActive ? 'bg-green-500' : 'bg-slate-300'}`} />
+                                <span className={`text-[9px] ${isActive ? 'text-slate-700' : 'text-slate-400'}`}>{layer}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -8772,17 +8830,17 @@ CRITICAL RULES:
             {/* Document Recommendations */}
             {(currentPhase === 'recommendations' || currentPhase === 'generation' || recommendedDocs.length > 0) && (
               <div className="flex-1 overflow-y-auto p-4">
-                <h3 className="text-sm font-bold text-slate-900 mb-3">Recommended Documents</h3>
+                <h3 className="text-sm font-bold text-slate-900 mb-3">Recommended Outputs</h3>
 
                 <div className="mb-3 border border-stone-200 bg-white p-2">
-                  <p className="text-[11px] font-semibold text-slate-700">Output Type Preference</p>
+                  <p className="text-[11px] font-semibold text-slate-700">Intelligence Output Mode</p>
                   <div className="mt-1 grid grid-cols-5 gap-1">
                     {([
                       { id: 'auto', label: 'Auto' },
-                      { id: 'letter', label: 'Letter' },
-                      { id: 'document', label: 'Document' },
-                      { id: 'case-study', label: 'Case Study' },
-                      { id: 'full-pack', label: 'Full Pack' }
+                      { id: 'letter', label: 'Brief' },
+                      { id: 'document', label: 'Analysis' },
+                      { id: 'case-study', label: 'Full Intel' },
+                      { id: 'full-pack', label: 'Complete' }
                     ] as Array<{ id: 'auto' | 'letter' | 'document' | 'case-study' | 'full-pack'; label: string }>).map((option) => (
                       <button
                         key={option.id}
@@ -8798,7 +8856,7 @@ CRITICAL RULES:
                       </button>
                     ))}
                   </div>
-                  <p className="mt-1 text-[10px] text-slate-500">Choose the output type the person needs first. Recommendations are re-ranked to match this preference.</p>
+                  <p className="mt-1 text-[10px] text-slate-500">Set the intelligence depth. Pipeline re-ranks output to match this preference.</p>
                 </div>
 
                 <div className="mb-3 border border-stone-200 bg-slate-50 p-2">
@@ -8810,7 +8868,7 @@ CRITICAL RULES:
                       className="mt-0.5"
                     />
                     <span>
-                      Full OS filtration mode (run all substantive requests through all core brains, then surface only relevant signals)
+                      Full pipeline verification mode (route all substantive queries through all 10 layers, surface only verified signals)
                     </span>
                   </label>
                   <label className="flex items-start gap-2 text-[11px] text-slate-700">
@@ -8821,7 +8879,7 @@ CRITICAL RULES:
                       className="mt-0.5"
                     />
                     <span>
-                      Run full case-tree match scan (conversation, uploaded files, NSIL insights, policy requirements, and recommendation graph)
+                      Deep verification scan (cross-reference conversation, uploads, intelligence outputs, policy frameworks, and entity graph)
                     </span>
                   </label>
                   {enableFullCaseTreeMatching && (
@@ -9061,7 +9119,7 @@ CRITICAL RULES:
                         onChange={(e) => setAllowAllDocumentAccess(e.target.checked)}
                         className="mt-0.5"
                       />
-                      Allow BW Consultant to use all uploaded material for final generation and support-document mapping.
+                      Allow ADVERSIQ to use all uploaded material for final generation and support-document mapping.
                     </label>
                     <button
                       onClick={handleGenerateDocuments}
@@ -9302,7 +9360,7 @@ CRITICAL RULES:
                     </button>
                   </div>
                 </div>
-                <p className="mt-1 text-[11px] text-slate-600">Use buttons while chatting to push context into BW Consultant and run live world research.</p>
+                <p className="mt-1 text-[11px] text-slate-600">Use buttons while chatting to push context into ADVERSIQ and run live world research.</p>
               </div>
 
               <div className="flex-1 overflow-y-auto p-3 space-y-3">
@@ -9518,10 +9576,10 @@ CRITICAL RULES:
                 </div>
                 <div className="border border-stone-200 bg-white p-3">
                   <p className="text-[11px] font-semibold text-slate-800">4) Everything feeds into your consultation</p>
-                  <p className="mt-1 text-[10px] text-slate-600">All findings and your inputs are woven into your BW Consultant conversation and any documents generated - giving you a more informed, relevant result.</p>
+                  <p className="mt-1 text-[10px] text-slate-600">All findings and your inputs are woven into your ADVERSIQ verification pipeline and any outputs generated — giving you a more informed, verified result.</p>
                 </div>
                 <div className="border border-stone-200 bg-slate-50 p-3">
-                  <p className="text-[10px] text-slate-700">Live Research works alongside BW Consultant to surface external findings that help you make better-informed decisions.</p>
+                  <p className="text-[10px] text-slate-700">Live Research works alongside ADVERSIQ to surface external findings that strengthen verification confidence.</p>
                 </div>
               </div>
             </div>
