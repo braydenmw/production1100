@@ -11,7 +11,7 @@
 
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { 
-  Bot, Send, Paperclip, Loader2, X,
+  Send, Paperclip, Loader2, X,
   FileText, Mail, Briefcase, Shield, BarChart3, Users, Scale, 
   Globe, FileCheck, PenTool, Download, Copy, Check,
   HelpCircle,
@@ -2947,7 +2947,7 @@ const BWConsultantOS: React.FC<BWConsultantOSProps> = ({ onOpenWorkspace, onNavi
       {
         id: crypto.randomUUID(),
         role: 'assistant',
-        content: 'Quick lines converted into ADVERSIQ baseline context and added to the verification pipeline.','
+        content: 'Quick lines converted into ADVERSIQ baseline context and added to the verification pipeline.',
         timestamp: new Date(),
         phase: 'discovery'
       }
@@ -7844,7 +7844,7 @@ CRITICAL RULES:
       setMessages(prev => [...prev, {
         id: crypto.randomUUID(),
         role: 'assistant',
-        content: 'Unable to import learning profile. Please use a valid JSON file exported from ADVERSIQ Intelligence.','
+        content: 'Unable to import learning profile. Please use a valid JSON file exported from ADVERSIQ Intelligence.',
         timestamp: new Date(),
         phase: 'recommendations'
       }]);
@@ -8724,13 +8724,6 @@ CRITICAL RULES:
                           </div>
                         ))}
                       </div>
-                    </div>
-                  </div>
-                    </div>
-                    <div className="mt-3 space-y-3">
-                      {Array.from({ length: 20 }).map((_, index) => (
-                        <div key={`a4-line-${index}`} className="border-b border-stone-200 h-5" />
-                      ))}
                     </div>
                   </div>
                 ) : (
