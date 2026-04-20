@@ -32,6 +32,19 @@ if (!rootElement) {
   throw new Error("Could not find root element to mount to");
 }
 
+// Diagnostic: apply baseline inline styles so the page is visually structured
+// even if the bundled CSS file fails to load. Remove once CSS loading is confirmed.
+rootElement.style.cssText = [
+  'min-height: 100vh',
+  'width: 100%',
+  'font-family: Inter, Segoe UI, Arial, -apple-system, sans-serif',
+  'font-size: 14px',
+  'line-height: 1.6',
+  'color: #1C1C1C',
+  'background-color: #F0F7FF',
+  'box-sizing: border-box',
+].join('; ');
+
 const root = ReactDOM.createRoot(rootElement);
 
 // Dynamically import the app and ErrorBoundary so import-time errors can be caught and displayed
