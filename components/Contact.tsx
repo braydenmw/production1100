@@ -1,16 +1,35 @@
-import React, { useState } from 'react';
-import { Mail, Phone, MapPin, CheckCircle, Loader2 } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { Mail, Phone, MapPin, CheckCircle, Loader2, AlertCircle } from 'lucide-react';
 
 export const Contact: React.FC = () => {
-  const [formState, setFormState] = useState<'idle' | 'submitting' | 'success'>('idle');
+  const [formState, setFormState] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
+  const formRef = useRef<HTMLFormElement>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormState('submitting');
-    // Simulate network request
-    setTimeout(() => {
+
+    const form = formRef.current;
+    if (!form) return;
+
+    const firstName = (form.querySelector('#firstName') as HTMLInputElement)?.value || '';
+    const lastName = (form.querySelector('#lastName') as HTMLInputElement)?.value || '';
+    const email = (form.querySelector('#email') as HTMLInputElement)?.value || '';
+    const message = (form.querySelector('#message') as HTMLTextAreaElement)?.value || '';
+
+    // Open the user's email client with the form data pre-filled
+    const subject = encodeURIComponent(`ADVERSIQ Inquiry from ${firstName} ${lastName}`);
+    const body = encodeURIComponent(
+      `From: ${firstName} ${lastName}\nEmail: ${email}\n\n${message}`
+    );
+    const mailtoLink = `mailto:advisory@bw-global.com?subject=${subject}&body=${body}`;
+
+    try {
+      window.open(mailtoLink, '_self');
       setFormState('success');
-    }, 1500);
+    } catch {
+      setFormState('error');
+    }
   };
 
   return (
@@ -56,9 +75,9 @@ export const Contact: React.FC = () => {
                 <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-6">
                   <CheckCircle className="h-8 w-8 text-green-600" />
                 </div>
-                <h4 className="text-2xl font-serif font-bold text-bw-navy mb-4">Message Sent</h4>
+                <h4 className="text-2xl font-serif font-bold text-bw-navy mb-4">Email Client Opened</h4>
                 <p className="text-gray-600 mb-8">
-                  Thank you for contacting ADVERSIQ Intelligence. A member of our executive team will review your inquiry and respond shortly.
+                  Your email client should have opened with the message pre-filled. Send it to complete your inquiry. If it didn't open, email us directly at advisory@bw-global.com.
                 </p>
                 <button 
                   onClick={() => setFormState('idle')}
@@ -68,7 +87,7 @@ export const Contact: React.FC = () => {
                 </button>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-6 w-full">
+              <form ref={formRef} onSubmit={handleSubmit} className="space-y-6 w-full">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">First Name</label>

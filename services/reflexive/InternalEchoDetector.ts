@@ -337,7 +337,7 @@ export class InternalEchoDetector {
               targetField: problemField,
               targetPhrase: pattern.problemDimension,
               connectionType: 'answer-to-problem',
-              strength: 0.7 + Math.random() * 0.2,
+              strength: 0.7 + (signal.length % 10) * 0.02,
               insight: pattern.connectionDescription,
               actionableAdvice: `Connect your ${signal} (mentioned in ${field}) to your ${pattern.problemDimension} strategy - this asset may directly address the gap you've identified.`
             });

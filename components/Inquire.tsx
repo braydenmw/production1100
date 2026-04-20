@@ -61,7 +61,7 @@ const Inquire: React.FC<InquireProps> = ({ params, onApplySuggestions }) => {
             };
 
             updateThinking('Summarising input...');
-            await new Promise(r => setTimeout(r, 800)); // Visual delay
+            // Let state update render
 
             updateThinking('Searching global index...');
             // Perform actual search if needed context
@@ -91,7 +91,7 @@ const Inquire: React.FC<InquireProps> = ({ params, onApplySuggestions }) => {
             }
 
             updateThinking('Reasoning & generating options...');
-            await new Promise(r => setTimeout(r, 500)); // Visual delay
+            // Let state update render
 
             // Perform Deep Analysis with NSIL-enriched context
             const context = `User Context: ${params.organizationType} in ${params.region}. Industry: ${params.industry.join(', ')}. Goal: ${params.problemStatement}. Recent Search Context: ${searchContext.text}${nsilContext}`;

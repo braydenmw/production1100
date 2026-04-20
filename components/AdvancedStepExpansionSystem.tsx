@@ -460,7 +460,11 @@ const AdvancedStepExpansionSystem: React.FC = () => {
                         ))}
 
                         <button
-                          onClick={() => overrideScore(section.id, Math.floor(Math.random() * 100))}
+                          onClick={() => {
+                            const currentScore = section.score ?? 50;
+                            const adjusted = Math.min(100, Math.max(0, currentScore + (currentScore < 50 ? 10 : -10)));
+                            overrideScore(section.id, adjusted);
+                          }}
                           className="w-full mt-2 py-2 px-3 bg-orange-100 text-orange-900 font-bold rounded-lg hover:bg-orange-200 transition-colors text-sm"
                         >
                           Override Score

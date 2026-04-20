@@ -386,6 +386,15 @@ export class ExportService {
       actor: 'ExportService',
       source: 'service'
     });
+
+    // Open the user's email client with the report ID for reference
+    const subject = encodeURIComponent(`ADVERSIQ Report: ${reportId}`);
+    const body = encodeURIComponent(
+      `Please find attached the ADVERSIQ Intelligence Report.\n\nReport ID: ${reportId}\nGenerated: ${new Date().toISOString()}\n\nNote: Export the report as PDF or DOCX and attach it to this email before sending.`
+    );
+    const mailtoLink = `mailto:?subject=${subject}&body=${body}`;
+    window.open(mailtoLink, '_self');
+
     await GovernanceService.recordProvenance({
       reportId,
       artifact: 'report-export',
@@ -415,7 +424,15 @@ export class ExportService {
       actor: 'ExportService',
       source: 'service'
     });
-    const link = `/share/${reportId}-${Date.now()}`;
+
+    // Copy the current page URL with report ID to clipboard
+    const shareUrl = `${window.location.origin}${window.location.pathname}?report=${encodeURIComponent(reportId)}`;
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+    } catch {
+      // Clipboard API may be blocked; fall back silently
+    }
+
     await GovernanceService.recordProvenance({
       reportId,
       artifact: 'report-export',
@@ -423,7 +440,7 @@ export class ExportService {
       actor: 'ExportService',
       source: 'service'
     });
-    return { link };
+    return { link: shareUrl };
   }
 }
 

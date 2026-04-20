@@ -551,9 +551,10 @@ export class HistoricalDataPipeline {
   private estimateCompetition(country: string, _year: number): number {
     const developedMarkets = ['United States', 'Germany', 'Japan', 'United Kingdom', 'France'];
     const emergingHigh = ['China', 'India', 'Brazil'];
-    if (developedMarkets.includes(country)) return 80 + Math.random() * 10;
-    if (emergingHigh.includes(country)) return 60 + Math.random() * 15;
-    return 40 + Math.random() * 20;
+    const hash = this.hashString(country);
+    if (developedMarkets.includes(country)) return 80 + (hash % 11);
+    if (emergingHigh.includes(country)) return 60 + (hash % 16);
+    return 40 + (hash % 21);
   }
 
   private estimateRegulatoryRisk(country: string, cpi: number): number {
@@ -562,8 +563,9 @@ export class HistoricalDataPipeline {
 
   private estimatePoliticalStability(country: string, cpi: number): number {
     const stableCountries = ['Singapore', 'Japan', 'Germany', 'Switzerland', 'Australia'];
-    if (stableCountries.includes(country)) return 85 + Math.random() * 10;
-    return Math.min(95, cpi * 1.1 + Math.random() * 10);
+    const hash = this.hashString(country);
+    if (stableCountries.includes(country)) return 85 + (hash % 11);
+    return Math.min(95, cpi * 1.1 + (hash % 11));
   }
 
   private estimateInfrastructure(country: string, year: number): number {
@@ -607,7 +609,16 @@ export class HistoricalDataPipeline {
   }
 
   private estimateTradeOpenness(country: string, fdi: number): number {
-    return Math.min(95, 40 + fdi * 5 + Math.random() * 10);
+    const hash = this.hashString(country);
+    return Math.min(95, 40 + fdi * 5 + (hash % 11));
+  }
+
+  private hashString(str: string): number {
+    let hash = 5381;
+    for (let i = 0; i < str.length; i++) {
+      hash = ((hash << 5) + hash + str.charCodeAt(i)) & 0x7fffffff;
+    }
+    return hash;
   }
 
   private estimateGdpPerCapita(country: string, year: number): number {

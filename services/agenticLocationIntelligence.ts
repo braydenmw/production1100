@@ -441,7 +441,10 @@ function getCategorySource(category: string): string {
     projects: ['Government Projects Portal', 'Development Bank', 'Infrastructure Ministry', 'PPP Center'],
   };
   const categorySourcesList = sources[category] || sources.news;
-  return categorySourcesList[Math.floor(Math.random() * categorySourcesList.length)];
+  // Deterministic selection based on category name
+  let hash = 0;
+  for (let i = 0; i < category.length; i++) hash = ((hash << 5) - hash + category.charCodeAt(i)) & 0x7fffffff;
+  return categorySourcesList[hash % categorySourcesList.length];
 }
 
 // ==================== PROFILE SYNTHESIS ENGINE ====================

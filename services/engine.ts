@@ -628,7 +628,6 @@ const computeSCF = (composite: CompositeScoreResult, sectorHint?: string) => {
 };
 
 export const runOpportunityOrchestration = async (regionProfile: RegionProfile): Promise<OrchResult> => {
-    await new Promise(r => setTimeout(r, 1000));
 
     const composite = await CompositeScoreService.getScores({ country: regionProfile.country, region: regionProfile.name });
     const { components, overall } = composite;

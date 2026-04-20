@@ -1203,9 +1203,9 @@ class AdvancedIndexService {
 
   private static computeDVS(params: ReportParameters, composite: CompositeScoreResult): DVSResult {
     const drivers = ['Volume', 'Price', 'Cost', 'FX'];
-    const impacts = drivers.map(driver => ({
+    const impacts = drivers.map((driver, idx) => ({
       driver,
-      impactScore: clamp(Math.round(40 + Math.random() * 55 + (composite.components.marketAccess - 60) * 0.2), 10, 100)
+      impactScore: clamp(Math.round(40 + (idx * 17 + 7) % 56 + (composite.components.marketAccess - 60) * 0.2), 10, 100)
     }));
 
     const ranked = impacts.sort((a, b) => b.impactScore - a.impactScore);

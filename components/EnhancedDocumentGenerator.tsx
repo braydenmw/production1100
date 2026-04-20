@@ -189,9 +189,6 @@ export const EnhancedDocumentGenerator: React.FC<EnhancedDocumentGeneratorProps>
   const generateDocuments = async () => {
     setIsGenerating(true);
     
-    // Simulate generation delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
     const newDocs: GeneratedDocument[] = [];
     
     selectedDocuments.forEach(docId => {
